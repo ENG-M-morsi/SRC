@@ -250,7 +250,7 @@ class TCN(nn.Module):
         super(TCN, self).__init__()
         #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
         #self.swinT = SwinT.SwinT(n_feats=in_channels)
-        self.hat = HAT(dim=in_channels, num_blocks=4, window_size=12, num_heads=4)
+        self.hat = HAT(dim=in_channels, num_blocks=3, window_size=16, num_heads=8)
 
     def forward(self, x, H, W):
         # الـ x هنا هو خرج TESA (بأبعاد B, C, H, W)

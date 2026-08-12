@@ -1,6 +1,5 @@
 # ===================================================================
-# hyperopt_with_your_data.py — بحث شامل مع SwinT و HUTCN
-# (يدعم المعاملات: nf, num_heads, depth, window_size, mlp_ratio)
+# hyperopt_with_your_data.py — بحث شامل مع PSA و num_blocks
 # ===================================================================
 import optuna
 import torch
@@ -9,7 +8,6 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lrs
 import os
 import sys
-import copy
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,7 +20,7 @@ from model.dhtcun import HUTCN
 from model import dhtcu_block as B
 
 # ===================================================================
-# دوال الخسارة الإضافية
+#  دوال الخسارة الإضافية
 # ===================================================================
 class CharbonnierLoss(nn.Module):
     def __init__(self, eps=1e-3):
@@ -41,39 +39,37 @@ class HuberLoss(nn.Module):
         return torch.mean(mask * (x - y)**2 + (1 - mask) * (2 * self.delta * diff - self.delta**2))
 
 # ===================================================================
-# دالة إنشاء DataLoaders (مصححة)
+#  دالة إنشاء DataLoaders
 # ===================================================================
 def get_loaders_from_args(trial_params, base_args):
-    args = copy.deepcopy(base_args)
-    args.data_train = ['DIV2K']
-    args.data_test = ['DIV2K']
-    args.data_range = '1-800/896-900'
-    args.scale = [4]
-    args.dir_data = r'D:\Mohamed Morsi\DATA'
+    args = base_args
     args.patch_size = trial_params['patch_size']
-    args.batch_size = trial_params['batch_size']
+    args.batch_size = trial_params['batch_size'] if 'batch_size' in trial_params else base_args.batch_size
+    args.dir_data = r'D:\Mohamed Morsi\DATA'
     loader = data.Data(args)
     return loader.loader_train, loader.loader_test
 
 # ===================================================================
-# دالة الهدف الرئيسية
+#  دالة الهدف الرئيسية
 # ===================================================================
 def objective(trial):
-    # ---------- معاملات بنية النموذج ----------
-    nf = trial.suggest_int('n_feats', 32, 96, step=8)
-    num_heads = trial.suggest_categorical('num_heads', [2, 4, 8])
+    # ---------- معاملات النموذج ----------
+    nf = trial.suggest_int('nf', 32, 128, step=8)
+    num_heads_options = [2, 4, 8]
+    num_heads = trial.suggest_categorical('num_heads', num_heads_options)
     if nf % num_heads != 0:
         raise optuna.TrialPruned()
 
-    depth = trial.suggest_int('depth', 1, 3, step=1)
-    window_size = trial.suggest_categorical('window_size', [8, 12, 16])
-    mlp_ratio = trial.suggest_float('mlp_ratio', 1.5, 2.5, step=0.25)
+    window_size = trial.suggest_categorical('window_size', [4, 6, 8, 12, 16])
+    num_blocks = trial.suggest_int('num_blocks', 1, 4, step=1)  # ✅ أضفنا num_blocks
+    ffn_ratio = trial.suggest_categorical('ffn_ratio', [1.0, 1.5, 2.0])
 
-    patch_size = trial.suggest_categorical('patch_size', [128, 160, 192])
+    # ---------- معاملات التدريب ----------
+    #patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224, 256])
+    patch_size = 192
     if window_size > patch_size:
         raise optuna.TrialPruned()
 
-    # ---------- معاملات التدريب ----------
     optimizer_name = trial.suggest_categorical('optimizer', ['ADAM', 'AdamW'])
     scheduler_name = trial.suggest_categorical('scheduler', ['fixed', 'cosine', 'step'])
     loss_name = trial.suggest_categorical('loss', ['L1', 'L2', 'Charbonnier', 'Huber'])
@@ -84,20 +80,19 @@ def objective(trial):
     model = HUTCN(
         in_nc=3,
         nf=nf,
-        num_modules=1,          # نستخدم كتلة واحدة للسرعة
+        num_modules=1,
         out_nc=3,
         upscale=4,
         num_heads=num_heads,
-        depth=depth,
         window_size=window_size,
-        mlp_ratio=mlp_ratio,
-        resolution=48
+        num_blocks=num_blocks,
+        ffn_ratio=ffn_ratio
     )
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
-    # ---------- المحسّن ----------
+    # ---------- المُحسّن ----------
     if optimizer_name == 'ADAM':
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
     else:
@@ -125,7 +120,7 @@ def objective(trial):
     # ---------- تحميل البيانات ----------
     trial_params = {
         'patch_size': patch_size,
-        'batch_size': 4
+        'batch_size': 8
     }
     train_loader, test_loaders = get_loaders_from_args(trial_params, base_args)
     val_loader = test_loaders[0] if test_loaders else None
@@ -144,9 +139,6 @@ def objective(trial):
             loss.backward()
             optimizer.step()
 
-            if batch_idx % 50 == 0:
-                print(f'Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item():.4f}')
-
         if scheduler is not None:
             scheduler.step()
 
@@ -162,18 +154,15 @@ def objective(trial):
                 psnr_sum += psnr.item()
 
         avg_psnr = psnr_sum / len(val_loader)
-
         trial.report(avg_psnr, epoch)
         if trial.should_prune():
             raise optuna.TrialPruned()
-
-        if avg_psnr > best_psnr:
-            best_psnr = avg_psnr
+        best_psnr = max(best_psnr, avg_psnr)
 
     return best_psnr
 
 # ===================================================================
-# تشغيل البحث
+#  تشغيل البحث
 # ===================================================================
 if __name__ == "__main__":
     N_TRIALS = 10
@@ -184,7 +173,7 @@ if __name__ == "__main__":
         pruner=optuna.pruners.MedianPruner(n_warmup_steps=3)
     )
 
-    print(f"🚀 بدء البحث الشامل ({N_TRIALS} محاولة، كل محاولة {5} Epochs)...")
+    print(f"🚀 بدء البحث الشامل ({N_TRIALS} محاولة، كل محاولة 10 Epochs)...")
     study.optimize(objective, n_trials=N_TRIALS, show_progress_bar=True)
 
     print("\n" + "="*70)
@@ -192,7 +181,7 @@ if __name__ == "__main__":
     print("="*70)
     for key, value in study.best_params.items():
         print(f"  {key:>20} : {value}")
-    print(f"\n📈 أفضل PSNR على مجموعة التحقق: {study.best_value:.3f} dB")
+    print(f"\n📈 أفضل PSNR: {study.best_value:.3f} dB")
     print("="*70)
 
     import json
