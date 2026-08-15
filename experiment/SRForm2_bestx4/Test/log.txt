@@ -2,12 +2,12 @@
 790,200 training parameters.
 
 Evaluation:
-[Set5 x4]	Average PSNR: 31.796 dB | SSIM: 0.8877
-[Set14 x4]	Average PSNR: 28.344 dB | SSIM: 0.7751
-[B100 x4]	Average PSNR: 27.402 dB | SSIM: 0.7307
-[Urban100 x4]	Average PSNR: 25.545 dB | SSIM: 0.7680
-[Manga109 x4]	Average PSNR: 29.640 dB | SSIM: 0.8976
-Forward: 328.11s
+[Set5 x4]	Average PSNR: 31.895 dB | SSIM: 0.8894
+[Set14 x4]	Average PSNR: 28.389 dB | SSIM: 0.7767
+[B100 x4]	Average PSNR: 27.433 dB | SSIM: 0.7324
+[Urban100 x4]	Average PSNR: 25.658 dB | SSIM: 0.7726
+[Manga109 x4]	Average PSNR: 29.826 dB | SSIM: 0.9000
+Forward: 327.39s
 
 Saving...
-Total: 329.11s
+Total: 328.41s

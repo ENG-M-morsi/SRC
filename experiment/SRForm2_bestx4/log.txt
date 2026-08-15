@@ -4613,3 +4613,4018 @@ Forward: 1.43s
 Saving...
 Total: 6.80s
 
+HUTCN(
+  (fea_conv): Conv2d(3, 96, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (attn): PSA(
+        (blocks): ModuleList(
+          (0-2): 3 x PSA_Block(
+            (norm_attn): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+            (norm_ffn): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+            (compress): Linear(in_features=384, out_features=96, bias=False)
+            (qkv): Linear(in_features=96, out_features=288, bias=True)
+            (crpb): ContinuousRPB(
+              (mlp): Sequential(
+                (0): Linear(in_features=2, out_features=16, bias=True)
+                (1): ReLU(inplace=True)
+                (2): Linear(in_features=16, out_features=2, bias=False)
+              )
+            )
+            (proj): Linear(in_features=96, out_features=96, bias=True)
+            (attn_drop): Dropout(p=0.0, inplace=False)
+            (proj_drop): Dropout(p=0.0, inplace=False)
+            (expand): Linear(in_features=96, out_features=384, bias=False)
+            (ffn): LightFFN(
+              (fc1): Linear(in_features=96, out_features=96, bias=True)
+              (dw): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=96, bias=False)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=96, out_features=96, bias=True)
+            )
+          )
+        )
+        (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (recon_conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(96, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Optimizer state loaded successfully.
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 96, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (attn): PSA(
+          (blocks): ModuleList(
+            (0-2): 3 x PSA_Block(
+              (norm_attn): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+              (norm_ffn): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+              (compress): Linear(in_features=384, out_features=96, bias=False)
+              (qkv): Linear(in_features=96, out_features=288, bias=True)
+              (crpb): ContinuousRPB(
+                (mlp): Sequential(
+                  (0): Linear(in_features=2, out_features=16, bias=True)
+                  (1): ReLU(inplace=True)
+                  (2): Linear(in_features=16, out_features=2, bias=False)
+                )
+              )
+              (proj): Linear(in_features=96, out_features=96, bias=True)
+              (attn_drop): Dropout(p=0.0, inplace=False)
+              (proj_drop): Dropout(p=0.0, inplace=False)
+              (expand): Linear(in_features=96, out_features=384, bias=False)
+              (ffn): LightFFN(
+                (fc1): Linear(in_features=96, out_features=96, bias=True)
+                (dw): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=96, bias=False)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=96, out_features=96, bias=True)
+              )
+            )
+          )
+          (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (recon_conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(96, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+790,200 total parameters.
+790,200 training parameters.
+[Epoch 221]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0259]	3.9+3.2s
+[1600/8000]	[Charbonnier: 0.0261]	3.8+3.4s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.3s
+[3200/8000]	[Charbonnier: 0.0258]	3.7+3.3s
+[4000/8000]	[Charbonnier: 0.0259]	3.7+3.4s
+[4800/8000]	[Charbonnier: 0.0262]	3.7+3.4s
+[5600/8000]	[Charbonnier: 0.0262]	3.7+3.3s
+[6400/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0264]	3.5+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 221: Average PSNR: 31.880 dB  (Best: 32.034 @epoch 210)
+Forward: 2.04s
+
+Saving...
+Total: 6.80s
+
+[Epoch 222]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.6+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 222: Average PSNR: 31.908 dB  (Best: 32.034 @epoch 210)
+Forward: 1.36s
+
+Saving...
+Total: 6.77s
+
+[Epoch 223]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0255]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0258]	3.5+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 223: Average PSNR: 31.886 dB  (Best: 32.034 @epoch 210)
+Forward: 1.50s
+
+Saving...
+Total: 6.84s
+
+[Epoch 224]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0275]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0264]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 224: Average PSNR: 31.903 dB  (Best: 32.034 @epoch 210)
+Forward: 1.41s
+
+Saving...
+Total: 6.78s
+
+[Epoch 225]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0261]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 225: Average PSNR: 31.950 dB  (Best: 32.034 @epoch 210)
+Forward: 1.41s
+
+Saving...
+Total: 6.75s
+
+[Epoch 226]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0259]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.7+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 226: Average PSNR: 31.973 dB  (Best: 32.034 @epoch 210)
+Forward: 1.45s
+
+Saving...
+Total: 6.79s
+
+[Epoch 227]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0270]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.7+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 227: Average PSNR: 31.815 dB  (Best: 32.034 @epoch 210)
+Forward: 1.44s
+
+Saving...
+Total: 6.79s
+
+[Epoch 228]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 228: Average PSNR: 31.958 dB  (Best: 32.034 @epoch 210)
+Forward: 1.43s
+
+Saving...
+Total: 6.79s
+
+[Epoch 229]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0264]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0263]	3.5+3.1s
+[5600/8000]	[Charbonnier: 0.0262]	3.5+3.1s
+[6400/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 229: Average PSNR: 31.938 dB  (Best: 32.034 @epoch 210)
+Forward: 1.46s
+
+Saving...
+Total: 6.81s
+
+[Epoch 230]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.7+3.3s
+[4800/8000]	[Charbonnier: 0.0259]	3.7+3.4s
+[5600/8000]	[Charbonnier: 0.0259]	3.7+3.3s
+[6400/8000]	[Charbonnier: 0.0259]	3.7+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.7+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.8+3.3s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 230: Average PSNR: 31.919 dB  (Best: 32.034 @epoch 210)
+Forward: 1.43s
+
+Saving...
+Total: 6.74s
+
+[Epoch 231]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0266]	3.9+3.3s
+[1600/8000]	[Charbonnier: 0.0262]	3.7+3.3s
+[2400/8000]	[Charbonnier: 0.0263]	3.7+3.3s
+[3200/8000]	[Charbonnier: 0.0260]	3.8+3.4s
+[4000/8000]	[Charbonnier: 0.0259]	3.7+3.3s
+[4800/8000]	[Charbonnier: 0.0260]	3.7+3.3s
+[5600/8000]	[Charbonnier: 0.0262]	3.7+3.3s
+[6400/8000]	[Charbonnier: 0.0263]	3.7+3.3s
+[7200/8000]	[Charbonnier: 0.0262]	3.7+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 231: Average PSNR: 31.913 dB  (Best: 32.034 @epoch 210)
+Forward: 1.48s
+
+Saving...
+Total: 6.83s
+
+[Epoch 232]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0251]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0250]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 232: Average PSNR: 31.924 dB  (Best: 32.034 @epoch 210)
+Forward: 1.36s
+
+Saving...
+Total: 6.69s
+
+[Epoch 233]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0267]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0271]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0262]	3.5+3.2s
+[3200/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0266
+
+Evaluation:
+[DIV2K x4]	Epoch 233: Average PSNR: 31.860 dB  (Best: 32.034 @epoch 210)
+Forward: 1.41s
+
+Saving...
+Total: 6.75s
+
+[Epoch 234]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0265]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 234: Average PSNR: 31.925 dB  (Best: 32.034 @epoch 210)
+Forward: 1.47s
+
+Saving...
+Total: 6.81s
+
+[Epoch 235]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0268]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0266]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 235: Average PSNR: 31.957 dB  (Best: 32.034 @epoch 210)
+Forward: 1.51s
+
+Saving...
+Total: 6.85s
+
+[Epoch 236]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.7+3.3s
+[8000/8000]	[Charbonnier: 0.0258]	3.7+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 236: Average PSNR: 31.981 dB  (Best: 32.034 @epoch 210)
+Forward: 1.44s
+
+Saving...
+Total: 6.77s
+
+[Epoch 237]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0249]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 237: Average PSNR: 32.009 dB  (Best: 32.034 @epoch 210)
+Forward: 1.34s
+
+Saving...
+Total: 6.67s
+
+[Epoch 238]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0259]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 238: Average PSNR: 31.938 dB  (Best: 32.034 @epoch 210)
+Forward: 1.43s
+
+Saving...
+Total: 6.86s
+
+[Epoch 239]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0244]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0250]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.7+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 239: Average PSNR: 31.970 dB  (Best: 32.034 @epoch 210)
+Forward: 1.36s
+
+Saving...
+Total: 6.71s
+
+[Epoch 240]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0255]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 240: Average PSNR: 31.950 dB  (Best: 32.034 @epoch 210)
+Forward: 1.44s
+
+Saving...
+Total: 6.79s
+
+[Epoch 241]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 241: Average PSNR: 31.967 dB  (Best: 32.034 @epoch 210)
+Forward: 1.43s
+
+Saving...
+Total: 6.81s
+
+[Epoch 242]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0263]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 242: Average PSNR: 31.968 dB  (Best: 32.034 @epoch 210)
+Forward: 1.43s
+
+Saving...
+Total: 6.79s
+
+[Epoch 243]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 243: Average PSNR: 31.957 dB  (Best: 32.034 @epoch 210)
+Forward: 1.36s
+
+Saving...
+Total: 6.74s
+
+[Epoch 244]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0271]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0267]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0262]	3.5+3.2s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 244: Average PSNR: 31.962 dB  (Best: 32.034 @epoch 210)
+Forward: 1.48s
+
+Saving...
+Total: 6.84s
+
+[Epoch 245]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0249]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.5+3.1s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.5+3.1s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 245: Average PSNR: 31.980 dB  (Best: 32.034 @epoch 210)
+Forward: 1.45s
+
+Saving...
+Total: 6.80s
+
+[Epoch 246]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 246: Average PSNR: 31.988 dB  (Best: 32.034 @epoch 210)
+Forward: 1.44s
+
+Saving...
+Total: 6.79s
+
+[Epoch 247]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0263]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 247: Average PSNR: 31.903 dB  (Best: 32.034 @epoch 210)
+Forward: 1.41s
+
+Saving...
+Total: 6.77s
+
+[Epoch 248]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 248: Average PSNR: 31.986 dB  (Best: 32.034 @epoch 210)
+Forward: 1.37s
+
+Saving...
+Total: 6.71s
+
+[Epoch 249]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0261]	3.6+3.3s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 249: Average PSNR: 31.896 dB  (Best: 32.034 @epoch 210)
+Forward: 1.54s
+
+Saving...
+Total: 6.90s
+
+[Epoch 250]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0255]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 250: Average PSNR: 31.975 dB  (Best: 32.034 @epoch 210)
+Forward: 1.50s
+
+Saving...
+Total: 6.85s
+
+[Epoch 251]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0265]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 251: Average PSNR: 31.971 dB  (Best: 32.034 @epoch 210)
+Forward: 1.37s
+
+Saving...
+Total: 6.76s
+
+[Epoch 252]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 252: Average PSNR: 31.856 dB  (Best: 32.034 @epoch 210)
+Forward: 1.36s
+
+Saving...
+Total: 6.70s
+
+[Epoch 253]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 253: Average PSNR: 31.987 dB  (Best: 32.034 @epoch 210)
+Forward: 1.48s
+
+Saving...
+Total: 6.82s
+
+[Epoch 254]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0266]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 254: Average PSNR: 31.940 dB  (Best: 32.034 @epoch 210)
+Forward: 1.34s
+
+Saving...
+Total: 6.70s
+
+[Epoch 255]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0255]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 255: Average PSNR: 31.946 dB  (Best: 32.034 @epoch 210)
+Forward: 1.47s
+
+Saving...
+Total: 6.92s
+
+[Epoch 256]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 256: Average PSNR: 31.946 dB  (Best: 32.034 @epoch 210)
+Forward: 1.44s
+
+Saving...
+Total: 6.77s
+
+[Epoch 257]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.5+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0261]	3.5+3.1s
+[7200/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 257: Average PSNR: 31.998 dB  (Best: 32.034 @epoch 210)
+Forward: 1.39s
+
+Saving...
+Total: 6.74s
+
+[Epoch 258]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0255]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 258: Average PSNR: 31.974 dB  (Best: 32.034 @epoch 210)
+Forward: 1.38s
+
+Saving...
+Total: 6.72s
+
+[Epoch 259]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 259: Average PSNR: 31.970 dB  (Best: 32.034 @epoch 210)
+Forward: 1.41s
+
+Saving...
+Total: 6.76s
+
+[Epoch 260]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0253]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0259]	3.5+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 260: Average PSNR: 31.902 dB  (Best: 32.034 @epoch 210)
+Forward: 1.36s
+
+Saving...
+Total: 6.70s
+
+[Epoch 261]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0252]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0247]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 261: Average PSNR: 31.994 dB  (Best: 32.034 @epoch 210)
+Forward: 1.36s
+
+Saving...
+Total: 6.72s
+
+[Epoch 262]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0266]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 262: Average PSNR: 32.012 dB  (Best: 32.034 @epoch 210)
+Forward: 1.42s
+
+Saving...
+Total: 6.77s
+
+[Epoch 263]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0252]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.5+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 263: Average PSNR: 31.935 dB  (Best: 32.034 @epoch 210)
+Forward: 1.44s
+
+Saving...
+Total: 6.80s
+
+[Epoch 264]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0263]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0263]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 264: Average PSNR: 31.955 dB  (Best: 32.034 @epoch 210)
+Forward: 1.49s
+
+Saving...
+Total: 6.82s
+
+[Epoch 265]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0269]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0263]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 265: Average PSNR: 32.004 dB  (Best: 32.034 @epoch 210)
+Forward: 1.44s
+
+Saving...
+Total: 6.77s
+
+[Epoch 266]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0273]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 266: Average PSNR: 31.922 dB  (Best: 32.034 @epoch 210)
+Forward: 1.41s
+
+Saving...
+Total: 6.75s
+
+[Epoch 267]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0255]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 267: Average PSNR: 31.960 dB  (Best: 32.034 @epoch 210)
+Forward: 1.40s
+
+Saving...
+Total: 6.74s
+
+[Epoch 268]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.5+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.5+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 268: Average PSNR: 31.997 dB  (Best: 32.034 @epoch 210)
+Forward: 1.43s
+
+Saving...
+Total: 6.77s
+
+[Epoch 269]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 269: Average PSNR: 31.982 dB  (Best: 32.034 @epoch 210)
+Forward: 1.47s
+
+Saving...
+Total: 6.80s
+
+[Epoch 270]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0250]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.5+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 270: Average PSNR: 31.989 dB  (Best: 32.034 @epoch 210)
+Forward: 1.49s
+
+Saving...
+Total: 6.85s
+
+[Epoch 271]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0265]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0261]	3.5+3.1s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 271: Average PSNR: 31.971 dB  (Best: 32.034 @epoch 210)
+Forward: 1.36s
+
+Saving...
+Total: 6.71s
+
+[Epoch 272]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0249]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0250]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 272: Average PSNR: 32.019 dB  (Best: 32.034 @epoch 210)
+Forward: 1.38s
+
+Saving...
+Total: 6.81s
+
+[Epoch 273]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0260]	3.5+3.2s
+[7200/8000]	[Charbonnier: 0.0260]	3.5+3.1s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 273: Average PSNR: 31.987 dB  (Best: 32.034 @epoch 210)
+Forward: 1.34s
+
+Saving...
+Total: 6.68s
+
+[Epoch 274]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0248]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 274: Average PSNR: 32.009 dB  (Best: 32.034 @epoch 210)
+Forward: 1.42s
+
+Saving...
+Total: 6.78s
+
+[Epoch 275]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0251]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.3s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+Average Loss: 0.0265
+
+Evaluation:
+[DIV2K x4]	Epoch 275: Average PSNR: 32.003 dB  (Best: 32.034 @epoch 210)
+Forward: 1.47s
+
+Saving...
+Total: 6.81s
+
+[Epoch 276]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0250]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.5+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 276: Average PSNR: 31.992 dB  (Best: 32.034 @epoch 210)
+Forward: 1.34s
+
+Saving...
+Total: 6.69s
+
+[Epoch 277]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0264]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0263]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 277: Average PSNR: 32.046 dB  (Best: 32.046 @epoch 277)
+Forward: 1.48s
+
+Saving...
+Total: 6.86s
+
+[Epoch 278]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0247]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 278: Average PSNR: 32.008 dB  (Best: 32.046 @epoch 277)
+Forward: 1.39s
+
+Saving...
+Total: 6.74s
+
+[Epoch 279]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0274]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 279: Average PSNR: 32.049 dB  (Best: 32.049 @epoch 279)
+Forward: 1.45s
+
+Saving...
+Total: 6.80s
+
+[Epoch 280]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0267]	3.5+3.2s
+[3200/8000]	[Charbonnier: 0.0270]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0267]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0266]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0264]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.3s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 280: Average PSNR: 32.007 dB  (Best: 32.049 @epoch 279)
+Forward: 1.42s
+
+Saving...
+Total: 6.75s
+
+[Epoch 281]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0249]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.5+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.5+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 281: Average PSNR: 31.990 dB  (Best: 32.049 @epoch 279)
+Forward: 1.52s
+
+Saving...
+Total: 6.87s
+
+[Epoch 282]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0250]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0252]	3.5+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.7+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.3s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 282: Average PSNR: 31.926 dB  (Best: 32.049 @epoch 279)
+Forward: 1.47s
+
+Saving...
+Total: 6.82s
+
+[Epoch 283]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0264]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 283: Average PSNR: 31.983 dB  (Best: 32.049 @epoch 279)
+Forward: 1.38s
+
+Saving...
+Total: 6.71s
+
+[Epoch 284]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0265]	3.5+3.1s
+[2400/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 284: Average PSNR: 31.976 dB  (Best: 32.049 @epoch 279)
+Forward: 1.44s
+
+Saving...
+Total: 6.77s
+
+[Epoch 285]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0261]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0257]	3.5+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 285: Average PSNR: 32.046 dB  (Best: 32.049 @epoch 279)
+Forward: 1.42s
+
+Saving...
+Total: 6.77s
+
+[Epoch 286]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0251]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0247]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 286: Average PSNR: 32.008 dB  (Best: 32.049 @epoch 279)
+Forward: 1.43s
+
+Saving...
+Total: 6.80s
+
+[Epoch 287]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0266]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.5+3.1s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 287: Average PSNR: 32.041 dB  (Best: 32.049 @epoch 279)
+Forward: 1.52s
+
+Saving...
+Total: 6.86s
+
+[Epoch 288]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 288: Average PSNR: 31.979 dB  (Best: 32.049 @epoch 279)
+Forward: 1.44s
+
+Saving...
+Total: 6.79s
+
+[Epoch 289]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0255]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0259]	3.5+3.1s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 289: Average PSNR: 32.072 dB  (Best: 32.072 @epoch 289)
+Forward: 1.34s
+
+Saving...
+Total: 6.70s
+
+[Epoch 290]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.3s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.3s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 290: Average PSNR: 32.014 dB  (Best: 32.072 @epoch 289)
+Forward: 1.36s
+
+Saving...
+Total: 6.81s
+
+[Epoch 291]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 291: Average PSNR: 32.017 dB  (Best: 32.072 @epoch 289)
+Forward: 1.45s
+
+Saving...
+Total: 6.79s
+
+[Epoch 292]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.5+3.1s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.3s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 292: Average PSNR: 32.053 dB  (Best: 32.072 @epoch 289)
+Forward: 1.45s
+
+Saving...
+Total: 6.78s
+
+[Epoch 293]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 293: Average PSNR: 32.039 dB  (Best: 32.072 @epoch 289)
+Forward: 1.48s
+
+Saving...
+Total: 6.84s
+
+[Epoch 294]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0243]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0249]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0250]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 294: Average PSNR: 31.976 dB  (Best: 32.072 @epoch 289)
+Forward: 1.34s
+
+Saving...
+Total: 6.69s
+
+[Epoch 295]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.5+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 295: Average PSNR: 31.917 dB  (Best: 32.072 @epoch 289)
+Forward: 1.34s
+
+Saving...
+Total: 6.68s
+
+[Epoch 296]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0249]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 296: Average PSNR: 32.036 dB  (Best: 32.072 @epoch 289)
+Forward: 1.33s
+
+Saving...
+Total: 6.69s
+
+[Epoch 297]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0249]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 297: Average PSNR: 32.027 dB  (Best: 32.072 @epoch 289)
+Forward: 1.49s
+
+Saving...
+Total: 6.87s
+
+[Epoch 298]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 298: Average PSNR: 32.081 dB  (Best: 32.081 @epoch 298)
+Forward: 1.48s
+
+Saving...
+Total: 6.85s
+
+[Epoch 299]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0250]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0250]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0249]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 299: Average PSNR: 32.005 dB  (Best: 32.081 @epoch 298)
+Forward: 1.34s
+
+Saving...
+Total: 6.68s
+
+[Epoch 300]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0259]	3.5+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 300: Average PSNR: 32.035 dB  (Best: 32.081 @epoch 298)
+Forward: 1.47s
+
+Saving...
+Total: 6.81s
+
+[Epoch 301]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 301: Average PSNR: 32.012 dB  (Best: 32.081 @epoch 298)
+Forward: 1.33s
+
+Saving...
+Total: 6.69s
+
+[Epoch 302]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0267]	3.7+3.2s
+[2400/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.5+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 302: Average PSNR: 32.005 dB  (Best: 32.081 @epoch 298)
+Forward: 1.42s
+
+Saving...
+Total: 6.79s
+
+[Epoch 303]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0239]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 303: Average PSNR: 32.059 dB  (Best: 32.081 @epoch 298)
+Forward: 1.50s
+
+Saving...
+Total: 6.83s
+
+[Epoch 304]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 304: Average PSNR: 32.040 dB  (Best: 32.081 @epoch 298)
+Forward: 1.41s
+
+Saving...
+Total: 6.77s
+
+[Epoch 305]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0255]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0254]	3.5+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 305: Average PSNR: 32.071 dB  (Best: 32.081 @epoch 298)
+Forward: 1.36s
+
+Saving...
+Total: 6.71s
+
+[Epoch 306]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 306: Average PSNR: 32.062 dB  (Best: 32.081 @epoch 298)
+Forward: 1.46s
+
+Saving...
+Total: 6.80s
+
+[Epoch 307]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0255]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 307: Average PSNR: 32.021 dB  (Best: 32.081 @epoch 298)
+Forward: 1.37s
+
+Saving...
+Total: 6.75s
+
+[Epoch 308]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 308: Average PSNR: 31.973 dB  (Best: 32.081 @epoch 298)
+Forward: 1.34s
+
+Saving...
+Total: 6.71s
+
+[Epoch 309]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0263]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 309: Average PSNR: 32.087 dB  (Best: 32.087 @epoch 309)
+Forward: 1.42s
+
+Saving...
+Total: 6.89s
+
+[Epoch 310]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0250]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 310: Average PSNR: 32.082 dB  (Best: 32.087 @epoch 309)
+Forward: 1.33s
+
+Saving...
+Total: 6.66s
+
+[Epoch 311]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0256]	3.5+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 311: Average PSNR: 32.014 dB  (Best: 32.087 @epoch 309)
+Forward: 1.44s
+
+Saving...
+Total: 6.78s
+
+[Epoch 312]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0248]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 312: Average PSNR: 32.036 dB  (Best: 32.087 @epoch 309)
+Forward: 1.42s
+
+Saving...
+Total: 6.77s
+
+[Epoch 313]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0252]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.5+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 313: Average PSNR: 32.045 dB  (Best: 32.087 @epoch 309)
+Forward: 1.36s
+
+Saving...
+Total: 6.71s
+
+[Epoch 314]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0252]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0248]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 314: Average PSNR: 32.059 dB  (Best: 32.087 @epoch 309)
+Forward: 1.38s
+
+Saving...
+Total: 6.72s
+
+[Epoch 315]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0265]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 315: Average PSNR: 32.072 dB  (Best: 32.087 @epoch 309)
+Forward: 1.45s
+
+Saving...
+Total: 6.79s
+
+[Epoch 316]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0261]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 316: Average PSNR: 32.066 dB  (Best: 32.087 @epoch 309)
+Forward: 1.43s
+
+Saving...
+Total: 6.79s
+
+[Epoch 317]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 317: Average PSNR: 32.077 dB  (Best: 32.087 @epoch 309)
+Forward: 1.45s
+
+Saving...
+Total: 6.80s
+
+[Epoch 318]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0268]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0264
+
+Evaluation:
+[DIV2K x4]	Epoch 318: Average PSNR: 32.075 dB  (Best: 32.087 @epoch 309)
+Forward: 1.35s
+
+Saving...
+Total: 6.70s
+
+[Epoch 319]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 319: Average PSNR: 32.032 dB  (Best: 32.087 @epoch 309)
+Forward: 1.41s
+
+Saving...
+Total: 6.75s
+
+[Epoch 320]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0263]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 320: Average PSNR: 32.043 dB  (Best: 32.087 @epoch 309)
+Forward: 1.38s
+
+Saving...
+Total: 6.74s
+
+[Epoch 321]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0251]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 321: Average PSNR: 32.051 dB  (Best: 32.087 @epoch 309)
+Forward: 1.50s
+
+Saving...
+Total: 6.88s
+
+[Epoch 322]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0265]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 322: Average PSNR: 32.075 dB  (Best: 32.087 @epoch 309)
+Forward: 1.39s
+
+Saving...
+Total: 6.74s
+
+[Epoch 323]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0251]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 323: Average PSNR: 32.056 dB  (Best: 32.087 @epoch 309)
+Forward: 1.41s
+
+Saving...
+Total: 6.77s
+
+[Epoch 324]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0253]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0249]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 324: Average PSNR: 32.091 dB  (Best: 32.091 @epoch 324)
+Forward: 1.40s
+
+Saving...
+Total: 6.78s
+
+[Epoch 325]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 325: Average PSNR: 32.107 dB  (Best: 32.107 @epoch 325)
+Forward: 1.37s
+
+Saving...
+Total: 6.73s
+
+[Epoch 326]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0259]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 326: Average PSNR: 32.047 dB  (Best: 32.107 @epoch 325)
+Forward: 1.45s
+
+Saving...
+Total: 6.88s
+
+[Epoch 327]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0259]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 327: Average PSNR: 32.081 dB  (Best: 32.107 @epoch 325)
+Forward: 1.48s
+
+Saving...
+Total: 6.83s
+
+[Epoch 328]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 328: Average PSNR: 32.079 dB  (Best: 32.107 @epoch 325)
+Forward: 1.49s
+
+Saving...
+Total: 6.84s
+
+[Epoch 329]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0268]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0264]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 329: Average PSNR: 32.036 dB  (Best: 32.107 @epoch 325)
+Forward: 1.43s
+
+Saving...
+Total: 6.78s
+
+[Epoch 330]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0252]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 330: Average PSNR: 32.069 dB  (Best: 32.107 @epoch 325)
+Forward: 1.44s
+
+Saving...
+Total: 6.79s
+
+[Epoch 331]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 331: Average PSNR: 31.995 dB  (Best: 32.107 @epoch 325)
+Forward: 1.35s
+
+Saving...
+Total: 6.69s
+
+[Epoch 332]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0244]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0249]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0250]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 332: Average PSNR: 32.054 dB  (Best: 32.107 @epoch 325)
+Forward: 1.42s
+
+Saving...
+Total: 6.77s
+
+[Epoch 333]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0263]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 333: Average PSNR: 32.087 dB  (Best: 32.107 @epoch 325)
+Forward: 1.38s
+
+Saving...
+Total: 6.73s
+
+[Epoch 334]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0263]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 334: Average PSNR: 32.041 dB  (Best: 32.107 @epoch 325)
+Forward: 1.43s
+
+Saving...
+Total: 6.78s
+
+[Epoch 335]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 335: Average PSNR: 32.086 dB  (Best: 32.107 @epoch 325)
+Forward: 1.46s
+
+Saving...
+Total: 6.82s
+
+[Epoch 336]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0251]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 336: Average PSNR: 32.088 dB  (Best: 32.107 @epoch 325)
+Forward: 1.37s
+
+Saving...
+Total: 6.74s
+
+[Epoch 337]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0261]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 337: Average PSNR: 32.059 dB  (Best: 32.107 @epoch 325)
+Forward: 1.37s
+
+Saving...
+Total: 6.73s
+
+[Epoch 338]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0249]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 338: Average PSNR: 32.080 dB  (Best: 32.107 @epoch 325)
+Forward: 1.43s
+
+Saving...
+Total: 6.79s
+
+[Epoch 339]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 339: Average PSNR: 32.085 dB  (Best: 32.107 @epoch 325)
+Forward: 1.39s
+
+Saving...
+Total: 6.75s
+
+[Epoch 340]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 340: Average PSNR: 32.100 dB  (Best: 32.107 @epoch 325)
+Forward: 1.35s
+
+Saving...
+Total: 6.70s
+
+[Epoch 341]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 341: Average PSNR: 32.073 dB  (Best: 32.107 @epoch 325)
+Forward: 1.42s
+
+Saving...
+Total: 6.78s
+
+[Epoch 342]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0251]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 342: Average PSNR: 31.981 dB  (Best: 32.107 @epoch 325)
+Forward: 1.37s
+
+Saving...
+Total: 6.73s
+
+[Epoch 343]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0264]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 343: Average PSNR: 32.062 dB  (Best: 32.107 @epoch 325)
+Forward: 1.42s
+
+Saving...
+Total: 6.78s
+
+[Epoch 344]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 344: Average PSNR: 32.002 dB  (Best: 32.107 @epoch 325)
+Forward: 1.44s
+
+Saving...
+Total: 6.78s
+
+[Epoch 345]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0268]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 345: Average PSNR: 32.090 dB  (Best: 32.107 @epoch 325)
+Forward: 1.33s
+
+Saving...
+Total: 6.80s
+
+[Epoch 346]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0275]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0266]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 346: Average PSNR: 31.944 dB  (Best: 32.107 @epoch 325)
+Forward: 1.43s
+
+Saving...
+Total: 6.80s
+
+[Epoch 347]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0247]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.3s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 347: Average PSNR: 32.100 dB  (Best: 32.107 @epoch 325)
+Forward: 1.34s
+
+Saving...
+Total: 6.70s
+
+[Epoch 348]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0255]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 348: Average PSNR: 32.089 dB  (Best: 32.107 @epoch 325)
+Forward: 1.36s
+
+Saving...
+Total: 6.71s
+
+[Epoch 349]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0265]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 349: Average PSNR: 32.053 dB  (Best: 32.107 @epoch 325)
+Forward: 1.37s
+
+Saving...
+Total: 6.74s
+
+[Epoch 350]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 350: Average PSNR: 32.121 dB  (Best: 32.121 @epoch 350)
+Forward: 1.44s
+
+Saving...
+Total: 6.83s
+
+[Epoch 351]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0248]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 351: Average PSNR: 32.085 dB  (Best: 32.121 @epoch 350)
+Forward: 1.41s
+
+Saving...
+Total: 6.76s
+
+[Epoch 352]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 352: Average PSNR: 32.084 dB  (Best: 32.121 @epoch 350)
+Forward: 1.45s
+
+Saving...
+Total: 6.82s
+
+[Epoch 353]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 353: Average PSNR: 32.105 dB  (Best: 32.121 @epoch 350)
+Forward: 1.44s
+
+Saving...
+Total: 6.82s
+
+[Epoch 354]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 354: Average PSNR: 32.097 dB  (Best: 32.121 @epoch 350)
+Forward: 1.36s
+
+Saving...
+Total: 6.72s
+
+[Epoch 355]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0267]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0264]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0266]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 355: Average PSNR: 31.991 dB  (Best: 32.121 @epoch 350)
+Forward: 1.39s
+
+Saving...
+Total: 6.74s
+
+[Epoch 356]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0263]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 356: Average PSNR: 32.088 dB  (Best: 32.121 @epoch 350)
+Forward: 1.41s
+
+Saving...
+Total: 6.78s
+
+[Epoch 357]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0270]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0258]	3.5+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 357: Average PSNR: 32.098 dB  (Best: 32.121 @epoch 350)
+Forward: 1.41s
+
+Saving...
+Total: 6.78s
+
+[Epoch 358]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0252]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 358: Average PSNR: 32.124 dB  (Best: 32.124 @epoch 358)
+Forward: 1.40s
+
+Saving...
+Total: 6.77s
+
+[Epoch 359]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0256]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 359: Average PSNR: 32.051 dB  (Best: 32.124 @epoch 358)
+Forward: 1.46s
+
+Saving...
+Total: 6.82s
+
+[Epoch 360]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.5+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 360: Average PSNR: 32.037 dB  (Best: 32.124 @epoch 358)
+Forward: 1.48s
+
+Saving...
+Total: 6.83s
+
+[Epoch 361]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 361: Average PSNR: 32.104 dB  (Best: 32.124 @epoch 358)
+Forward: 1.36s
+
+Saving...
+Total: 6.74s
+
+[Epoch 362]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 362: Average PSNR: 32.069 dB  (Best: 32.124 @epoch 358)
+Forward: 1.40s
+
+Saving...
+Total: 6.86s
+
+[Epoch 363]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0263]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 363: Average PSNR: 32.105 dB  (Best: 32.124 @epoch 358)
+Forward: 1.32s
+
+Saving...
+Total: 6.68s
+
+[Epoch 364]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0252]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.5+3.2s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 364: Average PSNR: 32.037 dB  (Best: 32.124 @epoch 358)
+Forward: 1.48s
+
+Saving...
+Total: 6.82s
+
+[Epoch 365]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0258]	3.5+3.1s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 365: Average PSNR: 32.109 dB  (Best: 32.124 @epoch 358)
+Forward: 1.39s
+
+Saving...
+Total: 6.75s
+
+[Epoch 366]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0263]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 366: Average PSNR: 32.123 dB  (Best: 32.124 @epoch 358)
+Forward: 1.33s
+
+Saving...
+Total: 6.68s
+
+[Epoch 367]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 367: Average PSNR: 32.074 dB  (Best: 32.124 @epoch 358)
+Forward: 1.35s
+
+Saving...
+Total: 6.75s
+
+[Epoch 368]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0246]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0249]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0249]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 368: Average PSNR: 32.106 dB  (Best: 32.124 @epoch 358)
+Forward: 1.43s
+
+Saving...
+Total: 6.78s
+
+[Epoch 369]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0250]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0256]	3.5+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0263
+
+Evaluation:
+[DIV2K x4]	Epoch 369: Average PSNR: 32.088 dB  (Best: 32.124 @epoch 358)
+Forward: 1.46s
+
+Saving...
+Total: 6.83s
+
+[Epoch 370]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 370: Average PSNR: 32.039 dB  (Best: 32.124 @epoch 358)
+Forward: 1.38s
+
+Saving...
+Total: 6.73s
+
+[Epoch 371]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0265]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 371: Average PSNR: 32.093 dB  (Best: 32.124 @epoch 358)
+Forward: 1.52s
+
+Saving...
+Total: 6.88s
+
+[Epoch 372]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0259]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 372: Average PSNR: 32.077 dB  (Best: 32.124 @epoch 358)
+Forward: 1.38s
+
+Saving...
+Total: 6.73s
+
+[Epoch 373]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0262]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0262]	3.6+3.3s
+[5600/8000]	[Charbonnier: 0.0259]	3.5+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 373: Average PSNR: 32.121 dB  (Best: 32.124 @epoch 358)
+Forward: 1.43s
+
+Saving...
+Total: 6.81s
+
+[Epoch 374]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 374: Average PSNR: 32.075 dB  (Best: 32.124 @epoch 358)
+Forward: 1.44s
+
+Saving...
+Total: 6.79s
+
+[Epoch 375]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0253]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0257]	3.5+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 375: Average PSNR: 32.062 dB  (Best: 32.124 @epoch 358)
+Forward: 1.41s
+
+Saving...
+Total: 6.74s
+
+[Epoch 376]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0253]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 376: Average PSNR: 32.098 dB  (Best: 32.124 @epoch 358)
+Forward: 1.41s
+
+Saving...
+Total: 6.78s
+
+[Epoch 377]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0249]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0253]	3.5+3.1s
+[6400/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 377: Average PSNR: 32.119 dB  (Best: 32.124 @epoch 358)
+Forward: 1.39s
+
+Saving...
+Total: 6.75s
+
+[Epoch 378]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0262]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 378: Average PSNR: 32.039 dB  (Best: 32.124 @epoch 358)
+Forward: 1.36s
+
+Saving...
+Total: 6.72s
+
+[Epoch 379]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0266]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 379: Average PSNR: 32.033 dB  (Best: 32.124 @epoch 358)
+Forward: 1.37s
+
+Saving...
+Total: 6.82s
+
+[Epoch 380]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0248]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0250]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 380: Average PSNR: 32.140 dB  (Best: 32.140 @epoch 380)
+Forward: 1.47s
+
+Saving...
+Total: 6.84s
+
+[Epoch 381]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0245]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 381: Average PSNR: 31.847 dB  (Best: 32.140 @epoch 380)
+Forward: 1.49s
+
+Saving...
+Total: 6.87s
+
+[Epoch 382]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0244]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 382: Average PSNR: 32.121 dB  (Best: 32.140 @epoch 380)
+Forward: 1.38s
+
+Saving...
+Total: 6.75s
+
+[Epoch 383]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0252]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0263]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 383: Average PSNR: 32.064 dB  (Best: 32.140 @epoch 380)
+Forward: 1.40s
+
+Saving...
+Total: 6.77s
+
+[Epoch 384]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0259]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 384: Average PSNR: 32.117 dB  (Best: 32.140 @epoch 380)
+Forward: 1.39s
+
+Saving...
+Total: 6.77s
+
+[Epoch 385]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0252]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 385: Average PSNR: 32.100 dB  (Best: 32.140 @epoch 380)
+Forward: 1.36s
+
+Saving...
+Total: 6.72s
+
+[Epoch 386]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 386: Average PSNR: 32.121 dB  (Best: 32.140 @epoch 380)
+Forward: 1.46s
+
+Saving...
+Total: 6.82s
+
+[Epoch 387]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0258]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 387: Average PSNR: 32.149 dB  (Best: 32.149 @epoch 387)
+Forward: 1.47s
+
+Saving...
+Total: 6.85s
+
+[Epoch 388]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0261]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0260]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 388: Average PSNR: 32.082 dB  (Best: 32.149 @epoch 387)
+Forward: 1.44s
+
+Saving...
+Total: 6.82s
+
+[Epoch 389]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0252]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 389: Average PSNR: 32.140 dB  (Best: 32.149 @epoch 387)
+Forward: 1.47s
+
+Saving...
+Total: 6.84s
+
+[Epoch 390]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0253]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0255]	3.7+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 390: Average PSNR: 32.104 dB  (Best: 32.149 @epoch 387)
+Forward: 1.34s
+
+Saving...
+Total: 6.71s
+
+[Epoch 391]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0249]	3.8+3.2s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 391: Average PSNR: 32.112 dB  (Best: 32.149 @epoch 387)
+Forward: 1.33s
+
+Saving...
+Total: 6.70s
+
+[Epoch 392]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0253]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 392: Average PSNR: 32.157 dB  (Best: 32.157 @epoch 392)
+Forward: 1.46s
+
+Saving...
+Total: 6.85s
+
+[Epoch 393]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0248]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 393: Average PSNR: 32.117 dB  (Best: 32.157 @epoch 392)
+Forward: 1.46s
+
+Saving...
+Total: 6.82s
+
+[Epoch 394]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0250]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0250]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0249]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 394: Average PSNR: 31.769 dB  (Best: 32.157 @epoch 392)
+Forward: 1.44s
+
+Saving...
+Total: 6.89s
+
+[Epoch 395]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0260]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0254]	3.6+3.3s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 395: Average PSNR: 32.115 dB  (Best: 32.157 @epoch 392)
+Forward: 1.41s
+
+Saving...
+Total: 6.77s
+
+[Epoch 396]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0248]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0249]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0248]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 396: Average PSNR: 32.136 dB  (Best: 32.157 @epoch 392)
+Forward: 1.36s
+
+Saving...
+Total: 6.75s
+
+[Epoch 397]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0267]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0266]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0261]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0260]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.3s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 397: Average PSNR: 32.040 dB  (Best: 32.157 @epoch 392)
+Forward: 1.50s
+
+Saving...
+Total: 6.86s
+
+[Epoch 398]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0248]	3.8+3.4s
+[1600/8000]	[Charbonnier: 0.0240]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0247]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0250]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0256]	3.5+3.1s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0258]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 398: Average PSNR: 32.106 dB  (Best: 32.157 @epoch 392)
+Forward: 1.45s
+
+Saving...
+Total: 6.81s
+
+[Epoch 399]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0253]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 399: Average PSNR: 32.059 dB  (Best: 32.157 @epoch 392)
+Forward: 1.49s
+
+Saving...
+Total: 6.87s
+
+[Epoch 400]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0250]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0251]	3.5+3.1s
+[3200/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 400: Average PSNR: 32.090 dB  (Best: 32.157 @epoch 392)
+Forward: 1.54s
+
+Saving...
+Total: 6.90s
+
+[Epoch 401]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0261]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 401: Average PSNR: 32.139 dB  (Best: 32.157 @epoch 392)
+Forward: 1.35s
+
+Saving...
+Total: 6.71s
+
+[Epoch 402]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0245]	3.7+3.2s
+[1600/8000]	[Charbonnier: 0.0249]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0249]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0253]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 402: Average PSNR: 32.140 dB  (Best: 32.157 @epoch 392)
+Forward: 1.35s
+
+Saving...
+Total: 6.74s
+
+[Epoch 403]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0248]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0249]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 403: Average PSNR: 32.120 dB  (Best: 32.157 @epoch 392)
+Forward: 1.52s
+
+Saving...
+Total: 6.89s
+
+[Epoch 404]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0251]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 404: Average PSNR: 32.131 dB  (Best: 32.157 @epoch 392)
+Forward: 1.40s
+
+Saving...
+Total: 6.76s
+
+[Epoch 405]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0244]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0248]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0248]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0251]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0251]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 405: Average PSNR: 32.079 dB  (Best: 32.157 @epoch 392)
+Forward: 1.42s
+
+Saving...
+Total: 6.77s
+
+[Epoch 406]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0257]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 406: Average PSNR: 32.108 dB  (Best: 32.157 @epoch 392)
+Forward: 1.33s
+
+Saving...
+Total: 6.69s
+
+[Epoch 407]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0254]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0259]	3.6+3.1s
+[2400/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[5600/8000]	[Charbonnier: 0.0254]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 407: Average PSNR: 32.046 dB  (Best: 32.157 @epoch 392)
+Forward: 1.39s
+
+Saving...
+Total: 6.78s
+
+[Epoch 408]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.8+3.3s
+[1600/8000]	[Charbonnier: 0.0252]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0251]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0250]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0250]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0252]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[6400/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0253]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 408: Average PSNR: 32.152 dB  (Best: 32.157 @epoch 392)
+Forward: 1.35s
+
+Saving...
+Total: 6.72s
+
+[Epoch 409]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0257]	3.7+3.4s
+[1600/8000]	[Charbonnier: 0.0266]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0262]	3.6+3.1s
+[3200/8000]	[Charbonnier: 0.0259]	3.6+3.2s
+[4000/8000]	[Charbonnier: 0.0258]	3.6+3.2s
+[4800/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[5600/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0255]	3.6+3.1s
+[7200/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[8000/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 409: Average PSNR: 32.086 dB  (Best: 32.157 @epoch 392)
+Forward: 1.39s
+
+Saving...
+Total: 6.74s
+
+[Epoch 410]	Learning rate: 1.19e-4
+[800/8000]	[Charbonnier: 0.0250]	3.7+3.3s
+[1600/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[2400/8000]	[Charbonnier: 0.0255]	3.6+3.2s
+[3200/8000]	[Charbonnier: 0.0254]	3.6+3.1s
+[4000/8000]	[Charbonnier: 0.0257]	3.6+3.1s
+[4800/8000]	[Charbonnier: 0.0256]	3.5+3.1s
+[5600/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[6400/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+[7200/8000]	[Charbonnier: 0.0256]	3.6+3.1s
+[8000/8000]	[Charbonnier: 0.0256]	3.6+3.2s
+Average Loss: 0.0262
+
+Evaluation:
+[DIV2K x4]	Epoch 410: Average PSNR: 32.123 dB  (Best: 32.157 @epoch 392)
+Forward: 1.41s
+
+Saving...
+Total: 6.77s
+
