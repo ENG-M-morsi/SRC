@@ -65,8 +65,8 @@ def objective(trial):
     ffn_ratio = trial.suggest_categorical('ffn_ratio', [1.0, 1.5, 2.0])
 
     # ---------- معاملات التدريب ----------
-    #patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224, 256])
-    patch_size = 192
+    patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224, 256])
+    #patch_size = 192
     if window_size > patch_size:
         raise optuna.TrialPruned()
 

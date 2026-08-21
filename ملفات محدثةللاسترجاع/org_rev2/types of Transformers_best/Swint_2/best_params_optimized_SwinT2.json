@@ -3,7 +3,7 @@
     "num_heads": 2,
     "window_size": 8,
     "num_blocks": 4,
-    "patch_size": 192,
+    "patch_size": 224,
     "optimizer": "AdamW",
     "scheduler": "cosine",
     "loss": "L2",

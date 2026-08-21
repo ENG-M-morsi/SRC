@@ -81,8 +81,8 @@ def objective(trial):
     num_modules = 1  # عدد كتل P_HTCB (ثابت)
 
     # ---------- (ب) patch_size ----------
-    #patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224, 256])
-    patch_size = 192
+    patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224, 256])
+    #patch_size = 192
     if window_size > patch_size:
         raise optuna.TrialPruned()
 
