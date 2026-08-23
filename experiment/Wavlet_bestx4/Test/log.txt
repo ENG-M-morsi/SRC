@@ -1,5 +1,5 @@
-5,454,305 total parameters.
-5,454,305 training parameters.
+2,280,897 total parameters.
+2,280,897 training parameters.
 
 Evaluation:
 [Set5 x4]	Average PSNR: 31.928 dB | SSIM: 0.8893
