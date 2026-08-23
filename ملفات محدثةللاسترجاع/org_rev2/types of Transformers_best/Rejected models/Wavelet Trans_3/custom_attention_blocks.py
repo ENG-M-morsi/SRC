@@ -274,5 +274,5 @@ class WaveletAttention(nn.Module):
         """x: (B,C,H,W) — H,W اختياريان للتوافق مع الـ API القديم"""
         #return x + self.res_scale * self.block(x)
         for blk in self.blocks:
-            res = x + self.res_scale * blk(x)
-        return res
+            x = x + self.res_scale * blk(x)
+        return x

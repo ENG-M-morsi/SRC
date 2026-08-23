@@ -4824,8 +4824,8 @@ Model(
     (recon_conv2): Conv2d(128, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
   )
 )
-5,454,305 total parameters.
-5,454,305 training parameters.
+2,280,897 total parameters.
+2,280,897 training parameters.
 [Epoch 1]	Learning rate: 1.62e-4
 [800/8000]	[L2: 0.0250]	3.8+3.0s
 [1600/8000]	[L2: 0.0162]	3.4+3.0s
@@ -9441,8 +9441,8 @@ Model(
     (recon_conv2): Conv2d(128, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
   )
 )
-5,454,305 total parameters.
-5,454,305 training parameters.
+2,280,897 total parameters.
+2,280,897 training parameters.
 [Epoch 221]	Learning rate: 1.62e-4
 [800/8000]	[L2: 0.0026]	3.7+3.0s
 [1600/8000]	[L2: 0.0025]	3.5+3.0s

@@ -1,0 +1,1 @@
+python "D:\Mohamed Morsi\src\main.py" --dir_data "D:\Mohamed Morsi\DATA" --model dhtcun --scale 2 --rgb_range 1 --n_resblocks 32 --n_feats 96 --res_scale 0.1 --save_results --data_test  Set5+Set14+B100+Urban100+Manga109     --test_only  --pre_train  "D:\Mohamed Morsi\src\experiment\DAT_bestx2\model\model_best.pt" --n_GPUs  1   

@@ -7662,7 +7662,7 @@ Model(
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 345: Average PSNR: 27.994 dB  (Best: 27.994 @epoch 1)
+[DIV2K x8]	Epoch 345: Average PSNR: 27.994 dB  (Best: 28.002 @epoch 331)
 Forward: 1.77s
 
 Saving...
@@ -7682,7 +7682,7 @@ Total: 7.30s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 346: Average PSNR: 27.994 dB  (Best: 27.994 @epoch 2)
+[DIV2K x8]	Epoch 346: Average PSNR: 27.994 dB  (Best: 28.002 @epoch 331)
 Forward: 1.20s
 
 Saving...
@@ -7702,7 +7702,7 @@ Total: 6.63s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 347: Average PSNR: 27.991 dB  (Best: 27.994 @epoch 2)
+[DIV2K x8]	Epoch 347: Average PSNR: 27.991 dB  (Best: 28.002 @epoch 331)
 Forward: 1.28s
 
 Saving...
@@ -7722,7 +7722,7 @@ Total: 6.67s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 348: Average PSNR: 27.999 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 348: Average PSNR: 27.999 dB  (Best: 28.002 @epoch 331)
 Forward: 1.29s
 
 Saving...
@@ -7742,7 +7742,7 @@ Total: 6.68s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 349: Average PSNR: 27.996 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 349: Average PSNR: 27.996 dB  (Best: 28.002 @epoch 331)
 Forward: 1.23s
 
 Saving...
@@ -7762,7 +7762,7 @@ Total: 6.62s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 350: Average PSNR: 27.992 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 350: Average PSNR: 27.992 dB  (Best: 28.002 @epoch 331)
 Forward: 1.19s
 
 Saving...
@@ -7782,7 +7782,7 @@ Total: 6.58s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 351: Average PSNR: 27.991 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 351: Average PSNR: 27.991 dB  (Best: 28.002 @epoch 331)
 Forward: 1.15s
 
 Saving...
@@ -7802,7 +7802,7 @@ Total: 6.58s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 352: Average PSNR: 27.993 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 352: Average PSNR: 27.993 dB  (Best: 28.002 @epoch 331)
 Forward: 1.19s
 
 Saving...
@@ -7822,7 +7822,7 @@ Total: 6.61s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 353: Average PSNR: 27.989 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 353: Average PSNR: 27.989 dB  (Best: 28.002 @epoch 331)
 Forward: 1.24s
 
 Saving...
@@ -7842,7 +7842,7 @@ Total: 6.59s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 354: Average PSNR: 27.994 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 354: Average PSNR: 27.994 dB  (Best: 28.002 @epoch 331)
 Forward: 1.31s
 
 Saving...
@@ -7862,7 +7862,7 @@ Total: 6.66s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 355: Average PSNR: 27.997 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 355: Average PSNR: 27.997 dB  (Best: 28.002 @epoch 331)
 Forward: 1.25s
 
 Saving...
@@ -7882,7 +7882,7 @@ Total: 6.65s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 356: Average PSNR: 27.991 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 356: Average PSNR: 27.991 dB  (Best: 28.002 @epoch 331)
 Forward: 1.24s
 
 Saving...
@@ -7902,7 +7902,7 @@ Total: 6.64s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 357: Average PSNR: 27.987 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 357: Average PSNR: 27.987 dB  (Best: 28.002 @epoch 331)
 Forward: 1.17s
 
 Saving...
@@ -7922,7 +7922,7 @@ Total: 6.54s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 358: Average PSNR: 27.990 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 358: Average PSNR: 27.990 dB  (Best: 28.002 @epoch 331)
 Forward: 1.19s
 
 Saving...
@@ -7942,7 +7942,7 @@ Total: 6.54s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 359: Average PSNR: 27.993 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 359: Average PSNR: 27.993 dB  (Best: 28.002 @epoch 331)
 Forward: 1.15s
 
 Saving...
@@ -7962,7 +7962,7 @@ Total: 6.54s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 360: Average PSNR: 27.993 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 360: Average PSNR: 27.993 dB  (Best: 28.002 @epoch 331)
 Forward: 1.20s
 
 Saving...
@@ -7982,7 +7982,7 @@ Total: 6.58s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 361: Average PSNR: 27.994 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 361: Average PSNR: 27.994 dB  (Best: 28.002 @epoch 331)
 Forward: 1.22s
 
 Saving...
@@ -8002,7 +8002,7 @@ Total: 6.64s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 362: Average PSNR: 27.999 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 362: Average PSNR: 27.999 dB  (Best: 28.002 @epoch 331)
 Forward: 1.20s
 
 Saving...
@@ -8022,7 +8022,7 @@ Total: 6.58s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 363: Average PSNR: 27.988 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 363: Average PSNR: 27.988 dB  (Best: 28.002 @epoch 331)
 Forward: 1.12s
 
 Saving...
@@ -8042,7 +8042,7 @@ Total: 6.56s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 364: Average PSNR: 27.997 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 364: Average PSNR: 27.997 dB  (Best: 28.002 @epoch 331)
 Forward: 1.31s
 
 Saving...
@@ -8062,7 +8062,7 @@ Total: 6.67s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 365: Average PSNR: 27.996 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 365: Average PSNR: 27.996 dB  (Best: 28.002 @epoch 331)
 Forward: 1.36s
 
 Saving...
@@ -8082,7 +8082,7 @@ Total: 6.74s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 366: Average PSNR: 27.997 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 366: Average PSNR: 27.997 dB  (Best: 28.002 @epoch 331)
 Forward: 1.21s
 
 Saving...
@@ -8102,7 +8102,7 @@ Total: 6.59s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 367: Average PSNR: 27.988 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 367: Average PSNR: 27.988 dB  (Best: 28.002 @epoch 331)
 Forward: 1.41s
 
 Saving...
@@ -8122,7 +8122,7 @@ Total: 6.77s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 368: Average PSNR: 27.994 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 368: Average PSNR: 27.994 dB  (Best: 28.002 @epoch 331)
 Forward: 1.25s
 
 Saving...
@@ -8142,7 +8142,7 @@ Total: 6.59s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 369: Average PSNR: 27.998 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 369: Average PSNR: 27.998 dB  (Best: 28.002 @epoch 331)
 Forward: 1.29s
 
 Saving...
@@ -8162,7 +8162,7 @@ Total: 6.64s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 370: Average PSNR: 27.997 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 370: Average PSNR: 27.997 dB  (Best: 28.002 @epoch 331)
 Forward: 1.24s
 
 Saving...
@@ -8182,7 +8182,7 @@ Total: 6.62s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 371: Average PSNR: 27.993 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 371: Average PSNR: 27.993 dB  (Best: 28.002 @epoch 331)
 Forward: 1.12s
 
 Saving...
@@ -8202,7 +8202,7 @@ Total: 6.47s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 372: Average PSNR: 27.999 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 372: Average PSNR: 27.999 dB  (Best: 28.002 @epoch 331)
 Forward: 1.30s
 
 Saving...
@@ -8222,7 +8222,7 @@ Total: 6.68s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 373: Average PSNR: 27.996 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 373: Average PSNR: 27.996 dB  (Best: 28.002 @epoch 331)
 Forward: 1.23s
 
 Saving...
@@ -8242,7 +8242,7 @@ Total: 6.59s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 374: Average PSNR: 27.997 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 374: Average PSNR: 27.997 dB  (Best: 28.002 @epoch 331)
 Forward: 1.25s
 
 Saving...
@@ -8262,7 +8262,7 @@ Total: 6.62s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 375: Average PSNR: 27.997 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 375: Average PSNR: 27.997 dB  (Best: 28.002 @epoch 331)
 Forward: 1.25s
 
 Saving...
@@ -8282,7 +8282,7 @@ Total: 6.65s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 376: Average PSNR: 27.995 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 376: Average PSNR: 27.995 dB  (Best: 28.002 @epoch 331)
 Forward: 1.26s
 
 Saving...
@@ -8302,7 +8302,7 @@ Total: 6.67s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 377: Average PSNR: 27.995 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 377: Average PSNR: 27.995 dB  (Best: 28.002 @epoch 331)
 Forward: 1.11s
 
 Saving...
@@ -8322,7 +8322,7 @@ Total: 6.48s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 378: Average PSNR: 27.996 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 378: Average PSNR: 27.996 dB  (Best: 28.002 @epoch 331)
 Forward: 1.22s
 
 Saving...
@@ -8342,7 +8342,7 @@ Total: 6.60s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 379: Average PSNR: 27.999 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 379: Average PSNR: 27.999 dB  (Best: 28.002 @epoch 331)
 Forward: 1.31s
 
 Saving...
@@ -8362,7 +8362,7 @@ Total: 6.69s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 380: Average PSNR: 27.998 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 380: Average PSNR: 27.998 dB  (Best: 28.002 @epoch 331)
 Forward: 1.27s
 
 Saving...
@@ -8382,7 +8382,7 @@ Total: 6.74s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 381: Average PSNR: 27.998 dB  (Best: 27.999 @epoch 4)
+[DIV2K x8]	Epoch 381: Average PSNR: 27.998 dB  (Best: 28.002 @epoch 331)
 Forward: 1.16s
 
 Saving...
@@ -8402,7 +8402,7 @@ Total: 6.52s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 382: Average PSNR: 27.999 dB  (Best: 27.999 @epoch 38)
+[DIV2K x8]	Epoch 382: Average PSNR: 27.999 dB  (Best: 28.002 @epoch 331)
 Forward: 1.32s
 
 Saving...
@@ -8422,7 +8422,7 @@ Total: 6.73s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 383: Average PSNR: 27.998 dB  (Best: 27.999 @epoch 38)
+[DIV2K x8]	Epoch 383: Average PSNR: 27.998 dB  (Best: 28.002 @epoch 331)
 Forward: 1.29s
 
 Saving...
@@ -8442,7 +8442,7 @@ Total: 6.66s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 384: Average PSNR: 28.000 dB  (Best: 28.000 @epoch 40)
+[DIV2K x8]	Epoch 384: Average PSNR: 28.000 dB  (Best: 28.002 @epoch 331)
 Forward: 1.32s
 
 Saving...
@@ -8462,7 +8462,7 @@ Total: 6.70s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 385: Average PSNR: 27.999 dB  (Best: 28.000 @epoch 40)
+[DIV2K x8]	Epoch 385: Average PSNR: 27.999 dB  (Best: 28.002 @epoch 331)
 Forward: 1.27s
 
 Saving...
@@ -8482,7 +8482,7 @@ Total: 6.66s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 386: Average PSNR: 27.999 dB  (Best: 28.000 @epoch 40)
+[DIV2K x8]	Epoch 386: Average PSNR: 27.999 dB  (Best: 28.002 @epoch 331)
 Forward: 1.22s
 
 Saving...
@@ -8502,7 +8502,7 @@ Total: 6.61s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 387: Average PSNR: 27.998 dB  (Best: 28.000 @epoch 40)
+[DIV2K x8]	Epoch 387: Average PSNR: 27.998 dB  (Best: 28.002 @epoch 331)
 Forward: 1.20s
 
 Saving...
@@ -8542,7 +8542,7 @@ Total: 6.56s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 389: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 389: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 388)
 Forward: 1.20s
 
 Saving...
@@ -8562,7 +8562,7 @@ Total: 6.59s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 390: Average PSNR: 28.000 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 390: Average PSNR: 28.000 dB  (Best: 28.003 @epoch 388)
 Forward: 1.21s
 
 Saving...
@@ -8582,7 +8582,7 @@ Total: 6.59s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 391: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 391: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 388)
 Forward: 1.24s
 
 Saving...
@@ -8602,7 +8602,7 @@ Total: 6.63s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 392: Average PSNR: 27.998 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 392: Average PSNR: 27.998 dB  (Best: 28.003 @epoch 388)
 Forward: 1.34s
 
 Saving...
@@ -8622,7 +8622,7 @@ Total: 6.70s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 393: Average PSNR: 28.000 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 393: Average PSNR: 28.000 dB  (Best: 28.003 @epoch 388)
 Forward: 1.23s
 
 Saving...
@@ -8642,7 +8642,7 @@ Total: 6.60s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 394: Average PSNR: 27.998 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 394: Average PSNR: 27.998 dB  (Best: 28.003 @epoch 388)
 Forward: 1.14s
 
 Saving...
@@ -8662,7 +8662,7 @@ Total: 6.54s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 395: Average PSNR: 27.997 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 395: Average PSNR: 27.997 dB  (Best: 28.003 @epoch 388)
 Forward: 1.09s
 
 Saving...
@@ -8682,7 +8682,7 @@ Total: 6.46s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 396: Average PSNR: 28.001 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 396: Average PSNR: 28.001 dB  (Best: 28.003 @epoch 388)
 Forward: 1.21s
 
 Saving...
@@ -8702,7 +8702,7 @@ Total: 6.58s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 397: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 397: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 388)
 Forward: 1.23s
 
 Saving...
@@ -8722,7 +8722,7 @@ Total: 6.72s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 398: Average PSNR: 27.998 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 398: Average PSNR: 27.998 dB  (Best: 28.003 @epoch 388)
 Forward: 1.17s
 
 Saving...
@@ -8742,7 +8742,7 @@ Total: 6.58s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 399: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 399: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 388)
 Forward: 1.26s
 
 Saving...
@@ -8762,7 +8762,7 @@ Total: 6.64s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 400: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 400: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 388)
 Forward: 1.33s
 
 Saving...
@@ -8862,7 +8862,7 @@ Total: 6.57s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 405: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 405: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 388)
 Forward: 1.26s
 
 Saving...
@@ -8882,7 +8882,7 @@ Total: 6.64s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 406: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 406: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 388)
 Forward: 1.32s
 
 Saving...
@@ -8902,7 +8902,7 @@ Total: 6.70s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 407: Average PSNR: 28.001 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 407: Average PSNR: 28.001 dB  (Best: 28.003 @epoch 388)
 Forward: 1.20s
 
 Saving...
@@ -8922,7 +8922,7 @@ Total: 6.61s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 408: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 408: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 388)
 Forward: 1.22s
 
 Saving...
@@ -8942,7 +8942,7 @@ Total: 6.60s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 409: Average PSNR: 28.000 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 409: Average PSNR: 28.000 dB  (Best: 28.003 @epoch 388)
 Forward: 1.25s
 
 Saving...
@@ -8962,7 +8962,7 @@ Total: 6.64s
 Average Loss: 0.0049
 
 Evaluation:
-[DIV2K x8]	Epoch 410: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 44)
+[DIV2K x8]	Epoch 410: Average PSNR: 27.999 dB  (Best: 28.003 @epoch 388)
 Forward: 1.16s
 
 Saving...

@@ -245,7 +245,7 @@ class TESA(nn.Module):
 
 
 class TCN(nn.Module):
-    def __init__(self, in_channels, num_heads=8, window_size=12, num_blocks=3):
+    def __init__(self, in_channels, num_heads=16, window_size=8, num_blocks=3):
         super(TCN, self).__init__()
         self.wavelet_attn = WaveletAttention(
             dim=in_channels,
@@ -259,7 +259,7 @@ class TCN(nn.Module):
 
 
 class P_HTCB(nn.Module):
-    def __init__(self, in_channels, num_heads=8, window_size=12, num_blocks=3):
+    def __init__(self, in_channels, num_heads=16, window_size=8, num_blocks=3):
         super(P_HTCB, self).__init__()
         self.tesa_in = TESA(in_channels)
         self.tcn1 = TCN(in_channels, num_heads, window_size, num_blocks)
