@@ -1,0 +1,12 @@
+{
+    "n_feats": 128,
+    "num_heads": 4,
+    "num_blocks": 4,
+    "window_size": 12,
+    "patch_size": 224,
+    "optimizer": "AdamW",
+    "scheduler": "cosine",
+    "loss": "L1",
+    "lr": 0.0002429095036825497,
+    "weight_decay": 0.00013199942261535007
+}

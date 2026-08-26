@@ -252,18 +252,19 @@ class TCN(nn.Module):
             window_size=window_size,
             num_blocks=num_blocks
         )
-        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
+        #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
 
     def forward(self, x, H, W):
         x_out = self.elan(x, H, W)
-        #return x_out
-        return self.conv3(x_out)
+        return x_out
+        #return self.conv3(x_out)
 
 class P_HTCB(nn.Module):
     def __init__(self, in_channels, num_heads=2, window_size=12, num_blocks=3):
         super(P_HTCB, self).__init__()
         self.tesa_in = TESA(in_channels)
         self.tcn1 = TCN(in_channels, num_heads, window_size, num_blocks)
+        self.tcn2 = TCN(in_channels, num_heads, window_size, num_blocks)
         self.c = conv_block(in_channels, in_channels, kernel_size=1, act_type='lrelu')
         self.tesa_out = TESA(in_channels)
 
@@ -271,7 +272,8 @@ class P_HTCB(nn.Module):
         B, C, H, W = x.shape
         h_tesa = self.tesa_in(x)
         h_tcn1 = self.tcn1(h_tesa, H, W)
-        h_add = h_tcn1
+        h_tcn2 = self.tcn2(h_tesa, H, W)
+        h_add = h_tcn1 + h_tcn2
         h_conv = self.c(h_add)
         out = self.tesa_out(h_conv)
         return out + x

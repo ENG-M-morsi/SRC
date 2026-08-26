@@ -1,0 +1,12 @@
+{
+    "nf": 120,
+    "num_heads": 2,
+    "window_size": 6,
+    "num_blocks": 1,
+    "ffn_ratio": 1.5,
+    "optimizer": "AdamW",
+    "scheduler": "fixed",
+    "loss": "L2",
+    "lr": 0.0001621702307943825,
+    "weight_decay": 5.149288946949016e-06
+}

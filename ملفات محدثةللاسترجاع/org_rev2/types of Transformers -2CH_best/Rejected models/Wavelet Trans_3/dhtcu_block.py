@@ -3,7 +3,7 @@ from collections import OrderedDict  # ✅ أضف هذا السطر
 import torch
 import torch.nn.functional as F
 #from . import SGBlock,FNet,Spartial_Attention,SwinT
-from .custom_attention_blocks import ELAN
+from .custom_attention_blocks import WaveletAttention
 
 def conv_layer(in_channels, out_channels, kernel_size, stride=1, dilation=1, groups=1):
     padding = int((kernel_size - 1) / 2) * dilation
@@ -243,27 +243,27 @@ class TESA(nn.Module):
         # HTESA = FESA(FESA(FESA(Hi/p)))
         return self.esa3(self.esa2(self.esa1(x)))
 
+
 class TCN(nn.Module):
-    def __init__(self, in_channels, num_heads=2, window_size=12, num_blocks=3):
+    def __init__(self, in_channels, num_heads=16, window_size=8, num_blocks=3):
         super(TCN, self).__init__()
-        self.elan = ELAN(
+        self.wavelet_attn = WaveletAttention(
             dim=in_channels,
             num_heads=num_heads,
             window_size=window_size,
             num_blocks=num_blocks
         )
-        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
 
     def forward(self, x, H, W):
-        x_out = self.elan(x, H, W)
-        #return x_out
-        return self.conv3(x_out)
+        return self.wavelet_attn(x, H, W)
+
 
 class P_HTCB(nn.Module):
-    def __init__(self, in_channels, num_heads=2, window_size=12, num_blocks=3):
+    def __init__(self, in_channels, num_heads=16, window_size=8, num_blocks=3):
         super(P_HTCB, self).__init__()
         self.tesa_in = TESA(in_channels)
         self.tcn1 = TCN(in_channels, num_heads, window_size, num_blocks)
+        # self.tcn2 = TCN(...)  # إذا أردت
         self.c = conv_block(in_channels, in_channels, kernel_size=1, act_type='lrelu')
         self.tesa_out = TESA(in_channels)
 
@@ -276,8 +276,6 @@ class P_HTCB(nn.Module):
         out = self.tesa_out(h_conv)
         return out + x
 
-
-    
 def pixelshuffle_block(in_channels, out_channels, upscale_factor=2, kernel_size=3, stride=1):
     conv = conv_layer(in_channels, out_channels * (upscale_factor ** 2), kernel_size, stride)
     pixel_shuffle = nn.PixelShuffle(upscale_factor)

@@ -264,6 +264,7 @@ class P_HTCB(nn.Module):
         super(P_HTCB, self).__init__()
         self.tesa_in = TESA(in_channels)
         self.tcn1 = TCN(in_channels, num_heads, window_size, num_blocks)
+        self.tcn2 = TCN(in_channels, num_heads, window_size, num_blocks)
         self.c = conv_block(in_channels, in_channels, kernel_size=1, act_type='lrelu')
         self.tesa_out = TESA(in_channels)
 
@@ -271,7 +272,8 @@ class P_HTCB(nn.Module):
         B, C, H, W = x.shape
         h_tesa = self.tesa_in(x)
         h_tcn1 = self.tcn1(h_tesa, H, W)
-        h_add = h_tcn1
+        h_tcn2 = self.tcn2(h_tesa, H, W)
+        h_add = h_tcn1 + h_tcn2
         h_conv = self.c(h_add)
         out = self.tesa_out(h_conv)
         return out + x
