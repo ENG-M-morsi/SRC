@@ -252,12 +252,12 @@ class TCN(nn.Module):
             window_size=window_size,
             num_blocks=num_blocks
         )
-        #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
+        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
 
     def forward(self, x, H, W):
         x_out = self.elan(x, H, W)
-        return x_out
-        #return self.conv3(x_out)
+        #return x_out
+        return self.conv3(x_out)
 
 class P_HTCB(nn.Module):
     def __init__(self, in_channels, num_heads=2, window_size=12, num_blocks=3):
