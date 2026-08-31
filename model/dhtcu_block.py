@@ -277,7 +277,7 @@ class P_HTCB(nn.Module):
         
         # TCN1 و TCN2 — Eq.3 (parallel)
         self.tcn1 = TCN(in_channels)
-        #self.tcn2 = TCN(in_channels)
+        self.tcn2 = TCN(in_channels)
 
         # Conv1x1 بعد Addition — Eq.4+5
         # [تصحيح #5+6]: الورقة Eq.4 تقول HTCN1 + HTCN2 (Addition وليس cat)
@@ -295,13 +295,13 @@ class P_HTCB(nn.Module):
 
         # Eq.3 — TCN1 و TCN2 بالتوازي على نفس الدخل
         h_tcn1 = self.tcn1(h_tesa, H, W)
-        #h_tcn2 = self.tcn2(h_tesa, H, W)
+        h_tcn2 = self.tcn2(h_tesa, H, W)
 
         # Eq.4+5 — Addition ثم Conv1x1
         # [تصحيح #5]: كان cat([h_tcn1, h_tcn2]) → تم تصحيحه إلى Addition
         # الورقة Eq.4: HCon_i/p = HTCN1 + HTCN2
-        #h_add  = h_tcn1 + h_tcn2                      # nf channels
-        h_add  = h_tcn1
+        h_add  = h_tcn1 + h_tcn2                      # nf channels
+        #h_add  = h_tcn1
         h_conv = self.c(h_add)                         # nf → nf
 
         # Eq.6 — TESA أخيرة
