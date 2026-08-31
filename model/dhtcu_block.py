@@ -248,15 +248,15 @@ class TCN(nn.Module):
     """Transformer CNN Block — Eq.3"""
     def __init__(self, in_channels):
         super(TCN, self).__init__()
-        #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
+        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
         #self.swinT = SwinT.SwinT(n_feats=in_channels)
         self.omnisr = OmniSR(dim=in_channels, num_heads=4, ws=16, num_blocks=2)
 
     def forward(self, x, H, W):
         # x shape: (B, C, H, W)
         x_out = self.omnisr(x, H, W)
-        return x_out
-        #return self.conv3(x_out)
+        #return x_out
+        return self.conv3(x_out)
 
 
 class P_HTCB(nn.Module):
@@ -277,7 +277,7 @@ class P_HTCB(nn.Module):
         
         # TCN1 و TCN2 — Eq.3 (parallel)
         self.tcn1 = TCN(in_channels)
-        self.tcn2 = TCN(in_channels)
+        #self.tcn2 = TCN(in_channels)
 
         # Conv1x1 بعد Addition — Eq.4+5
         # [تصحيح #5+6]: الورقة Eq.4 تقول HTCN1 + HTCN2 (Addition وليس cat)
@@ -295,13 +295,13 @@ class P_HTCB(nn.Module):
 
         # Eq.3 — TCN1 و TCN2 بالتوازي على نفس الدخل
         h_tcn1 = self.tcn1(h_tesa, H, W)
-        h_tcn2 = self.tcn2(h_tesa, H, W)
+        #h_tcn2 = self.tcn2(h_tesa, H, W)
 
         # Eq.4+5 — Addition ثم Conv1x1
         # [تصحيح #5]: كان cat([h_tcn1, h_tcn2]) → تم تصحيحه إلى Addition
         # الورقة Eq.4: HCon_i/p = HTCN1 + HTCN2
         #h_add  = h_tcn1 + h_tcn2                      # nf channels
-        h_add  = h_tcn1 + h_tcn2
+        h_add  = h_tcn1
         h_conv = self.c(h_add)                         # nf → nf
 
         # Eq.6 — TESA أخيرة

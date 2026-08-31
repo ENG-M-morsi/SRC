@@ -1,0 +1,414 @@
+HUTCN(
+  (fea_conv): Conv2d(3, 112, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (conv3): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (omnisr): OmniSR(
+        (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (blocks): ModuleList(
+          (0-1): 2 x OSAG(
+            (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+            (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+            (osa): OSA_Block(
+              (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=112, out_features=336, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=112, out_features=112, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (mlp): Sequential(
+                (0): Linear(in_features=112, out_features=224, bias=True)
+                (1): GELU(approximate='none')
+                (2): Linear(in_features=224, out_features=112, bias=True)
+                (3): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+        )
+        (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv1): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(112, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 112, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (conv3): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (omnisr): OmniSR(
+          (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (blocks): ModuleList(
+            (0-1): 2 x OSAG(
+              (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+              (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+              (osa): OSA_Block(
+                (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=112, out_features=336, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=112, out_features=112, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (mlp): Sequential(
+                  (0): Linear(in_features=112, out_features=224, bias=True)
+                  (1): GELU(approximate='none')
+                  (2): Linear(in_features=224, out_features=112, bias=True)
+                  (3): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv1): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(112, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+1,002,464 total parameters.
+1,002,464 training parameters.
+[Epoch 1]	Learning rate: 4.97e-4
+[800/8000]	[L1: 0.0827]	4.8+3.8s
+[1600/8000]	[L1: 0.0667]	4.3+3.7s
+[2400/8000]	[L1: 0.0587]	4.3+3.7s
+[3200/8000]	[L1: 0.0540]	4.2+3.7s
+[4000/8000]	[L1: 0.0504]	4.2+3.6s
+[4800/8000]	[L1: 0.0481]	4.3+3.7s
+[5600/8000]	[L1: 0.0463]	4.4+3.8s
+[6400/8000]	[L1: 0.0451]	4.3+3.7s
+[7200/8000]	[L1: 0.0440]	4.3+3.7s
+[8000/8000]	[L1: 0.0430]	4.3+3.7s
+Average Loss: 0.0430
+
+Evaluation:
+[DIV2K x4]	Epoch 1: Average PSNR: 28.946 dB  (Best: 28.946 @epoch 1)
+Forward: 2.29s
+
+Saving...
+Total: 7.96s
+
+[Epoch 2]	Learning rate: 4.97e-4
+[800/8000]	[L1: 0.0347]	4.6+3.8s
+[1600/8000]	[L1: 0.0346]	4.4+3.8s
+[2400/8000]	[L1: 0.0343]	4.3+3.7s
+[3200/8000]	[L1: 0.0344]	4.4+3.8s
+[4000/8000]	[L1: 0.0340]	4.4+3.8s
+[4800/8000]	[L1: 0.0336]	4.4+3.8s
+[5600/8000]	[L1: 0.0336]	4.4+3.8s
+[6400/8000]	[L1: 0.0333]	4.4+3.8s
+[7200/8000]	[L1: 0.0329]	4.4+3.8s
+[8000/8000]	[L1: 0.0329]	4.4+3.8s
+Average Loss: 0.0379
+
+Evaluation:
+[DIV2K x4]	Epoch 2: Average PSNR: 29.716 dB  (Best: 29.716 @epoch 2)
+Forward: 1.80s
+
+Saving...
+Total: 8.23s
+
+[Epoch 3]	Learning rate: 4.97e-4
+[800/8000]	[L1: 0.0316]	4.4+3.8s
+[1600/8000]	[L1: 0.0319]	4.4+3.8s
+[2400/8000]	[L1: 0.0319]	4.4+3.8s
+[3200/8000]	[L1: 0.0316]	4.5+3.9s
+[4000/8000]	[L1: 0.0311]	4.4+3.8s
+[4800/8000]	[L1: 0.0310]	4.4+3.8s
+[5600/8000]	[L1: 0.0308]	4.4+3.8s
+[6400/8000]	[L1: 0.0306]	4.4+3.8s
+[7200/8000]	[L1: 0.0307]	4.4+3.8s
+[8000/8000]	[L1: 0.0306]	4.4+3.8s
+Average Loss: 0.0355
+
+Evaluation:
+[DIV2K x4]	Epoch 3: Average PSNR: 30.437 dB  (Best: 30.437 @epoch 3)
+Forward: 1.76s
+
+Saving...
+Total: 8.30s
+
+[Epoch 4]	Learning rate: 4.97e-4
+[800/8000]	[L1: 0.0299]	4.5+3.8s
+[1600/8000]	[L1: 0.0305]	4.4+3.7s
+[2400/8000]	[L1: 0.0304]	4.4+3.8s
+[3200/8000]	[L1: 0.0302]	4.3+3.8s
+[4000/8000]	[L1: 0.0302]	4.3+3.8s
+[4800/8000]	[L1: 0.0302]	4.3+3.8s
+[5600/8000]	[L1: 0.0303]	4.4+3.8s
+[6400/8000]	[L1: 0.0301]	4.3+3.7s
+[7200/8000]	[L1: 0.0301]	4.3+3.7s
+[8000/8000]	[L1: 0.0299]	4.4+3.8s
+Average Loss: 0.0341
+
+Evaluation:
+[DIV2K x4]	Epoch 4: Average PSNR: 30.481 dB  (Best: 30.481 @epoch 4)
+Forward: 1.87s
+
+Saving...
+Total: 8.29s
+
+[Epoch 5]	Learning rate: 4.97e-4
+[800/8000]	[L1: 0.0293]	4.6+3.8s
+[1600/8000]	[L1: 0.0293]	4.4+3.7s
+[2400/8000]	[L1: 0.0296]	4.3+3.7s
+[3200/8000]	[L1: 0.0292]	4.4+3.8s
+[4000/8000]	[L1: 0.0292]	4.4+3.8s
+[4800/8000]	[L1: 0.0293]	4.4+3.9s
+[5600/8000]	[L1: 0.0293]	4.5+4.0s
+[6400/8000]	[L1: 0.0293]	4.4+3.8s
+[7200/8000]	[L1: 0.0293]	4.5+3.9s
+[8000/8000]	[L1: 0.0293]	4.5+3.9s
+Average Loss: 0.0331
+
+Evaluation:
+[DIV2K x4]	Epoch 5: Average PSNR: 30.615 dB  (Best: 30.615 @epoch 5)
+Forward: 1.72s
+
+Saving...
+Total: 8.45s
+
+[Epoch 6]	Learning rate: 4.97e-4
+[800/8000]	[L1: 0.0290]	4.8+4.0s
+[1600/8000]	[L1: 0.0288]	4.4+3.8s
+[2400/8000]	[L1: 0.0287]	4.5+3.9s
+[3200/8000]	[L1: 0.0287]	4.4+3.9s
+[4000/8000]	[L1: 0.0286]	4.5+3.8s
+[4800/8000]	[L1: 0.0287]	4.4+3.8s
+[5600/8000]	[L1: 0.0285]	4.3+3.8s
+[6400/8000]	[L1: 0.0285]	4.4+3.7s
+[7200/8000]	[L1: 0.0285]	4.4+3.7s
+[8000/8000]	[L1: 0.0285]	4.4+3.8s
+Average Loss: 0.0324
+
+Evaluation:
+[DIV2K x4]	Epoch 6: Average PSNR: 30.528 dB  (Best: 30.615 @epoch 5)
+Forward: 1.80s
+
+Saving...
+Total: 8.21s
+
+[Epoch 7]	Learning rate: 4.97e-4
+[800/8000]	[L1: 0.0288]	4.6+3.8s
+[1600/8000]	[L1: 0.0288]	4.3+3.7s
+[2400/8000]	[L1: 0.0289]	4.4+3.8s
+[3200/8000]	[L1: 0.0287]	4.4+3.7s
+[4000/8000]	[L1: 0.0285]	4.4+3.7s
+[4800/8000]	[L1: 0.0285]	4.4+3.8s
+[5600/8000]	[L1: 0.0286]	4.3+3.7s
+[6400/8000]	[L1: 0.0286]	4.4+3.7s
+[7200/8000]	[L1: 0.0285]	4.3+3.7s
+[8000/8000]	[L1: 0.0284]	4.4+3.7s
+Average Loss: 0.0318
+
+Evaluation:
+[DIV2K x4]	Epoch 7: Average PSNR: 31.245 dB  (Best: 31.245 @epoch 7)
+Forward: 1.74s
+
+Saving...
+Total: 8.17s
+
+[Epoch 8]	Learning rate: 4.97e-4
+[800/8000]	[L1: 0.0284]	4.6+3.8s
+[1600/8000]	[L1: 0.0282]	4.3+3.7s
+[2400/8000]	[L1: 0.0279]	4.4+3.8s
+[3200/8000]	[L1: 0.0282]	4.4+3.8s
+[4000/8000]	[L1: 0.0284]	4.4+3.7s
+[4800/8000]	[L1: 0.0283]	4.4+3.8s
+[5600/8000]	[L1: 0.0282]	4.3+3.7s
+[6400/8000]	[L1: 0.0283]	4.4+3.7s
+[7200/8000]	[L1: 0.0283]	4.4+3.7s
+[8000/8000]	[L1: 0.0282]	4.4+3.8s
+Average Loss: 0.0314
+
+Evaluation:
+[DIV2K x4]	Epoch 8: Average PSNR: 31.298 dB  (Best: 31.298 @epoch 8)
+Forward: 1.79s
+
+Saving...
+Total: 8.22s
+
+[Epoch 9]	Learning rate: 4.97e-4
+[800/8000]	[L1: 0.0288]	4.5+3.7s
+[1600/8000]	[L1: 0.0284]	4.3+3.7s
+[2400/8000]	[L1: 0.0286]	4.3+3.7s
+[3200/8000]	[L1: 0.0285]	4.3+3.7s
+[4000/8000]	[L1: 0.0287]	4.4+3.7s
+[4800/8000]	[L1: 0.0287]	4.3+3.7s
+[5600/8000]	[L1: 0.0284]	4.4+3.8s
+[6400/8000]	[L1: 0.0284]	4.3+3.7s
+[7200/8000]	[L1: 0.0283]	4.4+3.8s
+[8000/8000]	[L1: 0.0284]	4.4+3.8s
+Average Loss: 0.0310
+
+Evaluation:
+[DIV2K x4]	Epoch 9: Average PSNR: 31.023 dB  (Best: 31.298 @epoch 8)
+Forward: 1.80s
+
+Saving...
+Total: 8.18s
+
