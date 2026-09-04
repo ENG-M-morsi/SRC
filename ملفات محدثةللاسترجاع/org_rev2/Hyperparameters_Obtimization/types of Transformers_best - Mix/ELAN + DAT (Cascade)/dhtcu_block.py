@@ -13,7 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
 from .custom_attention_blocks import DAT
-from .custom_attention_blocks_ELAN import ELAN
+
 
 # -------------------------------------------------------------------
 # دوال مساعدة
@@ -152,31 +152,12 @@ class TCN(nn.Module):
             f"in_channels={in_channels} يجب أن يقبل القسمة على num_heads={num_heads}"
         self.dat = DAT(dim=in_channels, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
         # Conv3×3 بعد DAT (كما في الورقة: FConv3 ∘ FSTL)
-        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
+        #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
 
     def forward(self, x):
         # x: (B, C, H, W)  — DAT يستقبل ويُرجع نفس الشكل
-        #return self.dat(x)
-        return self.conv3(self.dat(x))
-
-# -------------------------------------------------------------------
-# TECN — Transformer CNN Block (يستخدم Elan المصحّح)
-# الإصلاح الرئيسي: self.dat(x) بدون H, W
-# -------------------------------------------------------------------
-class TECN(nn.Module):
-    def __init__(self, in_channels, num_heads=2, window_size=12, num_blocks=3):
-        super(TECN, self).__init__()
-        # التحقق من توافق dim مع num_heads
-        assert in_channels % num_heads == 0, \
-            f"in_channels={in_channels} يجب أن يقبل القسمة على num_heads={num_heads}"
-        self.elan = ELAN (dim=in_channels, num_heads=num_heads, window_size = window_size, num_blocks=num_blocks)
-        # Conv3×3 بعد DAT (كما في الورقة: FConv3 ∘ FSTL)
-        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
-
-    def forward(self, x):
-        # x: (B, C, H, W)  — DAT يستقبل ويُرجع نفس الشكل
-        #return self.dat(x)
-        return self.conv3(self.elan(x))
+        return self.dat(x)
+        #return self.conv3(self.dat(x))
 
 
 # -------------------------------------------------------------------
@@ -196,7 +177,7 @@ class P_HTCB(nn.Module):
 
         # TCN1 و TCN2 متوازيان — Eq.3
         self.tcn1 = TCN(in_channels, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
-        self.tecn2 = TECN(in_channels, num_heads, window_size = ws, num_blocks = num_blocks )
+        #self.tcn2 = TCN(in_channels, num_heads=num_heads)
 
         # Conv1×1 بعد Addition — Eq.5
         self.c = conv_block(in_channels, in_channels,
@@ -209,11 +190,11 @@ class P_HTCB(nn.Module):
 
         # TCN1 و TCN2 بالتوازي على نفس المدخل
         h_tcn1 = self.tcn1(h_tesa)
-        h_tecn2 = self.tecn2(h_tesa)
+       # h_tcn2 = self.tcn2(h_tesa)
 
         # Addition — Eq.4
-        h_add  = h_tcn1 + h_tecn2
-        #h_add  = h_tcn1 
+        #h_add  = h_tcn1 + h_tcn2
+        h_add  = h_tcn1 
 
         # Conv1×1 — Eq.5
         h_conv = self.c(h_add)

@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 from . import dhtcu_block as B
+from . import dhtcu_block_ELAN as B_ELAN
 def make_model(args, parent=False):
     #model = HUTCN()
     #model = HUTCN(upscale = args.scale[0])
@@ -38,6 +39,7 @@ class HUTCN(nn.Module):
         self.post_unet_conv = B.conv_layer(nf, nf, kernel_size=1)
 
         self.B1 = B.P_HTCB(in_channels=nf, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
+        self.B1 = B_ELAN.P_HTCB(in_channels=nf, num_heads=num_heads, window_size = ws, num_blocks=num_blocks)
         #self.B2 = B.P_HTCB(in_channels=nf)
         #self.B3 = B.P_HTCB(in_channels=nf)
         #self.B4 = B.P_HTCB(in_channels=nf)
@@ -66,7 +68,7 @@ class HUTCN(nn.Module):
     def forward(self, input):
         out_fea = self.fea_conv(input)
         out_B1 = self.B1(out_fea)
-        #out_B2 = self.B2(out_B1)
+        out_B2 = self.B2(out_B1)
         #out_B3 = self.B3(out_B2)
 
         #out_B4 = self.B4(out_B3)
@@ -78,7 +80,7 @@ class HUTCN(nn.Module):
         # [تصحيح #1+2]: الورقة تقول بعد U-Net: ESA ثم Conv1x1 ثم + residual
         # كان: out_lr = self.c1_r(out_B5) + out_fea  ← Conv3x3 خاطئ
         #out_lr = self.post_unet_conv(self.post_unet_esa(out_B5)) + out_fea
-        out_lr = self.post_unet_conv(self.post_unet_esa(out_B1)) + out_fea
+        out_lr = self.post_unet_conv(self.post_unet_esa(out_B2)) + out_fea
         # [تصحيح #3]: PixelShuffle ثم Conv3x3 ثم Conv3x3
         # كان: self.upsampler(out_lr) ← Conv3x3→PixelShuffle خاطئ
         #out_ps = self.pixel_shuffle(self.pre_shuffle(out_lr))
