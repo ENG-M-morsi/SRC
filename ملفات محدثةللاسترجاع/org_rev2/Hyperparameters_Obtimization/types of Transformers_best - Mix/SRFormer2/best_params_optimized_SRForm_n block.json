@@ -1,0 +1,13 @@
+{
+    "nf": 96,
+    "num_heads": 2,
+    "window_size": 12,
+    "num_blocks": 3,
+    "ffn_ratio": 1.0,
+    "patch_size": 256,
+    "optimizer": "AdamW",
+    "scheduler": "fixed",
+    "loss": "Charbonnier",
+    "lr": 0.00011916095713775816,
+    "weight_decay": 0.00041151130495610907
+}

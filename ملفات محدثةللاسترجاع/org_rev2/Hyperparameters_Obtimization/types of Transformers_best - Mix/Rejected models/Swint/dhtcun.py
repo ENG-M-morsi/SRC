@@ -28,7 +28,7 @@ def make_model(args, parent=False):
 
 
 class HUTCN(nn.Module):
-    def __init__(self, in_nc=3, nf=50, num_modules=4, out_nc=3, upscale=3, num_heads=2, ws=12, num_blocks=3):
+    def __init__(self, in_nc=3, nf=50, num_modules=4, out_nc=3, upscale=3,  num_heads=2, depth=3, window_size=12, mlp_ratio=1.5, resolution=48):
         super(HUTCN, self).__init__()
 
         self.fea_conv = B.conv_layer(in_nc, nf, kernel_size=1)
@@ -37,22 +37,22 @@ class HUTCN(nn.Module):
         self.post_unet_esa  = B.ESA(nf, nn.Conv2d)
         self.post_unet_conv = B.conv_layer(nf, nf, kernel_size=1)
 
-        self.B1 = B.P_HTCB(in_channels=nf, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
-        #self.B2 = B.P_HTCB(in_channels=nf)
-        #self.B3 = B.P_HTCB(in_channels=nf)
-        #self.B4 = B.P_HTCB(in_channels=nf)
-        #self.B5 = B.P_HTCB(in_channels=nf)
+        self.B1 = B.P_HTCB(in_channels=nf,num_heads = num_heads, depth=depth, window_size=window_size, mlp_ratio=mlp_ratio, resolution=resolution)
+        #self.B2 = B.P_HTCB(in_channels=nf,num_heads=num_heads)
+        #self.B3 = B.P_HTCB(in_channels=nf,num_heads=num_heads)
+        #self.B4 = B.P_HTCB(in_channels=nf,num_heads=num_heads)
+        #self.B5 = B.P_HTCB(in_channels=nf,num_heads=num_heads)
         #self.c = B.conv_block(nf * num_modules, nf, kernel_size=1, act_type='lrelu')
         #self.LR_conv = B.conv_layer(nf, nf, kernel_size=1)
-        self.LR_conv1 = B.conv_layer(nf, nf, kernel_size=1)
-        self.LR_conv2 = B.conv_layer(nf, nf, kernel_size=1)
+        #self.LR_conv1 = B.conv_layer(nf, nf, kernel_size=1)
+        #self.LR_conv2 = B.conv_layer(nf, nf, kernel_size=1)
         # [تصحيح #3]: الورقة تقول PixelShuffle ثم طبقتان Conv3x3
         # "Pixel Shuffle followed by two layers of the 3×3 convolution"
         # pixelshuffle_block الحالي يعمل: Conv3x3 → PixelShuffle (خاطئ)
         # التصحيح: PixelShuffle → Conv3x3 → Conv3x3
         self.pixel_shuffle = nn.PixelShuffle(upscale)
-        self.ps_conv1 = B.conv_layer(out_nc, out_nc, kernel_size=3)
-        self.ps_conv2 = B.conv_layer(out_nc, out_nc, kernel_size=3)
+        #self.ps_conv1 = B.conv_layer(out_nc, out_nc, kernel_size=3)
+        #self.ps_conv2 = B.conv_layer(out_nc, out_nc, kernel_size=3)
         # طبقة لرفع channels قبل PixelShuffle
         #self.pre_shuffle = B.conv_layer(nf, out_nc * (upscale ** 2), kernel_size=3)
         
@@ -77,8 +77,8 @@ class HUTCN(nn.Module):
 
         # [تصحيح #1+2]: الورقة تقول بعد U-Net: ESA ثم Conv1x1 ثم + residual
         # كان: out_lr = self.c1_r(out_B5) + out_fea  ← Conv3x3 خاطئ
-        #out_lr = self.post_unet_conv(self.post_unet_esa(out_B5)) + out_fea
         out_lr = self.post_unet_conv(self.post_unet_esa(out_B1)) + out_fea
+
         # [تصحيح #3]: PixelShuffle ثم Conv3x3 ثم Conv3x3
         # كان: self.upsampler(out_lr) ← Conv3x3→PixelShuffle خاطئ
         #out_ps = self.pixel_shuffle(self.pre_shuffle(out_lr))

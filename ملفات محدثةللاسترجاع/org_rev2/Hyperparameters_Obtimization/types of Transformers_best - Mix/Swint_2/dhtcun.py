@@ -28,7 +28,7 @@ def make_model(args, parent=False):
 
 
 class HUTCN(nn.Module):
-    def __init__(self, in_nc=3, nf=50, num_modules=4, out_nc=3, upscale=3, num_heads=2, ws=12, num_blocks=3):
+    def __init__(self, in_nc=3, nf=50, num_modules=1, out_nc=3, upscale=3, num_heads=2, window_size=8, num_blocks=4):
         super(HUTCN, self).__init__()
 
         self.fea_conv = B.conv_layer(in_nc, nf, kernel_size=1)
@@ -37,7 +37,7 @@ class HUTCN(nn.Module):
         self.post_unet_esa  = B.ESA(nf, nn.Conv2d)
         self.post_unet_conv = B.conv_layer(nf, nf, kernel_size=1)
 
-        self.B1 = B.P_HTCB(in_channels=nf, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
+        self.B1 = B.P_HTCB(in_channels=nf, num_heads=num_heads, window_size=window_size, num_blocks=num_blocks)
         #self.B2 = B.P_HTCB(in_channels=nf)
         #self.B3 = B.P_HTCB(in_channels=nf)
         #self.B4 = B.P_HTCB(in_channels=nf)

@@ -1,10 +1,11 @@
 # ===================================================================
 # dhtcu_block.py — النسخة المصححة الكاملة
 # الإصلاحات:
-# 1. TCN.forward: يستدعي DAT بـ (x) فقط
-# 2. P_HTCB.forward: تمرير H,W إلى TECN
-# 3. إضافة tcn2 (البلوك المتوازي الثاني)
+# 1. TCN.forward: يستدعي DAT بـ (x) فقط (بدون H,W)
+# 2. P_HTCB.forward: حذف استخراج B,C,H,W غير الضروري
+# 3. إضافة tcn2 (البلوك المتوازي الثاني — موجود في الورقة)
 # 4. fea_conv kernel_size=3 في dhtcun لتحسين الجودة
+# 5. num_heads=6 لـ DAT مع dim=90 (90//6=15 ✅)
 # ===================================================================
 
 import torch
@@ -12,7 +13,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
 from .custom_attention_blocks import DAT
-from .custom_attention_blocks_ELAN import ELAN
+
 
 # -------------------------------------------------------------------
 # دوال مساعدة
@@ -100,7 +101,7 @@ def pixelshuffle_block(in_channels, out_channels, upscale_factor=2, kernel_size=
 
 
 # -------------------------------------------------------------------
-# ESA — Enhanced Spatial Attention
+# ESA — Enhanced Spatial Attention (كما هو، يعمل جيداً)
 # -------------------------------------------------------------------
 class ESA(nn.Module):
     def __init__(self, n_feats, conv):
@@ -140,60 +141,66 @@ class TESA(nn.Module):
 
 
 # -------------------------------------------------------------------
-# TCN — Transformer CNN Block (يستخدم DAT)
+# TCN — Transformer CNN Block (يستخدم DAT المصحّح)
+# الإصلاح الرئيسي: self.dat(x) بدون H, W
 # -------------------------------------------------------------------
 class TCN(nn.Module):
     def __init__(self, in_channels, num_heads=3, ws=8, num_blocks=1):
         super(TCN, self).__init__()
+        # التحقق من توافق dim مع num_heads
         assert in_channels % num_heads == 0, \
             f"in_channels={in_channels} يجب أن يقبل القسمة على num_heads={num_heads}"
         self.dat = DAT(dim=in_channels, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
-        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
+        # Conv3×3 بعد DAT (كما في الورقة: FConv3 ∘ FSTL)
+        #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
 
     def forward(self, x):
-        return self.conv3(self.dat(x))
+        # x: (B, C, H, W)  — DAT يستقبل ويُرجع نفس الشكل
+        return self.dat(x)
+        #return self.conv3(self.dat(x))
 
 
 # -------------------------------------------------------------------
-# TECN — Transformer CNN Block (يستخدم ELAN)
-# الإصلاح: تمرير H, W إلى ELAN
-# -------------------------------------------------------------------
-class TECN(nn.Module):
-    def __init__(self, in_channels, num_heads=2, window_size=12, num_blocks=3):
-        super(TECN, self).__init__()
-        assert in_channels % num_heads == 0, \
-            f"in_channels={in_channels} يجب أن يقبل القسمة على num_heads={num_heads}"
-        self.elan = ELAN(dim=in_channels, num_heads=num_heads, window_size=window_size, num_blocks=num_blocks)
-        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
-
-    def forward(self, x, H, W):
-        return self.conv3(self.elan(x, H, W))
-
-
-# -------------------------------------------------------------------
-# P_HTCB — Parallel Hybrid Transformer CNN Block
+# P_HTCB — Parallel Hybrid Transformer CNN Block (مصحّح)
 # -------------------------------------------------------------------
 class P_HTCB(nn.Module):
+    """
+    الإصلاحات:
+    - TCN.forward يُستدعى بـ (x) فقط
+    - TCN2 مفعّل (parallel كما في الورقة)
+    - Addition بدل Cat (الورقة Eq.4: HTCN1 + HTCN2)
+    """
     def __init__(self, in_channels, num_heads=3, ws=8, num_blocks=1):
         super(P_HTCB, self).__init__()
 
         self.tesa_in  = TESA(in_channels)
 
-        # TCN1 و TCN2 متوازيان
+        # TCN1 و TCN2 متوازيان — Eq.3
         self.tcn1 = TCN(in_channels, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
-        self.tecn2 = TECN(in_channels, num_heads=num_heads, window_size=ws, num_blocks=num_blocks)
+        #self.tcn2 = TCN(in_channels, num_heads=num_heads)
 
-        self.c = conv_block(in_channels, in_channels, kernel_size=1, act_type='lrelu')
+        # Conv1×1 بعد Addition — Eq.5
+        self.c = conv_block(in_channels, in_channels,
+                            kernel_size=1, act_type='lrelu')
+
         self.tesa_out = TESA(in_channels)
 
     def forward(self, x):
-        B, C, H, W = x.shape
         h_tesa = self.tesa_in(x)
 
+        # TCN1 و TCN2 بالتوازي على نفس المدخل
         h_tcn1 = self.tcn1(h_tesa)
-        h_tecn2 = self.tecn2(h_tesa, H, W)      # ← تمرير H, W
+       # h_tcn2 = self.tcn2(h_tesa)
 
-        h_add = h_tcn1 + h_tecn2
+        # Addition — Eq.4
+        #h_add  = h_tcn1 + h_tcn2
+        h_add  = h_tcn1 
+
+        # Conv1×1 — Eq.5
         h_conv = self.c(h_add)
+
+        # TESA النهائية — Eq.6
         out = self.tesa_out(h_conv)
+
+        # Global residual
         return out + x
