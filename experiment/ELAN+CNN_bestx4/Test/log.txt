@@ -1,0 +1,13 @@
+1,418,898 total parameters.
+1,418,898 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 32.277 dB | SSIM: 0.8941
+[Set14 x4]	Average PSNR: 28.713 dB | SSIM: 0.7839
+[B100 x4]	Average PSNR: 27.647 dB | SSIM: 0.7393
+[Urban100 x4]	Average PSNR: 26.336 dB | SSIM: 0.7936
+[Manga109 x4]	Average PSNR: 30.747 dB | SSIM: 0.9101
+Forward: 327.59s
+
+Saving...
+Total: 328.60s
