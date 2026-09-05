@@ -1,264 +1,253 @@
-# ===================================================================
-# custom_attention_blocks.py — النسخة المحسَّنة النهائية
-#
-# المشاكل في النسخة القديمة:
-#   - Global Attention: O(N²) حيث N=H×W → بطيء لـ patches كبيرة
-#   - OverlapPatchEmbed: conv3×3 إضافية بلا فائدة
-#   - لا يوجد local inductive bias مناسب لـ SR
-#
-# الحل — SWDA (Shifted-Window Dual Aggregation):
-#   1. Window Attention (ws=8)  → O(N·ws²) بدل O(N²)
-#   2. Shifted Window → تغطية سياق أوسع بلا params إضافية
-#   3. ConvFFN (depthwise) بدل Linear MLP → inductive bias محلي
-#   4. حذف OverlapPatchEmbed الزائدة
-# ===================================================================
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import math
+from einops import rearrange
+import warnings
 
+def default_conv(in_channels, out_channels, kernel_size, bias=True):
+    """3x3 convolution with padding."""
+    return nn.Conv2d(
+        in_channels, out_channels, kernel_size,
+        padding=(kernel_size // 2), bias=bias
+    )
 
-# ─────────────────────────────────────────────────────────────────────
-# LayerNorm2d
-# ─────────────────────────────────────────────────────────────────────
-class LayerNorm2d(nn.Module):
-    def __init__(self, dim):
-        super().__init__()
-        self.norm = nn.LayerNorm(dim)
+class ShiftConv(nn.Module):
+    """
+    Shift Convolution module as described in ELAN paper.
+    It performs shift operations (up, down, left, right) and then a 1x1 convolution.
+    """
+    def __init__(self, in_channels, out_channels):
+        super(ShiftConv, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        # 1x1 convolution for fusion
+        self.conv = nn.Conv2d(in_channels * 5, out_channels, 1, padding=0, bias=True)
 
     def forward(self, x):
+        # x shape: (B, C, H, W)
         B, C, H, W = x.shape
-        x = self.norm(x.flatten(2).transpose(1, 2))
-        return x.transpose(1, 2).view(B, C, H, W)
 
+        # Original feature map
+        orig = x
 
-# ─────────────────────────────────────────────────────────────────────
-# Window helpers
-# ─────────────────────────────────────────────────────────────────────
-def _pad_to_window(x, ws):
-    _, _, H, W = x.shape
-    ph = (ws - H % ws) % ws
-    pw = (ws - W % ws) % ws
-    if ph or pw:
-        x = F.pad(x, (0, pw, 0, ph))
-    return x, H, W, ph, pw
+        # Shift operations: up, down, left, right
+        up = torch.roll(x, shifts=-1, dims=2)   # Shift up
+        down = torch.roll(x, shifts=1, dims=2)  # Shift down
+        left = torch.roll(x, shifts=-1, dims=3)  # Shift left
+        right = torch.roll(x, shifts=1, dims=3)  # Shift right
 
+        # Concatenate along channel dimension
+        shifted = torch.cat([orig, up, down, left, right], dim=1)  # (B, C*5, H, W)
 
-def window_partition(x, ws):
-    """(B,C,H,W) → (B*nH*nW, ws*ws, C)"""
-    B, C, H, W = x.shape
-    x = x.permute(0, 2, 3, 1).contiguous()           # (B,H,W,C)
-    x = x.view(B, H//ws, ws, W//ws, ws, C)
-    x = x.permute(0, 1, 3, 2, 4, 5).contiguous()
-    return x.view(B * (H//ws) * (W//ws), ws*ws, C)
+        # Apply 1x1 convolution to fuse information
+        out = self.conv(shifted)  # (B, out_channels, H, W)
 
+        return out
 
-def window_reverse(x, ws, H, W, B):
-    """(B*nH*nW, ws*ws, C) → (B,C,H,W)"""
-    C  = x.shape[-1]
-    nH, nW = H//ws, W//ws
-    x = x.view(B, nH, nW, ws, ws, C)
-    x = x.permute(0, 1, 3, 2, 4, 5).contiguous().view(B, H, W, C)
-    return x.permute(0, 3, 1, 2)
-
-
-# ─────────────────────────────────────────────────────────────────────
-# Relative Position Bias index (يُحسَب مرة واحدة)
-# ─────────────────────────────────────────────────────────────────────
-def _make_rpb_index(ws):
-    coords = torch.stack(torch.meshgrid(
-        torch.arange(ws), torch.arange(ws), indexing='ij'))   # (2,ws,ws)
-    coords_flat = coords.flatten(1)                           # (2,ws²)
-    rel = coords_flat[:, :, None] - coords_flat[:, None, :]  # (2,ws²,ws²)
-    rel = rel.permute(1, 2, 0).contiguous()
-    rel[:, :, 0] += ws - 1
-    rel[:, :, 1] += ws - 1
-    rel[:, :, 0] *= 2*ws - 1
-    return rel.sum(-1)                                        # (ws²,ws²)
-
-
-# ─────────────────────────────────────────────────────────────────────
-# WindowAttention
-# ─────────────────────────────────────────────────────────────────────
-class WindowAttention(nn.Module):
-    def __init__(self, dim, ws=8, num_heads=3):
+class GMSA(nn.Module):
+    """
+    Group-wise Multi-scale Self-Attention (GMSA) module.
+    It divides features into groups and applies window-based attention with different window sizes.
+    """
+    def __init__(self, dim, num_heads=2, window_size=8, qkv_bias=False, qk_scale=None, attn_drop=0., proj_drop=0.):
         super().__init__()
-        assert dim % num_heads == 0
-        self.ws        = ws
+        self.dim = dim
         self.num_heads = num_heads
-        self.head_dim  = dim // num_heads
-        self.scale     = self.head_dim ** -0.5
+        self.window_size = window_size
+        head_dim = dim // num_heads
+        self.scale = qk_scale or head_dim ** -0.5
 
-        self.qkv  = nn.Linear(dim, dim*3, bias=True)
-        self.proj = nn.Linear(dim, dim)
+        # Multi-scale window sizes
+        self.window_sizes = [window_size // 2, window_size, window_size * 2]
+        self.window_sizes = [ws for ws in self.window_sizes if ws > 0]
 
-        self.rpb_table = nn.Parameter(
-            torch.zeros((2*ws-1)**2, num_heads))
-        nn.init.trunc_normal_(self.rpb_table, std=0.02)
-        self.register_buffer('rpb_index', _make_rpb_index(ws))
+        # Projections for Q, K, V for each window size
+        self.qkv_list = nn.ModuleList()
+        self.attn_drop_list = nn.ModuleList()
+        self.proj_list = nn.ModuleList()
 
-    def _rpb(self):
-        ws2 = self.ws * self.ws
-        b   = self.rpb_table[self.rpb_index.reshape(-1)].view(ws2, ws2, self.num_heads)
-        return b.permute(2, 0, 1).unsqueeze(0)               # (1, nh, ws², ws²)
+        for _ in self.window_sizes:
+            self.qkv_list.append(nn.Linear(dim, dim * 3, bias=qkv_bias))
+            self.attn_drop_list.append(nn.Dropout(attn_drop))
+            self.proj_list.append(nn.Linear(dim, dim))
 
-    def forward(self, x, mask=None):
-        """
-        x:    (BW, ws², C)   BW = B * nH * nW
-        mask: (nH*nW, 1, ws², ws²)  أو None
-        """
-        BW, N, C = x.shape
-        h = self.num_heads
-        d = self.head_dim
+        self.proj_drop = nn.Dropout(proj_drop)
+        self.norm = nn.LayerNorm(dim)
+        self.relative_position_bias_tables = nn.ParameterList()
+        for ws in self.window_sizes:
+            # Relative position bias table for each window size
+            bias_table = nn.Parameter(torch.zeros((2 * ws - 1) * (2 * ws - 1), num_heads))
+            trunc_normal_(bias_table, std=.02)
+            self.relative_position_bias_tables.append(bias_table)
 
-        qkv = self.qkv(x).view(BW, N, 3, h, d).permute(2, 0, 3, 1, 4)
-        q, k, v = qkv.unbind(0)                              # (BW, h, N, d)
+        # Pre-compute indices for relative position bias
+        self.relative_position_indices = []
+        for ws in self.window_sizes:
+            coords_h = torch.arange(ws)
+            coords_w = torch.arange(ws)
+            coords = torch.stack(torch.meshgrid([coords_h, coords_w], indexing='ij'))
+            coords_flatten = torch.flatten(coords, 1)
+            relative_coords = coords_flatten[:, :, None] - coords_flatten[:, None, :]
+            relative_coords = relative_coords.permute(1, 2, 0).contiguous()
+            relative_coords[:, :, 0] += ws - 1
+            relative_coords[:, :, 1] += ws - 1
+            relative_coords[:, :, 0] *= 2 * ws - 1
+            relative_position_index = relative_coords.sum(-1)
+            self.register_buffer(f'relative_position_index_{ws}', relative_position_index)
+            self.relative_position_indices.append(relative_position_index)
 
-        attn = (q @ k.transpose(-2, -1)) * self.scale
-        attn = attn + self._rpb()                            # broadcast (1,h,N,N)
-
-        if mask is not None:
-            # mask: (nW, 1, N, N)
-            # attn: (BW, h, N, N)  حيث BW = B * nW
-            nW   = mask.shape[0]
-            B_   = BW // nW
-            attn = attn.view(B_, nW, h, N, N)
-            # mask (nW,1,N,N) → unsqueeze(0) → (1,nW,1,N,N)  ✅ broadcast مع (B_,nW,h,N,N)
-            attn = attn + mask.unsqueeze(0)
-            attn = attn.view(BW, h, N, N)
-
-        attn = attn.softmax(dim=-1)
-        x = (attn @ v).transpose(1, 2).reshape(BW, N, C)
-        return self.proj(x)
-
-
-# ─────────────────────────────────────────────────────────────────────
-# ConvFFN — Depthwise Feed-Forward
-# ─────────────────────────────────────────────────────────────────────
-class ConvFFN(nn.Module):
-    def __init__(self, dim, expand=2):
-        super().__init__()
-        hid = dim * expand
-        self.pw1 = nn.Conv2d(dim, hid, 1)
-        self.dw  = nn.Conv2d(hid, hid, 3, padding=1, groups=hid)
-        self.pw2 = nn.Conv2d(hid, dim, 1)
-        self.act = nn.GELU()
-
-    def forward(self, x):
-        return self.pw2(self.act(self.dw(self.pw1(x))))
-
-
-# ─────────────────────────────────────────────────────────────────────
-# Shift Mask  (يُحسَب ويُخزَّن في cache حسب (Hp, Wp))
-# ─────────────────────────────────────────────────────────────────────
-def _make_shift_mask(Hp, Wp, ws, shift, device):
-    """يُرجع mask شكله (nH*nW, 1, ws², ws²)"""
-    img  = torch.zeros(Hp, Wp, device=device)
-    # تعبئة المناطق بأرقام مختلفة
-    regions = [
-        ((0, Hp-shift),  (0, Wp-shift)),   # 0
-        ((0, Hp-shift),  (Wp-shift, Wp)),   # 1
-        ((Hp-shift, Hp), (0, Wp-shift)),    # 2
-        ((Hp-shift, Hp), (Wp-shift, Wp)),   # 3
-    ]
-    for idx, (hr, wr) in enumerate(regions):
-        img[hr[0]:hr[1], wr[0]:wr[1]] = idx
-
-    nH, nW = Hp//ws, Wp//ws
-    img = img.view(nH, ws, nW, ws).permute(0, 2, 1, 3).contiguous()
-    img = img.view(nH*nW, ws*ws)                             # (nW_total, ws²)
-
-    mask = img.unsqueeze(1) - img.unsqueeze(2)               # (nW_total, ws², ws²)
-    mask = mask.masked_fill(mask != 0, -100.0).masked_fill(mask == 0, 0.0)
-    return mask.unsqueeze(1)                                  # (nW_total, 1, ws², ws²)
-
-
-# ─────────────────────────────────────────────────────────────────────
-# SWDABlock — Shifted-Window Dual Aggregation Block
-# ─────────────────────────────────────────────────────────────────────
-class SWDABlock(nn.Module):
-    def __init__(self, dim, ws=8, num_heads=3, ffn_expand=2):
-        super().__init__()
-        self.ws    = ws
-        self.shift = ws // 2
-
-        self.norm1 = LayerNorm2d(dim)
-        self.norm2 = LayerNorm2d(dim)
-        self.norm3 = LayerNorm2d(dim)
-
-        self.w_attn  = WindowAttention(dim, ws, num_heads)   # بدون shift
-        self.sw_attn = WindowAttention(dim, ws, num_heads)   # مع shift
-
-        self.ffn = ConvFFN(dim, ffn_expand)
-
-        self._mask_cache = {}
-
-    def _get_mask(self, Hp, Wp, device):
-        key = (Hp, Wp)
-        if key not in self._mask_cache:
-            m = _make_shift_mask(Hp, Wp, self.ws, self.shift, device)
-            self._mask_cache[key] = m
-        return self._mask_cache[key].to(device)
-
-    def _apply_wattn(self, x, attn_mod, shift):
+    def forward(self, x, H, W):
         B, C, H, W = x.shape
-        ws = self.ws
+        x_flat = x.flatten(2).transpose(1, 2)  # (B, H*W, C)
 
-        # Pad
-        x, H_orig, W_orig, ph, pw = _pad_to_window(x, ws)
-        Hp, Wp = x.shape[2], x.shape[3]
+        out = 0
+        for idx, ws in enumerate(self.window_sizes):
+            # Pad to ensure divisibility
+            pad_h = (ws - H % ws) % ws
+            pad_w = (ws - W % ws) % ws
+            if pad_h > 0 or pad_w > 0:
+                x_padded = F.pad(x, (0, pad_w, 0, pad_h), mode='reflect')
+                B, C, H_pad, W_pad = x_padded.shape
+            else:
+                x_padded = x
+                H_pad, W_pad = H, W
 
-        # Shift
-        if shift:
-            x = torch.roll(x, shifts=(-self.shift, -self.shift), dims=(2, 3))
-            mask = self._get_mask(Hp, Wp, x.device)
-        else:
-            mask = None
+            # Window partition
+            x_windows = rearrange(x_padded, 'b c (h w1) (w w2) -> (b h w) (w1 w2) c', w1=ws, w2=ws)
+            B_, N, C = x_windows.shape
 
-        # Partition → Attend → Reverse
-        wins = window_partition(x, ws)                       # (B*nH*nW, ws², C)
-        wins = attn_mod(wins, mask)
-        x    = window_reverse(wins, ws, Hp, Wp, B)          # (B, C, Hp, Wp)
+            # QKV projection
+            qkv = self.qkv_list[idx](x_windows).reshape(B_, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+            q, k, v = qkv[0], qkv[1], qkv[2]
 
-        # Unshift
-        if shift:
-            x = torch.roll(x, shifts=(self.shift, self.shift), dims=(2, 3))
+            q = q * self.scale
+            attn = (q @ k.transpose(-2, -1))
 
-        # Unpad
-        return x[:, :, :H_orig, :W_orig]
+            # Relative position bias
+            relative_position_bias = self.relative_position_bias_tables[idx][self.relative_position_indices[idx].view(-1)].view(
+                ws * ws, ws * ws, -1)
+            relative_position_bias = relative_position_bias.permute(2, 0, 1).contiguous()
+            attn = attn + relative_position_bias.unsqueeze(0)
 
-    def forward(self, x):
-        x = x + self._apply_wattn(self.norm1(x), self.w_attn,  shift=False)
-        x = x + self._apply_wattn(self.norm2(x), self.sw_attn, shift=True)
-        x = x + self.ffn(self.norm3(x))
-        return x
+            attn = attn.softmax(dim=-1)
+            attn = self.attn_drop_list[idx](attn)
 
+            x_windows = (attn @ v).transpose(1, 2).reshape(B_, N, C)
+            x_windows = self.proj_list[idx](x_windows)
 
-# ─────────────────────────────────────────────────────────────────────
-# DAT — Dual Aggregation Transformer (محسَّن)
-#
-# مقارنة مع النسخة القديمة (dim=90, patch 48×48):
-# ┌──────────────┬────────────────┬─────────────────┐
-# │ المعامل      │   قديم         │   جديد          │
-# ├──────────────┼────────────────┼─────────────────┤
-# │ Attention    │ Global O(N²)   │ Window O(N·ws²) │
-# │ num_heads    │ 6              │ 3               │
-# │ FFN          │ Linear 2×      │ ConvFFN dw 2×   │
-# │ patch_embed  │ Conv3×3 زائدة  │ محذوف           │
-# └──────────────┴────────────────┴─────────────────┘
-# ─────────────────────────────────────────────────────────────────────
-class DAT(nn.Module):
-    def __init__(self, dim=90, num_heads=3, ws=8, num_blocks=1):
+            # Window reverse
+            x_out = rearrange(x_windows, '(b h w) (w1 w2) c -> b c (h w1) (w w2)', b=B, h=H_pad // ws, w=W_pad // ws, w1=ws, w2=ws)
+
+            # Remove padding
+            if pad_h > 0 or pad_w > 0:
+                x_out = x_out[:, :, :H, :W]
+
+            out += x_out
+
+        out = self.proj_drop(self.norm(out.flatten(2).transpose(1, 2)).transpose(1, 2).view(B, C, H, W))
+        return out
+
+class ELAB(nn.Module):
+    """
+    Efficient Long-Range Attention Block (ELAB) as described in ELAN paper.
+    It cascades two ShiftConv layers with a GMSA module.
+    """
+    def __init__(self, dim, num_heads=2, window_size=8, shift_conv=True):
+        super(ELAB, self).__init__()
+        self.shift_conv1 = ShiftConv(dim, dim) if shift_conv else default_conv(dim, dim, 3)
+        self.shift_conv2 = ShiftConv(dim, dim) if shift_conv else default_conv(dim, dim, 3)
+        self.gmsa = GMSA(dim, num_heads, window_size)
+        self.norm1 = nn.LayerNorm(dim)
+        self.norm2 = nn.LayerNorm(dim)
+        self.mlp = nn.Sequential(
+            nn.Linear(dim, dim * 4),
+            nn.GELU(),
+            nn.Linear(dim * 4, dim),
+            nn.Dropout(0.)
+        )
+        self.drop_path = nn.Identity()
+
+    def forward(self, x, H, W):
+        B, C, H, W = x.shape
+        shortcut = x
+
+        # First shift convolution
+        x = self.shift_conv1(x)
+        x = F.gelu(x)
+
+        # GMSA with residual connection
+        x_flat = x.flatten(2).transpose(1, 2)
+        x_flat = self.norm1(x_flat)
+        x_attn = self.gmsa(x, H, W)
+        x_attn_flat = x_attn.flatten(2).transpose(1, 2)
+        x_attn_flat = shortcut.flatten(2).transpose(1, 2) + self.drop_path(x_attn_flat)
+        x_attn = x_attn_flat.transpose(1, 2).view(B, C, H, W)
+
+        # Second shift convolution
+        x = self.shift_conv2(x_attn)
+        x = F.gelu(x)
+
+        # MLP
+        x_flat = x.flatten(2).transpose(1, 2)
+        x_mlp = self.norm2(x_flat)
+        x_mlp = self.mlp(x_mlp)
+        x_mlp = x_flat + self.drop_path(x_mlp)
+        x_out = x_mlp.transpose(1, 2).view(B, C, H, W)
+
+        return x_out
+
+class ELAN(nn.Module):
+    """
+    Efficient Long-Range Attention Network (ELAN) for image super-resolution.
+    """
+    def __init__(self, dim=60, num_heads=2, window_size=8, num_blocks=4):
         super().__init__()
-        assert dim % num_heads == 0, \
-            f"dim={dim} يجب أن يقبل القسمة على num_heads={num_heads}"
+        self.dim = dim
+        self.num_heads = num_heads
+        self.window_size = window_size
+        self.num_blocks = num_blocks
+
+        # Patch embedding
+        self.patch_embed = default_conv(dim, dim, 3)
+
+        # ELAB blocks
         self.blocks = nn.ModuleList([
-            SWDABlock(dim, ws=ws, num_heads=num_heads, ffn_expand=2)
+            ELAB(dim, num_heads, window_size, shift_conv=True)
             for _ in range(num_blocks)
         ])
-        self.norm = LayerNorm2d(dim)
 
-    def forward(self, x):
+        # Layer norm
+        self.norm = nn.LayerNorm(dim)
+
+    def forward(self, x, H, W):
+        # Input x shape: (B, C, H, W)
+        x = self.patch_embed(x)  # (B, dim, H, W)
+
         for blk in self.blocks:
-            x = blk(x)
-        return self.norm(x)
+            x = blk(x, H, W)
+
+        B, C, H, W = x.shape
+        x_flat = x.flatten(2).transpose(1, 2)
+        x = self.norm(x_flat).transpose(1, 2).view(B, C, H, W)
+        return x
+
+def trunc_normal_(tensor, mean=0., std=1., a=-2., b=2.):
+    """Fills the input Tensor with values drawn from a truncated normal distribution."""
+    def norm_cdf(x):
+        return (1. + math.erf(x / math.sqrt(2.))) / 2.
+
+    if (mean < a - 2 * std) or (mean > b + 2 * std):
+        warnings.warn("mean is more than 2 std from [a, b] in nn.init.trunc_normal_. "
+                      "The distribution of values may be incorrect.",
+                      stacklevel=2)
+
+    with torch.no_grad():
+        l = norm_cdf((a - mean) / std)
+        u = norm_cdf((b - mean) / std)
+        tensor.uniform_(2 * l - 1, 2 * u - 1)
+        tensor.erfinv_()
+        tensor.mul_(std * math.sqrt(2.))
+        tensor.add_(mean)
+        tensor.clamp_(min=a, max=b)
+        return tensor
