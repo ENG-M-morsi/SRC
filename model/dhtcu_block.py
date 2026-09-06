@@ -248,15 +248,15 @@ class TCN(nn.Module):
     """Transformer CNN Block — Eq.3"""
     def __init__(self, in_channels):
         super(TCN, self).__init__()
-        #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
+        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
         #self.swinT = SwinT.SwinT(n_feats=in_channels)
         self.hat = HAT(dim=in_channels, num_blocks=4, window_size=12, num_heads=4)
 
     def forward(self, x, H, W):
         # الـ x هنا هو خرج TESA (بأبعاد B, C, H, W)
         x_hat = self.hat(x, H, W)       # (B, C, H, W)
-        return x_hat
-        #return self.conv3(x_hat)
+        #return x_hat
+        return self.conv3(x_hat)
 
 
 class P_HTCB(nn.Module):
@@ -277,7 +277,7 @@ class P_HTCB(nn.Module):
         
         # TCN1 و TCN2 — Eq.3 (parallel)
         self.tcn1 = TCN(in_channels)
-        self.tcn2 = TCN(in_channels)
+        #self.tcn2 = TCN(in_channels)
 
         # Conv1x1 بعد Addition — Eq.4+5
         # [تصحيح #5+6]: الورقة Eq.4 تقول HTCN1 + HTCN2 (Addition وليس cat)
@@ -294,10 +294,10 @@ class P_HTCB(nn.Module):
         h_tesa = self.tesa_in(x)
         # Eq.3 — TCN1 و TCN2 بالتوازي على نفس الدخل
         h_tcn1 = self.tcn1(h_tesa, H, W)   # ✅ تم تمرير H, W
-        h_tcn2 = self.tcn2(h_tesa, H, W)   # ✅ تم تمرير H, W
+        #h_tcn2 = self.tcn2(h_tesa, H, W)   # ✅ تم تمرير H, W
         # Eq.4+5 — Addition ثم Conv1x1
-        h_add  = h_tcn1 + h_tcn2
-        #h_add  = h_tcn1
+        #h_add  = h_tcn1 + h_tcn2
+        h_add  = h_tcn1
         h_conv = self.c(h_add)
         # Eq.6 — TESA أخيرة
         out = self.tesa_out(h_conv)
