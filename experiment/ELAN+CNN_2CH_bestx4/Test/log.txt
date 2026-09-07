@@ -7,7 +7,7 @@ Evaluation:
 [B100 x4]	Average PSNR: 27.621 dB | SSIM: 0.7382
 [Urban100 x4]	Average PSNR: 26.202 dB | SSIM: 0.7901
 [Manga109 x4]	Average PSNR: 30.624 dB | SSIM: 0.9083
-Forward: 345.13s
+Forward: 343.55s
 
 Saving...
-Total: 346.14s
+Total: 344.57s

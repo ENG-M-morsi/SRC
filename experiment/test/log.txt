@@ -55689,3 +55689,3153 @@ Forward: 327.06s
 Saving...
 Total: 328.06s
 
+HUTCN(
+  (fea_conv): Conv2d(3, 96, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (elan): ELAN(
+        (patch_embed): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (blocks): ModuleList(
+          (0-2): 3 x ELAB(
+            (shift_conv1): ShiftConv(
+              (conv): Conv2d(480, 96, kernel_size=(1, 1), stride=(1, 1))
+            )
+            (shift_conv2): ShiftConv(
+              (conv): Conv2d(480, 96, kernel_size=(1, 1), stride=(1, 1))
+            )
+            (gmsa): GMSA(
+              (qkv_list): ModuleList(
+                (0-2): 3 x Linear(in_features=96, out_features=288, bias=False)
+              )
+              (attn_drop_list): ModuleList(
+                (0-2): 3 x Dropout(p=0.0, inplace=False)
+              )
+              (proj_list): ModuleList(
+                (0-2): 3 x Linear(in_features=96, out_features=96, bias=True)
+              )
+              (proj_drop): Dropout(p=0.0, inplace=False)
+              (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+              (relative_position_bias_tables): ParameterList(
+                  (0): Parameter containing: [torch.float32 of size 121x2 (cuda:0)]
+                  (1): Parameter containing: [torch.float32 of size 529x2 (cuda:0)]
+                  (2): Parameter containing: [torch.float32 of size 2209x2 (cuda:0)]
+              )
+            )
+            (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+            (mlp): Sequential(
+              (0): Linear(in_features=96, out_features=384, bias=True)
+              (1): GELU(approximate='none')
+              (2): Linear(in_features=384, out_features=96, bias=True)
+              (3): Dropout(p=0.0, inplace=False)
+            )
+            (drop_path): Identity()
+          )
+        )
+        (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+      )
+      (conv3): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    )
+    (tcn2): TCN(
+      (elan): ELAN(
+        (patch_embed): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (blocks): ModuleList(
+          (0-2): 3 x ELAB(
+            (shift_conv1): ShiftConv(
+              (conv): Conv2d(480, 96, kernel_size=(1, 1), stride=(1, 1))
+            )
+            (shift_conv2): ShiftConv(
+              (conv): Conv2d(480, 96, kernel_size=(1, 1), stride=(1, 1))
+            )
+            (gmsa): GMSA(
+              (qkv_list): ModuleList(
+                (0-2): 3 x Linear(in_features=96, out_features=288, bias=False)
+              )
+              (attn_drop_list): ModuleList(
+                (0-2): 3 x Dropout(p=0.0, inplace=False)
+              )
+              (proj_list): ModuleList(
+                (0-2): 3 x Linear(in_features=96, out_features=96, bias=True)
+              )
+              (proj_drop): Dropout(p=0.0, inplace=False)
+              (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+              (relative_position_bias_tables): ParameterList(
+                  (0): Parameter containing: [torch.float32 of size 121x2 (cuda:0)]
+                  (1): Parameter containing: [torch.float32 of size 529x2 (cuda:0)]
+                  (2): Parameter containing: [torch.float32 of size 2209x2 (cuda:0)]
+              )
+            )
+            (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+            (mlp): Sequential(
+              (0): Linear(in_features=96, out_features=384, bias=True)
+              (1): GELU(approximate='none')
+              (2): Linear(in_features=384, out_features=96, bias=True)
+              (3): Dropout(p=0.0, inplace=False)
+            )
+            (drop_path): Identity()
+          )
+        )
+        (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+      )
+      (conv3): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    )
+    (c): Sequential(
+      (0): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (recon_conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(96, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 96, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (elan): ELAN(
+          (patch_embed): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (blocks): ModuleList(
+            (0-2): 3 x ELAB(
+              (shift_conv1): ShiftConv(
+                (conv): Conv2d(480, 96, kernel_size=(1, 1), stride=(1, 1))
+              )
+              (shift_conv2): ShiftConv(
+                (conv): Conv2d(480, 96, kernel_size=(1, 1), stride=(1, 1))
+              )
+              (gmsa): GMSA(
+                (qkv_list): ModuleList(
+                  (0-2): 3 x Linear(in_features=96, out_features=288, bias=False)
+                )
+                (attn_drop_list): ModuleList(
+                  (0-2): 3 x Dropout(p=0.0, inplace=False)
+                )
+                (proj_list): ModuleList(
+                  (0-2): 3 x Linear(in_features=96, out_features=96, bias=True)
+                )
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (relative_position_bias_tables): ParameterList(
+                    (0): Parameter containing: [torch.float32 of size 121x2 (cuda:0)]
+                    (1): Parameter containing: [torch.float32 of size 529x2 (cuda:0)]
+                    (2): Parameter containing: [torch.float32 of size 2209x2 (cuda:0)]
+                )
+              )
+              (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+              (mlp): Sequential(
+                (0): Linear(in_features=96, out_features=384, bias=True)
+                (1): GELU(approximate='none')
+                (2): Linear(in_features=384, out_features=96, bias=True)
+                (3): Dropout(p=0.0, inplace=False)
+              )
+              (drop_path): Identity()
+            )
+          )
+          (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+        )
+        (conv3): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+      (tcn2): TCN(
+        (elan): ELAN(
+          (patch_embed): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (blocks): ModuleList(
+            (0-2): 3 x ELAB(
+              (shift_conv1): ShiftConv(
+                (conv): Conv2d(480, 96, kernel_size=(1, 1), stride=(1, 1))
+              )
+              (shift_conv2): ShiftConv(
+                (conv): Conv2d(480, 96, kernel_size=(1, 1), stride=(1, 1))
+              )
+              (gmsa): GMSA(
+                (qkv_list): ModuleList(
+                  (0-2): 3 x Linear(in_features=96, out_features=288, bias=False)
+                )
+                (attn_drop_list): ModuleList(
+                  (0-2): 3 x Dropout(p=0.0, inplace=False)
+                )
+                (proj_list): ModuleList(
+                  (0-2): 3 x Linear(in_features=96, out_features=96, bias=True)
+                )
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (relative_position_bias_tables): ParameterList(
+                    (0): Parameter containing: [torch.float32 of size 121x2 (cuda:0)]
+                    (1): Parameter containing: [torch.float32 of size 529x2 (cuda:0)]
+                    (2): Parameter containing: [torch.float32 of size 2209x2 (cuda:0)]
+                )
+              )
+              (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+              (mlp): Sequential(
+                (0): Linear(in_features=96, out_features=384, bias=True)
+                (1): GELU(approximate='none')
+                (2): Linear(in_features=384, out_features=96, bias=True)
+                (3): Dropout(p=0.0, inplace=False)
+              )
+              (drop_path): Identity()
+            )
+          )
+          (norm): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+        )
+        (conv3): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+      (c): Sequential(
+        (0): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (recon_conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(96, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+2,436,372 total parameters.
+2,436,372 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 32.201 dB | SSIM: 0.8932
+[Set14 x4]	Average PSNR: 28.654 dB | SSIM: 0.7825
+[B100 x4]	Average PSNR: 27.621 dB | SSIM: 0.7382
+[Urban100 x4]	Average PSNR: 26.202 dB | SSIM: 0.7901
+[Manga109 x4]	Average PSNR: 30.624 dB | SSIM: 0.9083
+Forward: 343.55s
+
+Saving...
+Total: 344.57s
+
+HUTCN(
+  (fea_conv): Conv2d(3, 112, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (omnisr): OmniSR(
+        (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (blocks): ModuleList(
+          (0-1): 2 x OSAG(
+            (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+            (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+            (osa): OSA_Block(
+              (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=112, out_features=336, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=112, out_features=112, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (mlp): Sequential(
+                (0): Linear(in_features=112, out_features=224, bias=True)
+                (1): GELU(approximate='none')
+                (2): Linear(in_features=224, out_features=112, bias=True)
+                (3): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+        )
+        (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (tcn2): TCN(
+      (omnisr): OmniSR(
+        (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (blocks): ModuleList(
+          (0-1): 2 x OSAG(
+            (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+            (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+            (osa): OSA_Block(
+              (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=112, out_features=336, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=112, out_features=112, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (mlp): Sequential(
+                (0): Linear(in_features=112, out_features=224, bias=True)
+                (1): GELU(approximate='none')
+                (2): Linear(in_features=224, out_features=112, bias=True)
+                (3): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+        )
+        (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv1): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(112, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 112, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (omnisr): OmniSR(
+          (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (blocks): ModuleList(
+            (0-1): 2 x OSAG(
+              (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+              (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+              (osa): OSA_Block(
+                (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=112, out_features=336, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=112, out_features=112, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (mlp): Sequential(
+                  (0): Linear(in_features=112, out_features=224, bias=True)
+                  (1): GELU(approximate='none')
+                  (2): Linear(in_features=224, out_features=112, bias=True)
+                  (3): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+      (tcn2): TCN(
+        (omnisr): OmniSR(
+          (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (blocks): ModuleList(
+            (0-1): 2 x OSAG(
+              (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+              (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+              (osa): OSA_Block(
+                (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=112, out_features=336, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=112, out_features=112, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (mlp): Sequential(
+                  (0): Linear(in_features=112, out_features=224, bias=True)
+                  (1): GELU(approximate='none')
+                  (2): Linear(in_features=224, out_features=112, bias=True)
+                  (3): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv1): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(112, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+1,240,872 total parameters.
+1,240,872 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 32.176 dB | SSIM: 0.8931
+[Set14 x4]	Average PSNR: 28.625 dB | SSIM: 0.7825
+[B100 x4]	Average PSNR: 27.600 dB | SSIM: 0.7375
+[Urban100 x4]	Average PSNR: 26.187 dB | SSIM: 0.7884
+[Manga109 x4]	Average PSNR: 30.602 dB | SSIM: 0.9096
+Forward: 322.57s
+
+Saving...
+Total: 323.57s
+
+HUTCN(
+  (fea_conv): Conv2d(3, 112, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (conv3): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (omnisr): OmniSR(
+        (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (blocks): ModuleList(
+          (0-1): 2 x OSAG(
+            (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+            (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+            (osa): OSA_Block(
+              (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=112, out_features=336, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=112, out_features=112, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (mlp): Sequential(
+                (0): Linear(in_features=112, out_features=224, bias=True)
+                (1): GELU(approximate='none')
+                (2): Linear(in_features=224, out_features=112, bias=True)
+                (3): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+        )
+        (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (tcn2): TCN(
+      (conv3): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (omnisr): OmniSR(
+        (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (blocks): ModuleList(
+          (0-1): 2 x OSAG(
+            (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+            (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+            (osa): OSA_Block(
+              (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=112, out_features=336, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=112, out_features=112, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (mlp): Sequential(
+                (0): Linear(in_features=112, out_features=224, bias=True)
+                (1): GELU(approximate='none')
+                (2): Linear(in_features=224, out_features=112, bias=True)
+                (3): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+        )
+        (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv1): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(112, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 112, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (conv3): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (omnisr): OmniSR(
+          (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (blocks): ModuleList(
+            (0-1): 2 x OSAG(
+              (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+              (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+              (osa): OSA_Block(
+                (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=112, out_features=336, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=112, out_features=112, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (mlp): Sequential(
+                  (0): Linear(in_features=112, out_features=224, bias=True)
+                  (1): GELU(approximate='none')
+                  (2): Linear(in_features=224, out_features=112, bias=True)
+                  (3): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+      (tcn2): TCN(
+        (conv3): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (omnisr): OmniSR(
+          (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (blocks): ModuleList(
+            (0-1): 2 x OSAG(
+              (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+              (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+              (osa): OSA_Block(
+                (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=112, out_features=336, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=112, out_features=112, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (mlp): Sequential(
+                  (0): Linear(in_features=112, out_features=224, bias=True)
+                  (1): GELU(approximate='none')
+                  (2): Linear(in_features=224, out_features=112, bias=True)
+                  (3): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv1): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(112, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+1,466,888 total parameters.
+1,466,888 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 32.179 dB | SSIM: 0.8936
+[Set14 x4]	Average PSNR: 28.626 dB | SSIM: 0.7828
+[B100 x4]	Average PSNR: 27.591 dB | SSIM: 0.7382
+[Urban100 x4]	Average PSNR: 26.141 dB | SSIM: 0.7889
+[Manga109 x4]	Average PSNR: 30.479 dB | SSIM: 0.9090
+Forward: 321.19s
+
+Saving...
+Total: 322.20s
+
+HUTCN(
+  (fea_conv): Conv2d(3, 112, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (conv3): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (omnisr): OmniSR(
+        (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (blocks): ModuleList(
+          (0-1): 2 x OSAG(
+            (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+            (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+            (osa): OSA_Block(
+              (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=112, out_features=336, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=112, out_features=112, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+              (mlp): Sequential(
+                (0): Linear(in_features=112, out_features=224, bias=True)
+                (1): GELU(approximate='none')
+                (2): Linear(in_features=224, out_features=112, bias=True)
+                (3): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+        )
+        (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv1): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(112, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 112, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (conv3): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (omnisr): OmniSR(
+          (patch_embed): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (blocks): ModuleList(
+            (0-1): 2 x OSAG(
+              (local_dw): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), groups=112, bias=False)
+              (local_pw): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+              (osa): OSA_Block(
+                (norm1): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=112, out_features=336, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=112, out_features=112, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+                (mlp): Sequential(
+                  (0): Linear(in_features=112, out_features=224, bias=True)
+                  (1): GELU(approximate='none')
+                  (2): Linear(in_features=224, out_features=112, bias=True)
+                  (3): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (norm): LayerNorm((112,), eps=1e-05, elementwise_affine=True)
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(112, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(28, 28, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(28, 28, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(28, 28, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(28, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(112, 112, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv1): Conv2d(112, 112, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(112, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+1,002,464 total parameters.
+1,002,464 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 32.166 dB | SSIM: 0.8927
+[Set14 x4]	Average PSNR: 28.619 dB | SSIM: 0.7820
+[B100 x4]	Average PSNR: 27.579 dB | SSIM: 0.7373
+[Urban100 x4]	Average PSNR: 26.072 dB | SSIM: 0.7862
+[Manga109 x4]	Average PSNR: 30.502 dB | SSIM: 0.9086
+Forward: 326.41s
+
+Saving...
+Total: 327.43s
+
+HUTCN(
+  (fea_conv): Conv2d(3, 128, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (hat): HAT(
+        (hat_group): HAT_Group(
+          (blocks): ModuleList(
+            (0-3): 4 x HAB(
+              (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=128, out_features=384, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=128, out_features=128, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (mlp): Mlp(
+                (fc1): Linear(in_features=128, out_features=256, bias=True)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=256, out_features=128, bias=True)
+                (drop): Dropout(p=0.0, inplace=False)
+              )
+              (conv_du): Sequential(
+                (0): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+                (1): ReLU(inplace=True)
+                (2): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1))
+                (3): Sigmoid()
+              )
+            )
+          )
+          (ocab): OCAB(
+            (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+            (attn): WindowAttention(
+              (qkv): Linear(in_features=128, out_features=384, bias=True)
+              (attn_drop): Dropout(p=0.0, inplace=False)
+              (proj): Linear(in_features=128, out_features=128, bias=True)
+              (proj_drop): Dropout(p=0.0, inplace=False)
+              (softmax): Softmax(dim=-1)
+            )
+            (drop_path): Identity()
+            (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+            (mlp): Mlp(
+              (fc1): Linear(in_features=128, out_features=256, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=256, out_features=128, bias=True)
+              (drop): Dropout(p=0.0, inplace=False)
+            )
+          )
+        )
+        (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+    (tcn2): TCN(
+      (hat): HAT(
+        (hat_group): HAT_Group(
+          (blocks): ModuleList(
+            (0-3): 4 x HAB(
+              (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=128, out_features=384, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=128, out_features=128, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (mlp): Mlp(
+                (fc1): Linear(in_features=128, out_features=256, bias=True)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=256, out_features=128, bias=True)
+                (drop): Dropout(p=0.0, inplace=False)
+              )
+              (conv_du): Sequential(
+                (0): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+                (1): ReLU(inplace=True)
+                (2): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1))
+                (3): Sigmoid()
+              )
+            )
+          )
+          (ocab): OCAB(
+            (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+            (attn): WindowAttention(
+              (qkv): Linear(in_features=128, out_features=384, bias=True)
+              (attn_drop): Dropout(p=0.0, inplace=False)
+              (proj): Linear(in_features=128, out_features=128, bias=True)
+              (proj_drop): Dropout(p=0.0, inplace=False)
+              (softmax): Softmax(dim=-1)
+            )
+            (drop_path): Identity()
+            (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+            (mlp): Mlp(
+              (fc1): Linear(in_features=128, out_features=256, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=256, out_features=128, bias=True)
+              (drop): Dropout(p=0.0, inplace=False)
+            )
+          )
+        )
+        (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(128, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 128, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (hat): HAT(
+          (hat_group): HAT_Group(
+            (blocks): ModuleList(
+              (0-3): 4 x HAB(
+                (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=128, out_features=384, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=128, out_features=128, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (mlp): Mlp(
+                  (fc1): Linear(in_features=128, out_features=256, bias=True)
+                  (act): GELU(approximate='none')
+                  (fc2): Linear(in_features=256, out_features=128, bias=True)
+                  (drop): Dropout(p=0.0, inplace=False)
+                )
+                (conv_du): Sequential(
+                  (0): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+                  (1): ReLU(inplace=True)
+                  (2): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1))
+                  (3): Sigmoid()
+                )
+              )
+            )
+            (ocab): OCAB(
+              (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=128, out_features=384, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=128, out_features=128, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (mlp): Mlp(
+                (fc1): Linear(in_features=128, out_features=256, bias=True)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=256, out_features=128, bias=True)
+                (drop): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+          (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+      (tcn2): TCN(
+        (hat): HAT(
+          (hat_group): HAT_Group(
+            (blocks): ModuleList(
+              (0-3): 4 x HAB(
+                (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=128, out_features=384, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=128, out_features=128, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (mlp): Mlp(
+                  (fc1): Linear(in_features=128, out_features=256, bias=True)
+                  (act): GELU(approximate='none')
+                  (fc2): Linear(in_features=256, out_features=128, bias=True)
+                  (drop): Dropout(p=0.0, inplace=False)
+                )
+                (conv_du): Sequential(
+                  (0): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+                  (1): ReLU(inplace=True)
+                  (2): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1))
+                  (3): Sigmoid()
+                )
+              )
+            )
+            (ocab): OCAB(
+              (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=128, out_features=384, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=128, out_features=128, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (mlp): Mlp(
+                (fc1): Linear(in_features=128, out_features=256, bias=True)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=256, out_features=128, bias=True)
+                (drop): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+          (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(128, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+2,402,304 total parameters.
+2,402,304 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 32.236 dB | SSIM: 0.8939
+[Set14 x4]	Average PSNR: 28.662 dB | SSIM: 0.7832
+[B100 x4]	Average PSNR: 27.619 dB | SSIM: 0.7385
+[Urban100 x4]	Average PSNR: 26.166 dB | SSIM: 0.7887
+[Manga109 x4]	Average PSNR: 30.587 dB | SSIM: 0.9104
+Forward: 327.48s
+
+Saving...
+Total: 328.50s
+
+HUTCN(
+  (fea_conv): Conv2d(3, 128, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (conv3): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (hat): HAT(
+        (hat_group): HAT_Group(
+          (blocks): ModuleList(
+            (0-3): 4 x HAB(
+              (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=128, out_features=384, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=128, out_features=128, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (mlp): Mlp(
+                (fc1): Linear(in_features=128, out_features=256, bias=True)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=256, out_features=128, bias=True)
+                (drop): Dropout(p=0.0, inplace=False)
+              )
+              (conv_du): Sequential(
+                (0): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+                (1): ReLU(inplace=True)
+                (2): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1))
+                (3): Sigmoid()
+              )
+            )
+          )
+          (ocab): OCAB(
+            (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+            (attn): WindowAttention(
+              (qkv): Linear(in_features=128, out_features=384, bias=True)
+              (attn_drop): Dropout(p=0.0, inplace=False)
+              (proj): Linear(in_features=128, out_features=128, bias=True)
+              (proj_drop): Dropout(p=0.0, inplace=False)
+              (softmax): Softmax(dim=-1)
+            )
+            (drop_path): Identity()
+            (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+            (mlp): Mlp(
+              (fc1): Linear(in_features=128, out_features=256, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=256, out_features=128, bias=True)
+              (drop): Dropout(p=0.0, inplace=False)
+            )
+          )
+        )
+        (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+    (tcn2): TCN(
+      (conv3): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (hat): HAT(
+        (hat_group): HAT_Group(
+          (blocks): ModuleList(
+            (0-3): 4 x HAB(
+              (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=128, out_features=384, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=128, out_features=128, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (mlp): Mlp(
+                (fc1): Linear(in_features=128, out_features=256, bias=True)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=256, out_features=128, bias=True)
+                (drop): Dropout(p=0.0, inplace=False)
+              )
+              (conv_du): Sequential(
+                (0): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+                (1): ReLU(inplace=True)
+                (2): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1))
+                (3): Sigmoid()
+              )
+            )
+          )
+          (ocab): OCAB(
+            (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+            (attn): WindowAttention(
+              (qkv): Linear(in_features=128, out_features=384, bias=True)
+              (attn_drop): Dropout(p=0.0, inplace=False)
+              (proj): Linear(in_features=128, out_features=128, bias=True)
+              (proj_drop): Dropout(p=0.0, inplace=False)
+              (softmax): Softmax(dim=-1)
+            )
+            (drop_path): Identity()
+            (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+            (mlp): Mlp(
+              (fc1): Linear(in_features=128, out_features=256, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=256, out_features=128, bias=True)
+              (drop): Dropout(p=0.0, inplace=False)
+            )
+          )
+        )
+        (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(128, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 128, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (conv3): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (hat): HAT(
+          (hat_group): HAT_Group(
+            (blocks): ModuleList(
+              (0-3): 4 x HAB(
+                (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=128, out_features=384, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=128, out_features=128, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (mlp): Mlp(
+                  (fc1): Linear(in_features=128, out_features=256, bias=True)
+                  (act): GELU(approximate='none')
+                  (fc2): Linear(in_features=256, out_features=128, bias=True)
+                  (drop): Dropout(p=0.0, inplace=False)
+                )
+                (conv_du): Sequential(
+                  (0): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+                  (1): ReLU(inplace=True)
+                  (2): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1))
+                  (3): Sigmoid()
+                )
+              )
+            )
+            (ocab): OCAB(
+              (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=128, out_features=384, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=128, out_features=128, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (mlp): Mlp(
+                (fc1): Linear(in_features=128, out_features=256, bias=True)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=256, out_features=128, bias=True)
+                (drop): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+          (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+      (tcn2): TCN(
+        (conv3): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (hat): HAT(
+          (hat_group): HAT_Group(
+            (blocks): ModuleList(
+              (0-3): 4 x HAB(
+                (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=128, out_features=384, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=128, out_features=128, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (mlp): Mlp(
+                  (fc1): Linear(in_features=128, out_features=256, bias=True)
+                  (act): GELU(approximate='none')
+                  (fc2): Linear(in_features=256, out_features=128, bias=True)
+                  (drop): Dropout(p=0.0, inplace=False)
+                )
+                (conv_du): Sequential(
+                  (0): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+                  (1): ReLU(inplace=True)
+                  (2): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1))
+                  (3): Sigmoid()
+                )
+              )
+            )
+            (ocab): OCAB(
+              (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=128, out_features=384, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=128, out_features=128, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (mlp): Mlp(
+                (fc1): Linear(in_features=128, out_features=256, bias=True)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=256, out_features=128, bias=True)
+                (drop): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+          (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(128, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+2,697,472 total parameters.
+2,697,472 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 32.278 dB | SSIM: 0.8943
+[Set14 x4]	Average PSNR: 28.659 dB | SSIM: 0.7831
+[B100 x4]	Average PSNR: 27.609 dB | SSIM: 0.7382
+[Urban100 x4]	Average PSNR: 26.082 dB | SSIM: 0.7864
+[Manga109 x4]	Average PSNR: 30.589 dB | SSIM: 0.9100
+Forward: 328.16s
+
+Saving...
+Total: 329.17s
+
+HUTCN(
+  (fea_conv): Conv2d(3, 128, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (conv3): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (hat): HAT(
+        (hat_group): HAT_Group(
+          (blocks): ModuleList(
+            (0-3): 4 x HAB(
+              (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=128, out_features=384, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=128, out_features=128, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (mlp): Mlp(
+                (fc1): Linear(in_features=128, out_features=256, bias=True)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=256, out_features=128, bias=True)
+                (drop): Dropout(p=0.0, inplace=False)
+              )
+              (conv_du): Sequential(
+                (0): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+                (1): ReLU(inplace=True)
+                (2): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1))
+                (3): Sigmoid()
+              )
+            )
+          )
+          (ocab): OCAB(
+            (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+            (attn): WindowAttention(
+              (qkv): Linear(in_features=128, out_features=384, bias=True)
+              (attn_drop): Dropout(p=0.0, inplace=False)
+              (proj): Linear(in_features=128, out_features=128, bias=True)
+              (proj_drop): Dropout(p=0.0, inplace=False)
+              (softmax): Softmax(dim=-1)
+            )
+            (drop_path): Identity()
+            (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+            (mlp): Mlp(
+              (fc1): Linear(in_features=128, out_features=256, bias=True)
+              (act): GELU(approximate='none')
+              (fc2): Linear(in_features=256, out_features=128, bias=True)
+              (drop): Dropout(p=0.0, inplace=False)
+            )
+          )
+        )
+        (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(128, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 128, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (conv3): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (hat): HAT(
+          (hat_group): HAT_Group(
+            (blocks): ModuleList(
+              (0-3): 4 x HAB(
+                (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=128, out_features=384, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=128, out_features=128, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+                (mlp): Mlp(
+                  (fc1): Linear(in_features=128, out_features=256, bias=True)
+                  (act): GELU(approximate='none')
+                  (fc2): Linear(in_features=256, out_features=128, bias=True)
+                  (drop): Dropout(p=0.0, inplace=False)
+                )
+                (conv_du): Sequential(
+                  (0): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+                  (1): ReLU(inplace=True)
+                  (2): Conv2d(32, 128, kernel_size=(1, 1), stride=(1, 1))
+                  (3): Sigmoid()
+                )
+              )
+            )
+            (ocab): OCAB(
+              (norm1): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (attn): WindowAttention(
+                (qkv): Linear(in_features=128, out_features=384, bias=True)
+                (attn_drop): Dropout(p=0.0, inplace=False)
+                (proj): Linear(in_features=128, out_features=128, bias=True)
+                (proj_drop): Dropout(p=0.0, inplace=False)
+                (softmax): Softmax(dim=-1)
+              )
+              (drop_path): Identity()
+              (norm2): LayerNorm((128,), eps=1e-05, elementwise_affine=True)
+              (mlp): Mlp(
+                (fc1): Linear(in_features=128, out_features=256, bias=True)
+                (act): GELU(approximate='none')
+                (fc2): Linear(in_features=256, out_features=128, bias=True)
+                (drop): Dropout(p=0.0, inplace=False)
+              )
+            )
+          )
+          (conv): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(128, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(32, 32, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(32, 32, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(32, 32, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(32, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(128, 128, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv1): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(128, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+1,695,916 total parameters.
+1,695,916 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 32.211 dB | SSIM: 0.8937
+[Set14 x4]	Average PSNR: 28.639 dB | SSIM: 0.7824
+[B100 x4]	Average PSNR: 27.583 dB | SSIM: 0.7372
+[Urban100 x4]	Average PSNR: 25.978 dB | SSIM: 0.7833
+[Manga109 x4]	Average PSNR: 30.478 dB | SSIM: 0.9089
+Forward: 320.86s
+
+Saving...
+Total: 321.87s
+
+HUTCN(
+  (fea_conv): Conv2d(3, 96, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (swint): SwinT(
+        (rstb): RSTB(
+          (residual_group): BasicLayer(
+            dim=96, input_resolution=(16, 16), depth=4
+            (blocks): ModuleList(
+              (0-3): 4 x SwinTransformerBlock(
+                (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=96, out_features=288, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=96, out_features=96, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (mlp): Mlp(
+                  (fc1): Linear(in_features=96, out_features=216, bias=True)
+                  (act): GELU(approximate='none')
+                  (fc2): Linear(in_features=216, out_features=96, bias=True)
+                  (drop): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+    (tcn2): TCN(
+      (swint): SwinT(
+        (rstb): RSTB(
+          (residual_group): BasicLayer(
+            dim=96, input_resolution=(16, 16), depth=4
+            (blocks): ModuleList(
+              (0-3): 4 x SwinTransformerBlock(
+                (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=96, out_features=288, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=96, out_features=96, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (mlp): Mlp(
+                  (fc1): Linear(in_features=96, out_features=216, bias=True)
+                  (act): GELU(approximate='none')
+                  (fc2): Linear(in_features=216, out_features=96, bias=True)
+                  (drop): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(96, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 96, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (swint): SwinT(
+          (rstb): RSTB(
+            (residual_group): BasicLayer(
+              dim=96, input_resolution=(16, 16), depth=4
+              (blocks): ModuleList(
+                (0-3): 4 x SwinTransformerBlock(
+                  (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                  (attn): WindowAttention(
+                    (qkv): Linear(in_features=96, out_features=288, bias=True)
+                    (attn_drop): Dropout(p=0.0, inplace=False)
+                    (proj): Linear(in_features=96, out_features=96, bias=True)
+                    (proj_drop): Dropout(p=0.0, inplace=False)
+                    (softmax): Softmax(dim=-1)
+                  )
+                  (drop_path): Identity()
+                  (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                  (mlp): Mlp(
+                    (fc1): Linear(in_features=96, out_features=216, bias=True)
+                    (act): GELU(approximate='none')
+                    (fc2): Linear(in_features=216, out_features=96, bias=True)
+                    (drop): Dropout(p=0.0, inplace=False)
+                  )
+                )
+              )
+            )
+            (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          )
+          (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+      (tcn2): TCN(
+        (swint): SwinT(
+          (rstb): RSTB(
+            (residual_group): BasicLayer(
+              dim=96, input_resolution=(16, 16), depth=4
+              (blocks): ModuleList(
+                (0-3): 4 x SwinTransformerBlock(
+                  (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                  (attn): WindowAttention(
+                    (qkv): Linear(in_features=96, out_features=288, bias=True)
+                    (attn_drop): Dropout(p=0.0, inplace=False)
+                    (proj): Linear(in_features=96, out_features=96, bias=True)
+                    (proj_drop): Dropout(p=0.0, inplace=False)
+                    (softmax): Softmax(dim=-1)
+                  )
+                  (drop_path): Identity()
+                  (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                  (mlp): Mlp(
+                    (fc1): Linear(in_features=96, out_features=216, bias=True)
+                    (act): GELU(approximate='none')
+                    (fc2): Linear(in_features=216, out_features=96, bias=True)
+                    (drop): Dropout(p=0.0, inplace=False)
+                  )
+                )
+              )
+            )
+            (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          )
+          (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(96, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+1,372,684 total parameters.
+1,372,684 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 31.945 dB | SSIM: 0.8891
+[Set14 x4]	Average PSNR: 28.505 dB | SSIM: 0.7789
+[B100 x4]	Average PSNR: 27.511 dB | SSIM: 0.7343
+[Urban100 x4]	Average PSNR: 25.745 dB | SSIM: 0.7740
+[Manga109 x4]	Average PSNR: 30.129 dB | SSIM: 0.9021
+Forward: 328.76s
+
+Saving...
+Total: 329.63s
+
+HUTCN(
+  (fea_conv): Conv2d(3, 96, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (conv3): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (swint): SwinT(
+        (rstb): RSTB(
+          (residual_group): BasicLayer(
+            dim=96, input_resolution=(16, 16), depth=4
+            (blocks): ModuleList(
+              (0-3): 4 x SwinTransformerBlock(
+                (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=96, out_features=288, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=96, out_features=96, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (mlp): Mlp(
+                  (fc1): Linear(in_features=96, out_features=216, bias=True)
+                  (act): GELU(approximate='none')
+                  (fc2): Linear(in_features=216, out_features=96, bias=True)
+                  (drop): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+    (tcn2): TCN(
+      (conv3): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (swint): SwinT(
+        (rstb): RSTB(
+          (residual_group): BasicLayer(
+            dim=96, input_resolution=(16, 16), depth=4
+            (blocks): ModuleList(
+              (0-3): 4 x SwinTransformerBlock(
+                (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=96, out_features=288, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=96, out_features=96, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (mlp): Mlp(
+                  (fc1): Linear(in_features=96, out_features=216, bias=True)
+                  (act): GELU(approximate='none')
+                  (fc2): Linear(in_features=216, out_features=96, bias=True)
+                  (drop): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(96, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 96, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (conv3): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (swint): SwinT(
+          (rstb): RSTB(
+            (residual_group): BasicLayer(
+              dim=96, input_resolution=(16, 16), depth=4
+              (blocks): ModuleList(
+                (0-3): 4 x SwinTransformerBlock(
+                  (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                  (attn): WindowAttention(
+                    (qkv): Linear(in_features=96, out_features=288, bias=True)
+                    (attn_drop): Dropout(p=0.0, inplace=False)
+                    (proj): Linear(in_features=96, out_features=96, bias=True)
+                    (proj_drop): Dropout(p=0.0, inplace=False)
+                    (softmax): Softmax(dim=-1)
+                  )
+                  (drop_path): Identity()
+                  (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                  (mlp): Mlp(
+                    (fc1): Linear(in_features=96, out_features=216, bias=True)
+                    (act): GELU(approximate='none')
+                    (fc2): Linear(in_features=216, out_features=96, bias=True)
+                    (drop): Dropout(p=0.0, inplace=False)
+                  )
+                )
+              )
+            )
+            (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          )
+          (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+      (tcn2): TCN(
+        (conv3): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (swint): SwinT(
+          (rstb): RSTB(
+            (residual_group): BasicLayer(
+              dim=96, input_resolution=(16, 16), depth=4
+              (blocks): ModuleList(
+                (0-3): 4 x SwinTransformerBlock(
+                  (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                  (attn): WindowAttention(
+                    (qkv): Linear(in_features=96, out_features=288, bias=True)
+                    (attn_drop): Dropout(p=0.0, inplace=False)
+                    (proj): Linear(in_features=96, out_features=96, bias=True)
+                    (proj_drop): Dropout(p=0.0, inplace=False)
+                    (softmax): Softmax(dim=-1)
+                  )
+                  (drop_path): Identity()
+                  (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                  (mlp): Mlp(
+                    (fc1): Linear(in_features=96, out_features=216, bias=True)
+                    (act): GELU(approximate='none')
+                    (fc2): Linear(in_features=216, out_features=96, bias=True)
+                    (drop): Dropout(p=0.0, inplace=False)
+                  )
+                )
+              )
+            )
+            (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          )
+          (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(96, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+1,538,764 total parameters.
+1,538,764 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 32.009 dB | SSIM: 0.8900
+[Set14 x4]	Average PSNR: 28.515 dB | SSIM: 0.7794
+[B100 x4]	Average PSNR: 27.513 dB | SSIM: 0.7344
+[Urban100 x4]	Average PSNR: 25.766 dB | SSIM: 0.7742
+[Manga109 x4]	Average PSNR: 30.143 dB | SSIM: 0.9023
+Forward: 325.11s
+
+Saving...
+Total: 326.13s
+
+HUTCN(
+  (fea_conv): Conv2d(3, 96, kernel_size=(1, 1), stride=(1, 1))
+  (post_unet_esa): ESA(
+    (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+    (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+    (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+    (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (sigmoid): Sigmoid()
+    (relu): ReLU(inplace=True)
+  )
+  (post_unet_conv): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (B1): P_HTCB(
+    (tesa_in): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+    (tcn1): TCN(
+      (conv3): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (swint): SwinT(
+        (rstb): RSTB(
+          (residual_group): BasicLayer(
+            dim=96, input_resolution=(16, 16), depth=4
+            (blocks): ModuleList(
+              (0-3): 4 x SwinTransformerBlock(
+                (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (attn): WindowAttention(
+                  (qkv): Linear(in_features=96, out_features=288, bias=True)
+                  (attn_drop): Dropout(p=0.0, inplace=False)
+                  (proj): Linear(in_features=96, out_features=96, bias=True)
+                  (proj_drop): Dropout(p=0.0, inplace=False)
+                  (softmax): Softmax(dim=-1)
+                )
+                (drop_path): Identity()
+                (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                (mlp): Mlp(
+                  (fc1): Linear(in_features=96, out_features=216, bias=True)
+                  (act): GELU(approximate='none')
+                  (fc2): Linear(in_features=216, out_features=96, bias=True)
+                  (drop): Dropout(p=0.0, inplace=False)
+                )
+              )
+            )
+          )
+          (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+        (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      )
+    )
+    (c): Sequential(
+      (0): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+      (1): LeakyReLU(negative_slope=0.05, inplace=True)
+    )
+    (tesa_out): TESA(
+      (esa1): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa2): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+      (esa3): ESA(
+        (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+        (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+        (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (sigmoid): Sigmoid()
+        (relu): ReLU(inplace=True)
+      )
+    )
+  )
+  (LR_conv1): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (LR_conv2): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+  (pixel_shuffle): PixelShuffle(upscale_factor=4)
+  (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  (recon_conv2): Conv2d(96, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+)
+Model(
+  (model): HUTCN(
+    (fea_conv): Conv2d(3, 96, kernel_size=(1, 1), stride=(1, 1))
+    (post_unet_esa): ESA(
+      (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+      (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+      (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+      (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+      (sigmoid): Sigmoid()
+      (relu): ReLU(inplace=True)
+    )
+    (post_unet_conv): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (B1): P_HTCB(
+      (tesa_in): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+      (tcn1): TCN(
+        (conv3): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        (swint): SwinT(
+          (rstb): RSTB(
+            (residual_group): BasicLayer(
+              dim=96, input_resolution=(16, 16), depth=4
+              (blocks): ModuleList(
+                (0-3): 4 x SwinTransformerBlock(
+                  (norm1): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                  (attn): WindowAttention(
+                    (qkv): Linear(in_features=96, out_features=288, bias=True)
+                    (attn_drop): Dropout(p=0.0, inplace=False)
+                    (proj): Linear(in_features=96, out_features=96, bias=True)
+                    (proj_drop): Dropout(p=0.0, inplace=False)
+                    (softmax): Softmax(dim=-1)
+                  )
+                  (drop_path): Identity()
+                  (norm2): LayerNorm((96,), eps=1e-05, elementwise_affine=True)
+                  (mlp): Mlp(
+                    (fc1): Linear(in_features=96, out_features=216, bias=True)
+                    (act): GELU(approximate='none')
+                    (fc2): Linear(in_features=216, out_features=96, bias=True)
+                    (drop): Dropout(p=0.0, inplace=False)
+                  )
+                )
+              )
+            )
+            (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          )
+          (conv): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+        )
+      )
+      (c): Sequential(
+        (0): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+        (1): LeakyReLU(negative_slope=0.05, inplace=True)
+      )
+      (tesa_out): TESA(
+        (esa1): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa2): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+        (esa3): ESA(
+          (conv1): Conv2d(96, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv2): Conv2d(24, 24, kernel_size=(3, 3), stride=(2, 2))
+          (conv3): Conv2d(24, 24, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (conv_f): Conv2d(24, 24, kernel_size=(1, 1), stride=(1, 1))
+          (conv4): Conv2d(24, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+          (sigmoid): Sigmoid()
+          (relu): ReLU(inplace=True)
+        )
+      )
+    )
+    (LR_conv1): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (LR_conv2): Conv2d(96, 96, kernel_size=(1, 1), stride=(1, 1))
+    (pixel_shuffle): PixelShuffle(upscale_factor=4)
+    (ps_conv1): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (ps_conv2): Conv2d(3, 3, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv1): Conv2d(96, 96, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+    (recon_conv2): Conv2d(96, 48, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1))
+  )
+)
+970,178 total parameters.
+970,178 training parameters.
+
+Evaluation:
+[Set5 x4]	Average PSNR: 31.965 dB | SSIM: 0.8896
+[Set14 x4]	Average PSNR: 28.506 dB | SSIM: 0.7787
+[B100 x4]	Average PSNR: 27.503 dB | SSIM: 0.7342
+[Urban100 x4]	Average PSNR: 25.704 dB | SSIM: 0.7726
+[Manga109 x4]	Average PSNR: 30.064 dB | SSIM: 0.9012
+Forward: 328.11s
+
+Saving...
+Total: 329.12s
+
