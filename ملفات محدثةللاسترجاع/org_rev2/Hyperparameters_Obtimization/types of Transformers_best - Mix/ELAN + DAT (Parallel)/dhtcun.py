@@ -1,5 +1,5 @@
 # ===================================================================
-# dhtcun.py — النسخة المصححة (مع معاملات منفصلة)
+# dhtcun.py
 # ===================================================================
 import torch
 import torch.nn as nn
@@ -11,9 +11,7 @@ def make_model(args, parent=False):
 
 class HUTCN(nn.Module):
     def __init__(self, in_nc=3, nf=50, num_modules=4, out_nc=3, upscale=3,
-                 # معاملات DAT
                  num_heads_dat=3, ws_dat=8, num_blocks_dat=1,
-                 # معاملات ELAN
                  num_heads_elan=2, ws_elan=12, num_blocks_elan=3):
         super(HUTCN, self).__init__()
 
@@ -21,7 +19,6 @@ class HUTCN(nn.Module):
         self.post_unet_esa = B.ESA(nf, nn.Conv2d)
         self.post_unet_conv = B.conv_layer(nf, nf, kernel_size=1)
 
-        # تمرير المعاملات المنفصلة إلى P_HTCB
         self.B1 = B.P_HTCB(
             in_channels=nf,
             num_heads_dat=num_heads_dat,

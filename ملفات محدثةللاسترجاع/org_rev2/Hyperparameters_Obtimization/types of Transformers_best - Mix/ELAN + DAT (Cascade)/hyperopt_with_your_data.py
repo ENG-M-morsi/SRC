@@ -1,6 +1,5 @@
 # ===================================================================
-# hyperopt_with_your_data.py — بحث شامل مع DAT (Shifted-Window Dual Aggregation)
-# متوافق مع ملفات dhtcu_block.py, dhtcun.py, custom_attention_blocks.py
+# hyperopt_with_your_data.py — بحث شامل مع معاملات منفصلة لـ DAT و ELAN
 # ===================================================================
 import optuna
 import torch
@@ -18,8 +17,7 @@ import data
 import model as model_module
 import loss as loss_module
 from option import args as base_args
-from model.dhtcun import HUTCN
-from model import dhtcu_block as B
+from model.dhtcun import HUTCN   # فقط هذا الاستيراد
 
 # ===================================================================
 # دوال الخسارة الإضافية
@@ -45,11 +43,10 @@ class HuberLoss(nn.Module):
 # ===================================================================
 def get_loaders_from_args(trial_params, base_args):
     args = copy.deepcopy(base_args)
-    # إعدادات البيانات الصحيحة (كقوائم لتجنب خطأ data.d)
     args.data_train = ['DIV2K']
     args.data_test = ['DIV2K']
     args.data_range = '1-800/896-900'
-    args.scale = [4]  # قائمة أعداد صحيحة
+    args.scale = [4]
     args.dir_data = r'D:\Mohamed Morsi\DATA'
     args.patch_size = trial_params['patch_size']
     args.batch_size = trial_params['batch_size']
@@ -60,19 +57,28 @@ def get_loaders_from_args(trial_params, base_args):
 # دالة الهدف الرئيسية
 # ===================================================================
 def objective(trial):
-    # ---------- معاملات النموذج ----------
-    nf = trial.suggest_int('n_feats', 64, 128, step=8)
-    num_heads = trial.suggest_categorical('num_heads', [2, 4, 8, 16])
-    if nf % num_heads != 0:
+    # ---------- معاملات بنية النموذج ----------
+    nf = trial.suggest_int('n_feats', 32, 128, step=8)
+
+    # --- معاملات DAT ---
+    num_heads_dat = trial.suggest_categorical('num_heads_dat', [2, 4, 8])
+    if nf % num_heads_dat != 0:
         raise optuna.TrialPruned()
+    ws_dat = trial.suggest_categorical('ws_dat', [4, 6, 8, 12, 16])
+    num_blocks_dat = trial.suggest_int('num_blocks_dat', 1, 4, step=1)
 
-    num_blocks = trial.suggest_int('num_blocks', 2, 4, step=1)
-    window_size = trial.suggest_categorical('window_size', [4, 8, 12])
+    # --- معاملات ELAN ---
+    num_heads_elan = trial.suggest_categorical('num_heads_elan', [2, 4, 8])
+    if nf % num_heads_elan != 0:
+        raise optuna.TrialPruned()
+    ws_elan = trial.suggest_categorical('ws_elan', [4, 6, 8, 12, 16])
+    num_blocks_elan = trial.suggest_int('num_blocks_elan', 1, 4, step=1)
 
+    # --- معاملات عامة ---
     patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224])
-    # شرط اختياري
-    if window_size > patch_size:
+    if ws_dat > patch_size or ws_elan > patch_size:
         raise optuna.TrialPruned()
+    batch_size = trial.suggest_categorical('batch_size', [4, 8])
 
     # ---------- معاملات التدريب ----------
     optimizer_name = trial.suggest_categorical('optimizer', ['ADAM', 'AdamW'])
@@ -82,34 +88,36 @@ def objective(trial):
     weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
 
     # ---------- بناء النموذج ----------
-    # HUTCN الآن يقبل num_heads, ws, num_blocks
     model = HUTCN(
         in_nc=3,
         nf=nf,
-        num_modules=1,   # نستخدم كتلة واحدة فقط للسرعة
+        num_modules=1,
         out_nc=3,
         upscale=4,
-        num_heads=num_heads,
-        ws=window_size,
-        num_blocks=num_blocks
+        num_heads_dat=num_heads_dat,
+        ws_dat=ws_dat,
+        num_blocks_dat=num_blocks_dat,
+        num_heads_elan=num_heads_elan,
+        ws_elan=ws_elan,
+        num_blocks_elan=num_blocks_elan
     )
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
-    # ---------- المحسّن ----------
+    # ---------- المُحسّن ----------
     if optimizer_name == 'ADAM':
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
     else:
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
     # ---------- جدول التوهين ----------
-    EPOCHS = 10  # يمكن تعديلها حسب الحاجة
+    EPOCHS = 10
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':
         scheduler = lrs.CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=1e-7)
-    else:  # step
+    else:
         scheduler = lrs.StepLR(optimizer, step_size=3, gamma=0.5)
 
     # ---------- دالة الخسارة ----------
@@ -119,13 +127,13 @@ def objective(trial):
         criterion = nn.MSELoss()
     elif loss_name == 'Charbonnier':
         criterion = CharbonnierLoss(eps=1e-3)
-    else:  # Huber
+    else:
         criterion = HuberLoss(delta=0.01)
 
     # ---------- تحميل البيانات ----------
     trial_params = {
         'patch_size': patch_size,
-        'batch_size': 8  # يمكن جعله متغيراً أيضاً
+        'batch_size': batch_size
     }
     train_loader, test_loaders = get_loaders_from_args(trial_params, base_args)
     val_loader = test_loaders[0] if test_loaders else None
@@ -176,17 +184,14 @@ def objective(trial):
 # تشغيل البحث
 # ===================================================================
 if __name__ == "__main__":
-    N_TRIALS = 10  # عدد المحاولات
-
+    N_TRIALS = 30
     study = optuna.create_study(
         direction='maximize',
         sampler=optuna.samplers.TPESampler(seed=42),
         pruner=optuna.pruners.MedianPruner(n_warmup_steps=3)
     )
-
-    print(f"🚀 بدء البحث الشامل ({N_TRIALS} محاولة، كل محاولة {10} Epochs)...")
+    print(f"🚀 بدء البحث الشامل مع معاملات منفصلة ({N_TRIALS} محاولة، كل محاولة 10 Epochs)...")
     study.optimize(objective, n_trials=N_TRIALS, show_progress_bar=True)
-
     print("\n" + "="*70)
     print("🏆 أفضل المعاملات:")
     print("="*70)
@@ -194,8 +199,7 @@ if __name__ == "__main__":
         print(f"  {key:>20} : {value}")
     print(f"\n📈 أفضل PSNR على مجموعة التحقق: {study.best_value:.3f} dB")
     print("="*70)
-
     import json
-    with open('best_params_optimized.json', 'w') as f:
+    with open('best_params_optimized_separate.json', 'w') as f:
         json.dump(study.best_params, f, indent=4)
-    print("✅ تم حفظ أفضل المعاملات في best_params_optimized.json")
+    print("✅ تم حفظ أفضل المعاملات في best_params_optimized_separate.json")

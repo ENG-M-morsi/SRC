@@ -12,7 +12,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from collections import OrderedDict
-from .custom_attention_blocks import DAT
+from .custom_attention_blocks_DAT import DAT
 
 
 # -------------------------------------------------------------------
