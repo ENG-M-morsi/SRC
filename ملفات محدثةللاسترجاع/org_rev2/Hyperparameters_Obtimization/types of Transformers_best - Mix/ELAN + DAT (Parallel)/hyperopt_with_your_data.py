@@ -119,7 +119,7 @@ def objective(trial):
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
     # ---------- (هـ) جدول توهين ----------
-    EPOCHS = 20  # عدد قليل للتجربة السريعة (يمكن رفعه لاحقاً)
+    EPOCHS = 12  # عدد قليل للتجربة السريعة (يمكن رفعه لاحقاً)
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':
@@ -199,7 +199,7 @@ if __name__ == "__main__":
         pruner=optuna.pruners.MedianPruner(n_warmup_steps=3)
     )
 
-    print(f"🚀 بدء البحث الشامل مع معاملات منفصلة ({N_TRIALS} محاولة، كل محاولة 10 Epochs)...")
+    print(f"🚀 بدء البحث الشامل مع معاملات منفصلة ({N_TRIALS} محاولة، كل محاولة 12 Epochs)...")
     study.optimize(objective, n_trials=N_TRIALS, show_progress_bar=True)
 
     print("\n" + "="*70)

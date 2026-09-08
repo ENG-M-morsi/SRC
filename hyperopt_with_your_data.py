@@ -1,5 +1,5 @@
 # ===================================================================
-# hyperopt_with_your_data.py — بحث شامل مع معاملات منفصلة لـ DAT و ELAN
+# hyperopt_with_your_data.py — بحث شامل مع معاملات منفصلة
 # ===================================================================
 import optuna
 import torch
@@ -9,6 +9,8 @@ import torch.optim.lr_scheduler as lrs
 import os
 import sys
 import copy
+import numpy as np
+import random
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -17,10 +19,11 @@ import data
 import model as model_module
 import loss as loss_module
 from option import args as base_args
-from model.dhtcun import HUTCN   # فقط هذا الاستيراد
+from model.dhtcun import HUTCN
+from model import dhtcu_block as B
 
 # ===================================================================
-# دوال الخسارة الإضافية
+# دوال الخسارة الإضافية (Charbonnier & Huber)
 # ===================================================================
 class CharbonnierLoss(nn.Module):
     def __init__(self, eps=1e-3):
@@ -39,7 +42,7 @@ class HuberLoss(nn.Module):
         return torch.mean(mask * (x - y)**2 + (1 - mask) * (2 * self.delta * diff - self.delta**2))
 
 # ===================================================================
-# دالة إنشاء DataLoaders (مصححة)
+# دالة تحميل البيانات (مع نسخ args لتجنب التعديل)
 # ===================================================================
 def get_loaders_from_args(trial_params, base_args):
     args = copy.deepcopy(base_args)
@@ -57,46 +60,50 @@ def get_loaders_from_args(trial_params, base_args):
 # دالة الهدف الرئيسية
 # ===================================================================
 def objective(trial):
-    # ---------- معاملات بنية النموذج ----------
+    # ---------- (أ) معاملات بنية النموذج ----------
     nf = trial.suggest_int('n_feats', 32, 128, step=8)
 
-    # --- معاملات DAT ---
+    # --- معاملات DAT (Transformer الأول) ---
     num_heads_dat = trial.suggest_categorical('num_heads_dat', [2, 4, 8])
     if nf % num_heads_dat != 0:
         raise optuna.TrialPruned()
     ws_dat = trial.suggest_categorical('ws_dat', [4, 6, 8, 12, 16])
     num_blocks_dat = trial.suggest_int('num_blocks_dat', 1, 4, step=1)
 
-    # --- معاملات ELAN ---
+    # --- معاملات ELAN (Transformer الثاني) ---
     num_heads_elan = trial.suggest_categorical('num_heads_elan', [2, 4, 8])
     if nf % num_heads_elan != 0:
         raise optuna.TrialPruned()
     ws_elan = trial.suggest_categorical('ws_elan', [4, 6, 8, 12, 16])
     num_blocks_elan = trial.suggest_int('num_blocks_elan', 1, 4, step=1)
 
-    # --- معاملات عامة ---
+    # --- معاملات مشتركة ---
+    batch_size = trial.suggest_categorical('batch_size', [4, 8])
     patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224])
+
+    # شرط أساسي: حجم النافذة لا يتجاوز حجم الـ patch (نطبقه على كلا النوعين)
     if ws_dat > patch_size or ws_elan > patch_size:
         raise optuna.TrialPruned()
-    batch_size = trial.suggest_categorical('batch_size', [4, 8])
 
-    # ---------- معاملات التدريب ----------
+    # ---------- (ب) معاملات التدريب ----------
     optimizer_name = trial.suggest_categorical('optimizer', ['ADAM', 'AdamW'])
     scheduler_name = trial.suggest_categorical('scheduler', ['fixed', 'cosine', 'step'])
     loss_name = trial.suggest_categorical('loss', ['L1', 'L2', 'Charbonnier', 'Huber'])
     lr = trial.suggest_float('lr', 1e-5, 5e-4, log=True)
     weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
 
-    # ---------- بناء النموذج ----------
+    # ---------- (ج) بناء النموذج ----------
     model = HUTCN(
         in_nc=3,
         nf=nf,
-        num_modules=1,
+        num_modules=1,          # نستخدم كتلة واحدة للسرعة
         out_nc=3,
         upscale=4,
+        # معاملات DAT
         num_heads_dat=num_heads_dat,
         ws_dat=ws_dat,
         num_blocks_dat=num_blocks_dat,
+        # معاملات ELAN
         num_heads_elan=num_heads_elan,
         ws_elan=ws_elan,
         num_blocks_elan=num_blocks_elan
@@ -105,32 +112,32 @@ def objective(trial):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
-    # ---------- المُحسّن ----------
+    # ---------- (د) المُحسّن ----------
     if optimizer_name == 'ADAM':
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
     else:
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
-    # ---------- جدول التوهين ----------
-    EPOCHS = 10
+    # ---------- (هـ) جدول توهين ----------
+    EPOCHS = 12  # عدد قليل للتجربة السريعة (يمكن رفعه لاحقاً)
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':
         scheduler = lrs.CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=1e-7)
-    else:
+    else:  # step
         scheduler = lrs.StepLR(optimizer, step_size=3, gamma=0.5)
 
-    # ---------- دالة الخسارة ----------
+    # ---------- (و) دالة الخسارة ----------
     if loss_name == 'L1':
         criterion = nn.L1Loss()
     elif loss_name == 'L2':
         criterion = nn.MSELoss()
     elif loss_name == 'Charbonnier':
         criterion = CharbonnierLoss(eps=1e-3)
-    else:
+    else:  # Huber
         criterion = HuberLoss(delta=0.01)
 
-    # ---------- تحميل البيانات ----------
+    # ---------- (ز) تحميل البيانات ----------
     trial_params = {
         'patch_size': patch_size,
         'batch_size': batch_size
@@ -140,7 +147,7 @@ def objective(trial):
     if val_loader is None:
         raise optuna.TrialPruned()
 
-    # ---------- حلقة التدريب ----------
+    # ---------- (ح) حلقة التدريب ----------
     best_psnr = 0.0
     for epoch in range(1, EPOCHS + 1):
         model.train()
@@ -184,14 +191,17 @@ def objective(trial):
 # تشغيل البحث
 # ===================================================================
 if __name__ == "__main__":
-    N_TRIALS = 30
+    N_TRIALS = 30  # عدد المحاولات
+
     study = optuna.create_study(
         direction='maximize',
         sampler=optuna.samplers.TPESampler(seed=42),
         pruner=optuna.pruners.MedianPruner(n_warmup_steps=3)
     )
-    print(f"🚀 بدء البحث الشامل مع معاملات منفصلة ({N_TRIALS} محاولة، كل محاولة 10 Epochs)...")
+
+    print(f"🚀 بدء البحث الشامل مع معاملات منفصلة ({N_TRIALS} محاولة، كل محاولة 12 Epochs)...")
     study.optimize(objective, n_trials=N_TRIALS, show_progress_bar=True)
+
     print("\n" + "="*70)
     print("🏆 أفضل المعاملات:")
     print("="*70)
@@ -199,6 +209,7 @@ if __name__ == "__main__":
         print(f"  {key:>20} : {value}")
     print(f"\n📈 أفضل PSNR على مجموعة التحقق: {study.best_value:.3f} dB")
     print("="*70)
+
     import json
     with open('best_params_optimized_separate.json', 'w') as f:
         json.dump(study.best_params, f, indent=4)
