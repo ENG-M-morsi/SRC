@@ -1,5 +1,5 @@
 # ===================================================================
-# hyperopt_with_your_data.py — بحث شامل مع معاملات منفصلة لـ DAT و ELAN
+# hyperopt_with_your_data.py — بحث شامل مع معاملات منفصلة + استكمال تلقائي
 # ===================================================================
 import optuna
 import torch
@@ -9,6 +9,7 @@ import torch.optim.lr_scheduler as lrs
 import os
 import sys
 import copy
+import json
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -17,7 +18,17 @@ import data
 import model as model_module
 import loss as loss_module
 from option import args as base_args
-from model.dhtcun import HUTCN   # فقط هذا الاستيراد
+from model.dhtcun import HUTCN
+
+# ===================================================================
+# إعدادات البحث (يمكنك تعديلها من هنا)
+# ===================================================================
+N_TRIALS = 20               # ← إجمالي عدد المحاولات المطلوبة
+EPOCHS_PER_TRIAL = 25       # ← عدد الحقب لكل محاولة
+STUDY_NAME = "hutcn_hyperopt_separate_v1"    # ← غيّر الاسم لبدء دراسة جديدة
+STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                             "optuna_study.db")
+STORAGE_URL = f"sqlite:///{STORAGE_PATH}"
 
 # ===================================================================
 # دوال الخسارة الإضافية
@@ -39,7 +50,7 @@ class HuberLoss(nn.Module):
         return torch.mean(mask * (x - y)**2 + (1 - mask) * (2 * self.delta * diff - self.delta**2))
 
 # ===================================================================
-# دالة إنشاء DataLoaders (مصححة)
+# دالة إنشاء DataLoaders
 # ===================================================================
 def get_loaders_from_args(trial_params, base_args):
     args = copy.deepcopy(base_args)
@@ -112,7 +123,7 @@ def objective(trial):
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
     # ---------- جدول التوهين ----------
-    EPOCHS = 10
+    EPOCHS = EPOCHS_PER_TRIAL
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':
@@ -153,7 +164,7 @@ def objective(trial):
             optimizer.step()
 
             if batch_idx % 50 == 0:
-                print(f'Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item():.4f}')
+                print(f'[Trial {trial.number}] Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item():.4f}')
 
         if scheduler is not None:
             scheduler.step()
@@ -170,6 +181,7 @@ def objective(trial):
                 psnr_sum += psnr.item()
 
         avg_psnr = psnr_sum / len(val_loader)
+        print(f'[Trial {trial.number}] Epoch {epoch}: PSNR = {avg_psnr:.3f} dB')
 
         trial.report(avg_psnr, epoch)
         if trial.should_prune():
@@ -181,25 +193,78 @@ def objective(trial):
     return best_psnr
 
 # ===================================================================
-# تشغيل البحث
+# تشغيل البحث (مع خاصية الاستكمال التلقائي)
 # ===================================================================
 if __name__ == "__main__":
-    N_TRIALS = 20
+    # --------------------------------------------------------------
+    # ✅ إنشاء أو تحميل الدراسة (Persistence)
+    # --------------------------------------------------------------
     study = optuna.create_study(
+        study_name=STUDY_NAME,
+        storage=STORAGE_URL,
         direction='maximize',
         sampler=optuna.samplers.TPESampler(seed=42),
-        pruner=optuna.pruners.MedianPruner(n_warmup_steps=3)
+        pruner=optuna.pruners.MedianPruner(n_warmup_steps=3),
+        load_if_exists=True          # ← يحمّل الدراسة إن كانت موجودة
     )
-    print(f"🚀 بدء البحث الشامل مع معاملات منفصلة ({N_TRIALS} محاولة، كل محاولة 10 Epochs)...")
-    study.optimize(objective, n_trials=N_TRIALS, show_progress_bar=True)
-    print("\n" + "="*70)
-    print("🏆 أفضل المعاملات:")
-    print("="*70)
+
+    # عرض ملخص للدراسة الحالية
+    completed_trials = len([t for t in study.trials
+                            if t.state == optuna.trial.TrialState.COMPLETE])
+    total_trials = len(study.trials)
+
+    print("=" * 70)
+    print(f"📚 اسم الدراسة: {STUDY_NAME}")
+    print(f"📂 مسار التخزين: {STORAGE_PATH}")
+    print(f"✅ محاولات مكتملة سابقاً: {completed_trials}")
+    print(f"📊 إجمالي المحاولات المسجلة: {total_trials}")
+    if completed_trials > 0:
+        print(f"🏆 أفضل PSNR سابق: {study.best_value:.3f} dB")
+        print(f"🎯 أفضل trial: {study.best_trial.number}")
+    print("=" * 70)
+
+    # حساب عدد المحاولات المتبقية
+    remaining_trials = N_TRIALS - completed_trials
+    if remaining_trials <= 0:
+        print("✅ تم إكمال جميع المحاولات المطلوبة مسبقاً.")
+    else:
+        print(f"🚀 بدء/استئناف البحث ({remaining_trials} محاولة متبقية)...")
+        try:
+            study.optimize(
+                objective,
+                n_trials=remaining_trials,
+                show_progress_bar=True,
+                catch=(RuntimeError,)   # تجاهل أخطاء CUDA المؤقتة
+            )
+        except KeyboardInterrupt:
+            print("\n\n⚠️ تم إيقاف البحث يدوياً (Ctrl+C).")
+            print("💾 تم حفظ جميع النتائج تلقائياً في قاعدة البيانات.")
+            print("🔄 لتكملة البحث، أعد تشغيل نفس الأمر.")
+
+    # ==============================================================
+    # عرض وحفظ النتائج النهائية
+    # ==============================================================
+    print("\n" + "=" * 70)
+    print("🏆 أفضل المعاملات حتى الآن:")
+    print("=" * 70)
     for key, value in study.best_params.items():
         print(f"  {key:>20} : {value}")
     print(f"\n📈 أفضل PSNR على مجموعة التحقق: {study.best_value:.3f} dB")
-    print("="*70)
-    import json
-    with open('best_params_optimized_separate.json', 'w') as f:
-        json.dump(study.best_params, f, indent=4)
-    print("✅ تم حفظ أفضل المعاملات في best_params_optimized_separate.json")
+    print("=" * 70)
+
+    # حفظ النتائج في JSON
+    output_json = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                               'best_params_optimized_separate.json')
+    with open(output_json, 'w', encoding='utf-8') as f:
+        json.dump(study.best_params, f, indent=4, ensure_ascii=False)
+    print(f"✅ تم حفظ أفضل المعاملات في: {output_json}")
+
+    # (اختياري) حفظ جميع المحاولات في CSV
+    try:
+        df = study.trials_dataframe()
+        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                'optuna_all_trials.csv')
+        df.to_csv(csv_path, index=False, encoding='utf-8-sig')
+        print(f"📊 تم حفظ جميع المحاولات في: {csv_path}")
+    except Exception as e:
+        print(f"⚠️ تعذّر حفظ ملف CSV: {e}")
