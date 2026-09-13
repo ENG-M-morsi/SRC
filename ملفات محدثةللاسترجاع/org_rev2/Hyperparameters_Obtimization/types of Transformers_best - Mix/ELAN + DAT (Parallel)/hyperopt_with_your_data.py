@@ -124,7 +124,7 @@ def objective(trial):
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
     # ---------- (هـ) جدول توهين ----------
-    EPOCHS = 25
+    EPOCHS = 50
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':
@@ -193,7 +193,7 @@ def objective(trial):
 # تشغيل البحث (مع دعم الاستئناف)
 # ===================================================================
 if __name__ == "__main__":
-    N_TRIALS = 20  # إجمالي عدد المحاولات المطلوبة
+    N_TRIALS = 30  # إجمالي عدد المحاولات المطلوبة
 
     # --------------------------------------------------------------
     # ✅ إنشاء أو تحميل الدراسة السابقة (Persistence)
