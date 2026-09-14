@@ -23,8 +23,8 @@ from model.dhtcun import HUTCN
 # ===================================================================
 # إعدادات البحث (يمكنك تعديلها من هنا)
 # ===================================================================
-N_TRIALS = 20               # ← إجمالي عدد المحاولات المطلوبة
-EPOCHS_PER_TRIAL = 25       # ← عدد الحقب لكل محاولة
+N_TRIALS = 30               # ← إجمالي عدد المحاولات المطلوبة
+EPOCHS_PER_TRIAL = 50       # ← عدد الحقب لكل محاولة
 STUDY_NAME = "hutcn_hyperopt_separate_v1"    # ← غيّر الاسم لبدء دراسة جديدة
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "optuna_study.db")
