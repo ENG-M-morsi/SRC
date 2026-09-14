@@ -1,0 +1,16 @@
+{
+    "n_feats": 88,
+    "num_heads_dat": 8,
+    "ws_dat": 8,
+    "num_blocks_dat": 2,
+    "num_heads_elan": 8,
+    "ws_elan": 4,
+    "num_blocks_elan": 3,
+    "batch_size": 4,
+    "patch_size": 192,
+    "optimizer": "AdamW",
+    "scheduler": "fixed",
+    "loss": "L2",
+    "lr": 0.0002803667303206557,
+    "weight_decay": 6.181415824847745e-05
+}
