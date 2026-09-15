@@ -86,13 +86,15 @@ MANUAL_METRICS = {
 # --- 8) الخط تحت كل صورة (Bold وأسود، مناسب للنشر العلمي) ---
 # قائمة خطوط Bold شائعة (السكريبت بيجرّب واحد واحد لحد ما يلاقي المتاح)
 BOLD_FONT_CANDIDATES = [
-    "arialbd.ttf",                       # Arial Bold (ويندوز)
-    "C:/Windows/Fonts/arialbd.ttf",
-    "C:/Windows/Fonts/timesbd.ttf",       # Times New Roman Bold (شائع في IEEE)
-    "DejaVuSans-Bold.ttf",                # لينكس/ماك
+    "arial.ttf",
+    "C:/Windows/Fonts/arial.ttf",
+    "C:/Windows/Fonts/calibri.ttf",
+    "DejaVuSans.ttf",
 ]
-FONT_SIZE_NAME = 18      # حجم خط اسم الموديل (السطر الأول)
-FONT_SIZE_METRIC = 16    # حجم خط PSNR/SSIM (السطر الثاني)
+
+# تصغير أحجام الخط لتتناسب مع أبعاد الصورة العلمية
+FONT_SIZE_NAME = 24       # بدلاً من 20 (لأسماء النماذج مثل HR, Bicubic, DHTCUN)
+FONT_SIZE_METRIC = 22     # بدلاً من 18 (للأرقام والمقاييس مثل 27.88/0.7878)
 
 # --- 9) اسم ملف الناتج (هيتحفظ جوه OUTPUT_DIR أوتوماتيك) ---
 OUTPUT_FILENAME = "Fig_qualitative_GakuenNoise_x4.jpg"

@@ -63,13 +63,15 @@ MANUAL_METRICS = {
 }
 
 BOLD_FONT_CANDIDATES = [
-    "arialbd.ttf",
-    "C:/Windows/Fonts/arialbd.ttf",
-    "C:/Windows/Fonts/timesbd.ttf",
-    "DejaVuSans-Bold.ttf",
+    "arial.ttf",
+    "C:/Windows/Fonts/arial.ttf",
+    "C:/Windows/Fonts/calibri.ttf",
+    "DejaVuSans.ttf",
 ]
-FONT_SIZE_NAME = 18
-FONT_SIZE_METRIC = 16
+
+# تصغير أحجام الخط لتتناسب مع أبعاد الصورة العلمية
+FONT_SIZE_NAME = 24       # بدلاً من 20 (لأسماء النماذج مثل HR, Bicubic, DHTCUN)
+FONT_SIZE_METRIC = 22     # بدلاً من 18 (للأرقام والمقاييس مثل 27.88/0.7878)
 
 OUTPUT_FILENAME = "Fig_qualitative_ShimatteIkouze_vol01_x8.jpg"
 JPEG_QUALITY = 95

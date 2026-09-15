@@ -1,10 +1,11 @@
 # ===================================================================
-# analyze_optuna_study_general.py — تحليل شامل وعام لأي دراسة Optuna
-# 
-# الميزات:
-#   1. عام 100% — يعمل مع أي موديل دون تعديل
-#   2. تحليل trials المقتطعة بشكل منفصل
-#   3. اختبارات إحصائية (Wilcoxon, Mann-Whitney U, Bootstrap CI)
+# analyze_optuna_study_general.py — General-purpose Optuna study analysis
+#
+# Features:
+#   1. 100% generic — works with any model without modification
+#   2. Separate analysis of pruned trials
+#   3. Statistical tests (Wilcoxon, Mann-Whitney U, Bootstrap CI)
+#   4. All figures in English, publication-ready (no overlapping labels)
 # ===================================================================
 import optuna
 import optuna.visualization.matplotlib as optuna_vis
@@ -21,213 +22,300 @@ from scipy import stats
 warnings.filterwarnings('ignore')
 
 # ===================================================================
-# 🟠 [خاص بالموديل] — الإعدادات الأساسية
-#    عدّل هذين المتغيرين فقط عند تغيير الموديل
+# 🟠 [Model-specific] — Base settings
+#    Only edit these two variables when changing the model
 # ===================================================================
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 STORAGE_PATH = os.path.join(SCRIPT_DIR, "optuna_study.db")
 STORAGE_URL = f"sqlite:///{STORAGE_PATH}"
 
-# 🔵 اكتشاف تلقائي للدراسة
-STUDY_NAME = None   # ← اتركه None للاكتشاف التلقائي
-                    #    أو ضع الاسم يدوياً مثل: "hutcn_hyperopt_separate_v1"
+# 🔵 Automatic study detection
+STUDY_NAME = None   # ← leave as None for auto-detection
+                    #    or set the name manually, e.g.: "hutcn_hyperopt_separate_v1"
 
 OUTPUT_DIR = os.path.join(SCRIPT_DIR, "optuna_analysis")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+# ===================================================================
+# 🔵 [Generic] — Global publication-quality plot style
+# ===================================================================
+plt.rcParams.update({
+    'font.size': 11,
+    'axes.titlesize': 13,
+    'axes.labelsize': 11,
+    'xtick.labelsize': 9,
+    'ytick.labelsize': 9,
+    'legend.fontsize': 9,
+    'figure.titlesize': 14,
+    'axes.titlepad': 12,
+    'axes.labelpad': 8,
+    'savefig.dpi': 300,
+    'figure.autolayout': False,
+})
+
 
 # ===================================================================
-# 🔵 [عام] — دوال مساعدة
+# 🔵 [Generic] — Helper functions
 # ===================================================================
 def save_figure(fig, name):
-    """حفظ الرسم بصيغتي PDF و PNG."""
+    """Save the figure as PDF, PNG, and JPEG (all 300 dpi, tight bounding box).
+
+    JPEG does not support transparency, so the figure/axes background is
+    forced to opaque white before export to avoid black backgrounds on
+    figures that use a transparent canvas.
+    """
     pdf_path = os.path.join(OUTPUT_DIR, f"{name}.pdf")
     png_path = os.path.join(OUTPUT_DIR, f"{name}.png")
-    fig.savefig(pdf_path, dpi=300, bbox_inches='tight')
-    fig.savefig(png_path, dpi=300, bbox_inches='tight')
-    print(f"   ✅ {name}.pdf + {name}.png")
+    jpeg_path = os.path.join(OUTPUT_DIR, f"{name}.jpeg")
+
+    fig.savefig(pdf_path, dpi=300, bbox_inches='tight', facecolor='white')
+    fig.savefig(png_path, dpi=300, bbox_inches='tight', facecolor='white')
+    # JPEG: force white background explicitly + high quality (no visible
+    # compression artifacts) via pil_kwargs.
+    fig.savefig(jpeg_path, dpi=300, bbox_inches='tight', facecolor='white',
+                format='jpeg', pil_kwargs={'quality': 95, 'optimize': True})
+
+    print(f"   ✅ {name}.pdf + {name}.png + {name}.jpeg")
     plt.close(fig)
+
+
+def clear_all_titles(fig):
+    """
+    🔵 [Generic] Remove every title Optuna may have set on a figure,
+    including axes titles set with a non-default loc ('left'/'right'),
+    and the figure-level suptitle, so a custom English title can replace
+    them without any leftover duplicate text.
+    """
+    for ax in fig.get_axes():
+        for loc in ('left', 'center', 'right'):
+            try:
+                ax.set_title('', loc=loc)
+            except Exception:
+                pass
+    if getattr(fig, '_suptitle', None) is not None:
+        fig._suptitle.set_text('')
+
+
+def clean_label(name):
+    """Turn 'params_xxx' into a readable English-friendly label."""
+    return name.replace('params_', '').replace('_', ' ')
 
 
 def detect_parameters(df, exclude_cols=None):
     """
-    🔵 [عام] يكتشف كل المعاملات تلقائياً من DataFrame
-    ويعيد قائمتين: رقمية + تصنيفية
+    🔵 [Generic] Automatically detects all parameters from the DataFrame
+    and returns two lists: numeric + categorical
     """
     if exclude_cols is None:
         exclude_cols = ['number', 'value', 'state', 'datetime_start',
                         'datetime_complete', 'duration', 'system_attrs',
                         'user_attrs']
-    
+
     numeric_params = []
     categorical_params = []
-    
+
     for col in df.columns:
         if not col.startswith('params_'):
             continue
         if col in exclude_cols:
             continue
-        
-        # التحقق من نوع البيانات
+
         dtype = df[col].dtype
         if dtype in ['int64', 'int32', 'float64', 'float32']:
-            # التحقق من عدد القيم الفريدة
             if df[col].nunique() <= 10:
                 categorical_params.append(col)
             else:
                 numeric_params.append(col)
         else:
             categorical_params.append(col)
-    
+
     return numeric_params, categorical_params
 
 
 def confidence_interval(data, confidence=0.95, n_bootstrap=10000):
     """
-    🔵 [عام] حساب فاصل الثقة بطريقة Bootstrap
+    🔵 [Generic] Compute the confidence interval using Bootstrap
     """
     data = np.asarray(data)
     if len(data) < 2:
         return (np.nan, np.nan)
-    
+
     boot_means = []
     rng = np.random.default_rng(42)
     for _ in range(n_bootstrap):
         sample = rng.choice(data, size=len(data), replace=True)
         boot_means.append(np.mean(sample))
-    
+
     lower = np.percentile(boot_means, (1 - confidence) / 2 * 100)
     upper = np.percentile(boot_means, (1 + confidence) / 2 * 100)
     return lower, upper
 
+
 def fix_optuna_plot_size(plot_result, size=(15, 10)):
     """
-    🔵 [عام] إصلاح حجم الرسوم من optuna.visualization.matplotlib
-    تتعامل مع الحالات المختلفة: Axes, ndarray of Axes, Figure
+    🔵 [Generic] Fix the figure size returned by optuna.visualization.matplotlib
+    and translate any default Optuna text/labels into a clean English style.
+    Handles different return types: Axes, ndarray of Axes, Figure
     """
     fig = None
-    
-    # حالة 1: numpy array من Axes
+    axes_list = []
+
     if isinstance(plot_result, np.ndarray):
         if plot_result.size > 0:
-            fig = plot_result.flatten()[0].get_figure()
-    
-    # حالة 2: Axes واحد
+            axes_list = list(plot_result.flatten())
+            fig = axes_list[0].get_figure()
     elif hasattr(plot_result, 'get_figure'):
+        axes_list = [plot_result]
         fig = plot_result.get_figure()
-    
-    # حالة 3: Axes بإصدارات أقدم
     elif hasattr(plot_result, 'figure'):
+        axes_list = [plot_result]
         fig = plot_result.figure
-    
-    # حالة 4: Figure جاهز
     elif hasattr(plot_result, 'set_size_inches'):
         fig = plot_result
-    
-    # ضبط الحجم
+        axes_list = fig.get_axes()
+
     if fig is not None:
         fig.set_size_inches(*size)
-    
+        n_axes = len(axes_list)
+        # Denser grids (slice/contour with many parameters) need smaller
+        # fonts and more spacing between subplots to avoid any overlap
+        # with the colorbar or with neighbouring axis labels.
+        tick_size = 8 if n_axes <= 6 else 6
+        label_size = 9 if n_axes <= 6 else 7
+        for ax in axes_list:
+            try:
+                for label in ax.get_xticklabels():
+                    label.set_rotation(30)
+                    label.set_ha('right')
+                ax.tick_params(axis='both', labelsize=tick_size)
+                ax.title.set_fontsize(11)
+                ax.xaxis.label.set_fontsize(label_size)
+                ax.yaxis.label.set_fontsize(label_size)
+                ax.xaxis.labelpad = 4
+                ax.yaxis.labelpad = 4
+            except Exception:
+                pass
+        # NOTE: fig.tight_layout() is intentionally NOT called here.
+        # Optuna's contour/parallel-coordinate figures embed a shared
+        # colorbar axis inside the same GridSpec; tight_layout() does not
+        # know about that extra axis and pushes/overlaps it with the last
+        # column's tick labels. Instead we widen the subplot spacing
+        # manually (safe for any number of axes, with or without a
+        # colorbar) and let bbox_inches='tight' at save time trim the
+        # final whitespace without disturbing internal spacing.
+        # Deliberately do NOT call subplots_adjust/tight_layout here.
+        # Optuna's contour/parallel-coordinate figures place a shared
+        # colorbar axis at a fixed GridSpec position computed for the
+        # figure's *original* size; any subplots_adjust call after
+        # set_size_inches() recomputes subplot positions independently of
+        # that colorbar axis and pushes them into each other. The figure's
+        # default internal spacing (computed by Optuna itself) is already
+        # correct — we only resize the canvas and rely on
+        # bbox_inches='tight' at save time to trim outer whitespace.
+
     return fig
+
+
 # ===================================================================
-# 🔵 [عام] — تحميل الدراسة (مع اكتشاف تلقائي للاسم)
+# 🔵 [Generic] — Load the study (with automatic name detection)
 # ===================================================================
 print("=" * 75)
-print("📊 تحليل دراسة Optuna (نسخة عامة)")
+print("📊 Optuna Study Analysis (generic version)")
 print("=" * 75)
 
 if not os.path.exists(STORAGE_PATH):
-    print(f"❌ لم يتم العثور على قاعدة البيانات: {STORAGE_PATH}")
+    print(f"❌ Database not found: {STORAGE_PATH}")
     sys.exit(1)
 
-# ✅ اكتشاف اسم الدراسة تلقائياً
+# ✅ Auto-detect the study name
 if STUDY_NAME is None:
     try:
         summaries = optuna.study.get_all_study_summaries(storage=STORAGE_URL)
     except Exception as e:
-        print(f"❌ فشل قراءة قاعدة البيانات: {e}")
+        print(f"❌ Failed to read the database: {e}")
         sys.exit(1)
 
     if len(summaries) == 0:
-        print("❌ لا توجد دراسات في قاعدة البيانات!")
+        print("❌ No studies found in the database!")
         sys.exit(1)
     elif len(summaries) == 1:
         STUDY_NAME = summaries[0].study_name
-        print(f"✅ اكتُشفت دراسة واحدة: '{STUDY_NAME}'")
+        print(f"✅ Detected a single study: '{STUDY_NAME}'")
     else:
-        print(f"⚠️ توجد {len(summaries)} دراسات في قاعدة البيانات:")
+        print(f"⚠️ Found {len(summaries)} studies in the database:")
         for i, s in enumerate(summaries, 1):
             n_complete = sum(1 for t in optuna.load_study(
                 study_name=s.study_name, storage=STORAGE_URL).trials
                 if t.state == optuna.trial.TrialState.COMPLETE)
-            print(f"   [{i}] '{s.study_name}' — {n_complete} trials مكتملة")
+            print(f"   [{i}] '{s.study_name}' — {n_complete} completed trials")
         print()
-        choice = input("👉 أدخل رقم الدراسة المطلوبة: ").strip()
+        choice = input("👉 Enter the number of the desired study: ").strip()
         try:
             idx = int(choice) - 1
             STUDY_NAME = summaries[idx].study_name
-            print(f"✅ اخترت: '{STUDY_NAME}'")
+            print(f"✅ Selected: '{STUDY_NAME}'")
         except (ValueError, IndexError):
-            print("❌ اختيار غير صحيح.")
+            print("❌ Invalid selection.")
             sys.exit(1)
 
-# ✅ تحميل الدراسة
+# ✅ Load the study
 try:
     study = optuna.load_study(study_name=STUDY_NAME, storage=STORAGE_URL)
 except KeyError:
-    print(f"❌ الدراسة '{STUDY_NAME}' غير موجودة في قاعدة البيانات.")
-    print("💡 الدراسات المتوفرة:")
+    print(f"❌ Study '{STUDY_NAME}' was not found in the database.")
+    print("💡 Available studies:")
     for s in optuna.study.get_all_study_summaries(storage=STORAGE_URL):
         print(f"   - {s.study_name}")
     sys.exit(1)
-# استخراج كل trials
+
+# Extract all trials
 all_trials = study.trials
-complete_trials = [t for t in all_trials 
+complete_trials = [t for t in all_trials
                    if t.state == optuna.trial.TrialState.COMPLETE]
-pruned_trials = [t for t in all_trials 
+pruned_trials = [t for t in all_trials
                  if t.state == optuna.trial.TrialState.PRUNED]
-failed_trials = [t for t in all_trials 
+failed_trials = [t for t in all_trials
                  if t.state == optuna.trial.TrialState.FAIL]
 
-print(f"\n📚 اسم الدراسة: {STUDY_NAME}")
-print(f"📊 إجمالي trials: {len(all_trials)}")
-print(f"✅ مكتملة (COMPLETE): {len(complete_trials)}")
-print(f"✂️ مقتطعة (PRUNED):   {len(pruned_trials)}")
-print(f"❌ فاشلة (FAILED):    {len(failed_trials)}")
+print(f"\n📚 Study name: {STUDY_NAME}")
+print(f"📊 Total trials: {len(all_trials)}")
+print(f"✅ Completed: {len(complete_trials)}")
+print(f"✂️ Pruned:    {len(pruned_trials)}")
+print(f"❌ Failed:    {len(failed_trials)}")
 
 if len(complete_trials) < 2:
-    print("⚠️ عدد المحاولات المكتملة قليل جداً للتحليل.")
+    print("⚠️ Too few completed trials for analysis.")
     sys.exit(1)
 
-print(f"\n🏆 أفضل PSNR: {study.best_value:.4f} dB (Trial #{study.best_trial.number})")
+print(f"\n🏆 Best PSNR: {study.best_value:.4f} dB (Trial #{study.best_trial.number})")
 
-# نسبة الاقتطاع
+# Pruning rate
 pruning_rate = len(pruned_trials) / max(len(all_trials), 1) * 100
-print(f"📉 نسبة الاقتطاع: {pruning_rate:.1f}%")
+print(f"📉 Pruning rate: {pruning_rate:.1f}%")
 if pruning_rate > 30:
-    print("⚠️ تحذير: نسبة الاقتطاع عالية (> 30%). قد يؤثر على التحليل.")
+    print("⚠️ Warning: high pruning rate (> 30%). May affect the analysis.")
 elif pruning_rate > 15:
-    print("ℹ️ ملاحظة: نسبة اقتطاع متوسطة (15-30%). التحليل مقبول.")
+    print("ℹ️ Note: moderate pruning rate (15-30%). Analysis is acceptable.")
 else:
-    print("✅ نسبة اقتطاع منخفضة (< 15%). التحليل موثوق.")
+    print("✅ Low pruning rate (< 15%). Analysis is reliable.")
 
-# تحويل إلى DataFrame
+# Convert to DataFrame
 df = study.trials_dataframe()
 df_complete = df[df['state'] == 'COMPLETE'].copy()
 df_pruned = df[df['state'] == 'PRUNED'].copy() if len(pruned_trials) > 0 else pd.DataFrame()
 
-# 🔵 اكتشاف المعاملات تلقائياً
+# 🔵 Auto-detect parameters
 numeric_params, categorical_params = detect_parameters(df_complete)
-print(f"\n🔍 اكتُشفت {len(numeric_params)} معامل رقمي و {len(categorical_params)} تصنيفي")
-print(f"   الرقمية: {[p.replace('params_', '') for p in numeric_params]}")
-print(f"   التصنيفية: {[p.replace('params_', '') for p in categorical_params]}")
+print(f"\n🔍 Detected {len(numeric_params)} numeric parameter(s) and {len(categorical_params)} categorical parameter(s)")
+print(f"   Numeric: {[clean_label(p) for p in numeric_params]}")
+print(f"   Categorical: {[clean_label(p) for p in categorical_params]}")
 
 
 # ===================================================================
-# القسم 1: الرسوم البيانية الأساسية (Optimization History)
+# Section 1: Basic plots (Optimization History)
 # ===================================================================
 print("\n" + "=" * 75)
-print("📈 القسم 1: الرسوم البيانية الأساسية")
+print("📈 Section 1: Basic plots")
 print("=" * 75)
 print("   → History Plot...")
 
@@ -237,159 +325,229 @@ best_so_far = np.maximum.accumulate(values)
 trial_numbers = df_complete['number'].values
 
 ax.plot(trial_numbers, values, 'o-', color='steelblue',
-        markersize=6, label='PSNR لكل trial', alpha=0.7)
+        markersize=6, label='PSNR per trial', alpha=0.7)
 ax.plot(trial_numbers, best_so_far, 'r-', linewidth=2,
-        label=f'أفضل PSNR تراكمي ({best_so_far[-1]:.3f} dB)')
+        label=f'Best cumulative PSNR ({best_so_far[-1]:.3f} dB)')
 ax.axhline(y=study.best_value, color='green', linestyle='--',
-           alpha=0.5, label=f'أفضل نتيجة = {study.best_value:.3f} dB')
-ax.set_xlabel('رقم المحاولة (Trial)')
+           alpha=0.5, label=f'Best value = {study.best_value:.3f} dB')
+ax.set_xlabel('Trial number')
 ax.set_ylabel('PSNR (dB)')
-ax.set_title('تاريخ التحسين — PSNR عبر المحاولات')
+ax.set_title('Optimization History — PSNR across trials')
 ax.grid(True, alpha=0.3)
-ax.legend(loc='lower right')
+ax.legend(loc='lower right', framealpha=0.9)
+fig.tight_layout()
 save_figure(fig, "01_optimization_history")
 
 
 # ===================================================================
-# القسم 2: أهمية المعاملات
+# Section 2: Parameter importance
 # ===================================================================
 print("   → Parameter Importance...")
 try:
     plot_result = optuna_vis.plot_param_importances(study)
     fig = fix_optuna_plot_size(plot_result, size=(12, 7))
     if fig is not None:
+        ax = fig.get_axes()[0]
+        clear_all_titles(fig)
+        fig.suptitle('Hyperparameter Importance', fontsize=13, fontweight='bold', y=1.02)
+        ax.set_xlabel('Importance (relative)', fontsize=11)
+        ax.set_ylabel('Hyperparameter', fontsize=11)
+        # Clean up default Optuna param_ prefixes on y tick labels if present
+        new_labels = [clean_label(t.get_text()) for t in ax.get_yticklabels()]
+        ax.set_yticklabels(new_labels)
+        fig.tight_layout()
         save_figure(fig, "02_param_importance")
     else:
-        print("   ⚠️ لم يتم الحصول على Figure")
+        print("   ⚠️ Could not obtain a Figure")
 except Exception as e:
-    print(f"   ⚠️ تعذّر: {e}")
+    print(f"   ⚠️ Failed: {e}")
 
 
 # ===================================================================
-# القسم 3: Slice + Contour (يعملان مع أي معاملات)
+# Section 3: Slice + Contour (work with any parameters)
 # ===================================================================
+def top_importance_params(study, max_params=4):
+    """
+    🔵 [Generic] Return the top-N most important parameter names.
+    Optuna's matplotlib grid renderers (plot_slice / plot_contour) start
+    overlapping their shared colorbar with the last column once more than
+    ~4 parameters are shown — this is a limitation of the Optuna renderer
+    itself. Capping to the most important parameters keeps every subplot
+    readable and avoids that overlap while still showing the relationships
+    that matter most.
+    """
+    try:
+        importances = optuna.importance.get_param_importances(study)
+        top = list(importances.keys())[:max_params]
+        return top if len(top) >= 2 else None
+    except Exception:
+        return None
+
+
 print("   → Slice Plot...")
 try:
-    plot_result = optuna_vis.plot_slice(study)
+    top_params_for_grid = top_importance_params(study, max_params=4)
+    if top_params_for_grid:
+        plot_result = optuna_vis.plot_slice(study, params=top_params_for_grid)
+    else:
+        plot_result = optuna_vis.plot_slice(study)
     fig = fix_optuna_plot_size(plot_result, size=(18, 12))
     if fig is not None:
+        for ax in fig.get_axes():
+            xl = ax.get_xlabel()
+            if xl:
+                ax.set_xlabel(clean_label(xl))
+        if fig._suptitle is not None:
+            fig._suptitle.set_text('')
+        subtitle = ('Slice Plot — Parameter Value vs. Objective' if not top_params_for_grid
+                    else f'Slice Plot — Top {len(top_params_for_grid)} Most Important Parameters')
+        fig.suptitle(subtitle, fontsize=14, y=1.02)
         save_figure(fig, "03_slice_plot")
     else:
-        print("   ⚠️ لم يتم الحصول على Figure")
+        print("   ⚠️ Could not obtain a Figure")
 except Exception as e:
-    print(f"   ⚠️ تعذّر: {e}")
+    print(f"   ⚠️ Failed: {e}")
 
 print("   → Contour Plot...")
 try:
-    plot_result = optuna_vis.plot_contour(study)
+    if top_params_for_grid:
+        plot_result = optuna_vis.plot_contour(study, params=top_params_for_grid)
+    else:
+        plot_result = optuna_vis.plot_contour(study)
     fig = fix_optuna_plot_size(plot_result, size=(18, 12))
     if fig is not None:
+        for ax in fig.get_axes():
+            xl, yl = ax.get_xlabel(), ax.get_ylabel()
+            if xl:
+                ax.set_xlabel(clean_label(xl))
+            if yl:
+                ax.set_ylabel(clean_label(yl))
+        if fig._suptitle is not None:
+            fig._suptitle.set_text('')
+        subtitle = ('Contour Plot — Parameter Interactions' if not top_params_for_grid
+                    else f'Contour Plot — Top {len(top_params_for_grid)} Most Important Parameters')
+        fig.suptitle(subtitle, fontsize=14, y=1.02)
         save_figure(fig, "04_contour_plot")
     else:
-        print("   ⚠️ لم يتم الحصول على Figure")
+        print("   ⚠️ Could not obtain a Figure")
 except Exception as e:
-    print(f"   ⚠️ تعذّر: {e}")
+    print(f"   ⚠️ Failed: {e}")
 
 print("   → Parallel Coordinates...")
 try:
     plot_result = optuna_vis.plot_parallel_coordinate(study)
     fig = fix_optuna_plot_size(plot_result, size=(18, 9))
     if fig is not None:
+        for ax in fig.get_axes():
+            ax.set_title('')  # clear Optuna's default title to avoid a duplicate
+            # Clean up underscore-style tick labels (e.g. 'batch_size' ->
+            # 'batch size') for visual consistency with every other figure.
+            new_xticklabels = [clean_label(t.get_text()) if t.get_text() != 'Objective Value'
+                                else t.get_text() for t in ax.get_xticklabels()]
+            if new_xticklabels:
+                ax.set_xticklabels(new_xticklabels)
+        if fig._suptitle is not None:
+            fig._suptitle.set_text('')
+        fig.suptitle('Parallel Coordinate Plot', fontsize=14, y=0.98)
         save_figure(fig, "05_parallel_coordinates")
     else:
-        print("   ⚠️ لم يتم الحصول على Figure")
+        print("   ⚠️ Could not obtain a Figure")
 except Exception as e:
-    print(f"   ⚠️ تعذّر: {e}")
+    print(f"   ⚠️ Failed: {e}")
 
 
 # ===================================================================
-# القسم 4: Custom Scatter Plots (لكل معامل تلقائياً)
+# Section 4: Custom scatter plots (automatic, per parameter)
 # ===================================================================
 print("\n" + "=" * 75)
-print("📊 القسم 2: Custom Scatter Plots (تلقائي)")
+print("📊 Section 2: Custom Scatter Plots (automatic)")
 print("=" * 75)
-print("   → Scatter لكل معامل رقمي...")
+print("   → Scatter plot for each parameter...")
 
 all_plottable = numeric_params + categorical_params
 n_params = len(all_plottable)
 n_cols = 3
 n_rows = (n_params + n_cols - 1) // n_cols
 
-fig, axes = plt.subplots(n_rows, n_cols, figsize=(18, 5 * n_rows))
+fig, axes = plt.subplots(n_rows, n_cols, figsize=(18, 5.2 * n_rows))
 axes = axes.flatten() if n_rows > 1 else [axes]
 
 for idx, param in enumerate(all_plottable):
     ax = axes[idx]
     x = df_complete[param].values
     y = df_complete['value'].values
-    
-    scatter = ax.scatter(x, y, c=y, cmap='viridis',
-                        s=80, alpha=0.7, edgecolors='black')
-    
-    # أفضل قيمة
+
+    ax.scatter(x, y, c=y, cmap='viridis',
+               s=80, alpha=0.7, edgecolors='black', linewidths=0.5)
+
+    # Best value
     best_idx = np.argmax(y)
     ax.scatter(x[best_idx], y[best_idx], color='red', s=200,
                marker='*', zorder=5, edgecolors='black',
-               label=f'الأفضل: {y[best_idx]:.3f}')
-    
-    # خط الاتجاه (فقط للمعاملات الرقمية)
+               label=f'Best: {y[best_idx]:.3f}')
+
+    # Trend line (numeric parameters only)
     if param in numeric_params:
         try:
             z = np.polyfit(x, y, 1)
             p = np.poly1d(z)
             x_sorted = np.sort(x)
             ax.plot(x_sorted, p(x_sorted), 'r--', alpha=0.5,
-                    linewidth=1.5, label='خط الاتجاه')
+                    linewidth=1.5, label='Trend line')
         except Exception:
             pass
-    
-    clean_name = param.replace('params_', '')
-    ax.set_xlabel(clean_name, fontsize=11, fontweight='bold')
-    ax.set_ylabel('PSNR (dB)', fontsize=11)
-    ax.set_title(f'{clean_name} vs PSNR', fontsize=12, fontweight='bold')
+
+    clean_name = clean_label(param)
+    ax.set_xlabel(clean_name, fontsize=10, fontweight='bold', labelpad=6)
+    ax.set_ylabel('PSNR (dB)', fontsize=10, labelpad=6)
+    ax.set_title(f'{clean_name} vs PSNR', fontsize=11, fontweight='bold', pad=10)
     ax.grid(True, alpha=0.3)
-    ax.legend(loc='best', fontsize=9)
+    ax.legend(loc='best', fontsize=8, framealpha=0.9)
+    ax.tick_params(axis='x', labelrotation=30, labelsize=8)
+    for label in ax.get_xticklabels():
+        label.set_ha('right')
 
 for idx in range(len(all_plottable), len(axes)):
     axes[idx].axis('off')
 
-plt.tight_layout()
+fig.tight_layout(pad=2.0, h_pad=3.0, w_pad=2.0)
 save_figure(fig, "06_custom_scatter_plots")
 
 
 # ===================================================================
-# القسم 5: Correlation Heatmap (تلقائي)
+# Section 5: Correlation heatmap (automatic)
 # ===================================================================
 print("   → Correlation Heatmap...")
 
 corr_data = df_complete[numeric_params + ['value']].copy()
 if len(numeric_params) > 1:
     corr_matrix = corr_data.corr()
-    
+
     fig, ax = plt.subplots(figsize=(12, 10))
     im = ax.imshow(corr_matrix.values, cmap='RdBu_r', aspect='auto',
                    vmin=-1, vmax=1)
-    
+
     for i in range(len(corr_matrix)):
         for j in range(len(corr_matrix)):
             ax.text(j, i, f'{corr_matrix.values[i, j]:.2f}',
                     ha='center', va='center',
                     color='white' if abs(corr_matrix.values[i, j]) > 0.5 else 'black',
                     fontsize=9)
-    
-    clean_labels = [c.replace('params_', '') for c in corr_matrix.columns]
+
+    clean_labels = [clean_label(c) if c != 'value' else 'PSNR' for c in corr_matrix.columns]
     ax.set_xticks(range(len(clean_labels)))
     ax.set_yticks(range(len(clean_labels)))
-    ax.set_xticklabels(clean_labels, rotation=45, ha='right', fontsize=10)
-    ax.set_yticklabels(clean_labels, fontsize=10)
-    ax.set_title('مصفوفة الارتباط', fontsize=13, fontweight='bold', pad=20)
-    plt.colorbar(im, ax=ax, label='معامل الارتباط')
-    plt.tight_layout()
+    ax.set_xticklabels(clean_labels, rotation=40, ha='right', fontsize=9)
+    ax.set_yticklabels(clean_labels, fontsize=9)
+    ax.set_title('Correlation Matrix', fontsize=13, fontweight='bold', pad=20)
+    cbar = plt.colorbar(im, ax=ax)
+    cbar.set_label('Correlation coefficient', fontsize=10)
+    fig.tight_layout()
     save_figure(fig, "07_correlation_heatmap")
 
 
 # ===================================================================
-# القسم 6: تحليل Top 10 Trials (تلقائي)
+# Section 6: Top 10 trials analysis (automatic)
 # ===================================================================
 print("   → Top 10 Trials...")
 
@@ -401,7 +559,7 @@ ax.axis('tight')
 ax.axis('off')
 
 table_data = []
-headers = ['Trial', 'PSNR'] + [p.replace('params_', '') for p in display_params]
+headers = ['Trial', 'PSNR'] + [clean_label(p) for p in display_params]
 for _, row in df_sorted.iterrows():
     row_data = [f"{int(row['number'])}", f"{row['value']:.3f}"]
     for p in display_params:
@@ -429,173 +587,197 @@ for i in range(len(table_data)):
         elif i == 0:
             cell.set_facecolor('#C6EFCE')
 
-ax.set_title('أفضل 10 محاولات', fontsize=14, fontweight='bold', pad=20)
+for j in range(len(headers)):
+    table[(0, j)].set_text_props(fontweight='bold', color='white')
+
+ax.set_title('Top 10 Trials', fontsize=14, fontweight='bold', pad=20)
 save_figure(fig, "08_top10_trials")
 
 
 # ===================================================================
-# 🆕 القسم 7: تحليل trials المقتطعة (PRUNED)
+# 🆕 Section 7: Pruned trials analysis
 # ===================================================================
 print("\n" + "=" * 75)
-print("✂️ القسم 3: تحليل trials المقتطعة (PRUNED)")
+print("✂️ Section 3: Pruned trials analysis")
 print("=" * 75)
 
 if len(df_pruned) > 0:
-    print(f"   عدد trials المقتطعة: {len(df_pruned)}")
-    
-    # 7.1 مقارنة توزيع المعاملات بين trials المكتملة والمقتطعة
-    fig, axes = plt.subplots(n_rows, n_cols, figsize=(18, 5 * n_rows))
+    print(f"   Number of pruned trials: {len(df_pruned)}")
+
+    # 7.1 Compare parameter distributions between completed and pruned trials
+    fig, axes = plt.subplots(n_rows, n_cols, figsize=(18, 5.2 * n_rows))
     axes = axes.flatten() if n_rows > 1 else [axes]
-    
+
     for idx, param in enumerate(all_plottable):
         ax = axes[idx]
         if param in df_complete.columns and param in df_pruned.columns:
             complete_vals = df_complete[param].dropna().values
             pruned_vals = df_pruned[param].dropna().values
-            
-            # رسم histogram مقارن
+
             if param in numeric_params:
                 bins = np.linspace(
                     min(complete_vals.min(), pruned_vals.min() if len(pruned_vals) > 0 else complete_vals.min()),
                     max(complete_vals.max(), pruned_vals.max() if len(pruned_vals) > 0 else complete_vals.max()),
                     15
                 )
-                ax.hist(complete_vals, bins=bins, alpha=0.6, 
-                        color='green', label=f'مكتملة ({len(complete_vals)})')
+                ax.hist(complete_vals, bins=bins, alpha=0.6,
+                        color='green', label=f'Completed ({len(complete_vals)})')
                 if len(pruned_vals) > 0:
-                    ax.hist(pruned_vals, bins=bins, alpha=0.6, 
-                            color='red', label=f'مقتطعة ({len(pruned_vals)})')
+                    ax.hist(pruned_vals, bins=bins, alpha=0.6,
+                            color='red', label=f'Pruned ({len(pruned_vals)})')
             else:
-                # معامل تصنيفي
                 all_vals = sorted(set(list(complete_vals) + list(pruned_vals)))
                 complete_counts = [np.sum(complete_vals == v) for v in all_vals]
                 pruned_counts = [np.sum(pruned_vals == v) for v in all_vals]
                 x_pos = np.arange(len(all_vals))
                 width = 0.35
-                ax.bar(x_pos - width/2, complete_counts, width, 
-                       alpha=0.6, color='green', label='مكتملة')
-                ax.bar(x_pos + width/2, pruned_counts, width, 
-                       alpha=0.6, color='red', label='مقتطعة')
+                ax.bar(x_pos - width/2, complete_counts, width,
+                       alpha=0.6, color='green', label='Completed')
+                ax.bar(x_pos + width/2, pruned_counts, width,
+                       alpha=0.6, color='red', label='Pruned')
                 ax.set_xticks(x_pos)
-                ax.set_xticklabels([str(v) for v in all_vals], rotation=45)
-            
-            clean_name = param.replace('params_', '')
-            ax.set_xlabel(clean_name, fontsize=10, fontweight='bold')
-            ax.set_ylabel('التكرار', fontsize=10)
-            ax.set_title(f'{clean_name}: مكتملة vs مقتطعة', 
-                        fontsize=11, fontweight='bold')
-            ax.legend(fontsize=9)
+                ax.set_xticklabels([str(v) for v in all_vals], rotation=30, ha='right')
+
+            clean_name = clean_label(param)
+            ax.set_xlabel(clean_name, fontsize=10, fontweight='bold', labelpad=6)
+            ax.set_ylabel('Count', fontsize=10, labelpad=6)
+            ax.set_title(f'{clean_name}: Completed vs Pruned',
+                        fontsize=10, fontweight='bold', pad=10)
+            ax.legend(fontsize=8, framealpha=0.9)
             ax.grid(True, alpha=0.3)
-    
+            ax.tick_params(axis='x', labelsize=8)
+
     for idx in range(len(all_plottable), len(axes)):
         axes[idx].axis('off')
-    
-    plt.tight_layout()
+
+    fig.tight_layout(pad=2.0, h_pad=3.0, w_pad=2.0)
     save_figure(fig, "12_pruned_vs_complete_distribution")
-    
-    # 7.2 جدول: أي قيم معاملات تُقتطع أكثر؟
-    print("   → تحليل مناطق الاقتطاع...")
-    
-    # حساب نسبة الاقتطاع لكل قيمة معامل
+
+    # 7.2 Table: which parameter values get pruned more often?
+    print("   → Analyzing pruning regions...")
+
+    N_PRUNING_BINS = 8  # number of bins used for continuous numeric parameters
+
     pruning_analysis = {}
+    df_relevant = df[df['state'].isin(['COMPLETE', 'PRUNED'])]
+
     for param in all_plottable:
         if param not in df.columns:
             continue
-        
-        # إجمالي trials لكل قيمة
-        all_counts = df[df['state'].isin(['COMPLETE', 'PRUNED'])].groupby(param).size()
-        pruned_counts = df_pruned.groupby(param).size() if len(df_pruned) > 0 else pd.Series()
-        
+
+        if param in numeric_params:
+            # Continuous parameter: group by value RANGE, not exact float
+            # value. Grouping by exact float would put almost every trial
+            # in its own singleton bucket (n=1), which is meaningless and
+            # produces an unreadable chart.
+            try:
+                binned = pd.cut(df_relevant[param], bins=N_PRUNING_BINS)
+                all_counts = df_relevant.groupby(binned, observed=True).size()
+                if len(df_pruned) > 0:
+                    pruned_binned = pd.cut(df_pruned[param], bins=binned.cat.categories)
+                    pruned_counts = df_pruned.groupby(pruned_binned, observed=True).size()
+                else:
+                    pruned_counts = pd.Series(dtype=float)
+                label_fn = lambda interval: f"[{interval.left:.3g}, {interval.right:.3g}]"
+            except Exception:
+                # Fallback: exact grouping if binning fails for any reason
+                all_counts = df_relevant.groupby(param).size()
+                pruned_counts = df_pruned.groupby(param).size() if len(df_pruned) > 0 else pd.Series()
+                label_fn = lambda v: str(v)
+        else:
+            # Categorical / low-cardinality parameter: exact grouping is fine
+            all_counts = df_relevant.groupby(param).size()
+            pruned_counts = df_pruned.groupby(param).size() if len(df_pruned) > 0 else pd.Series()
+            label_fn = lambda v: str(v)
+
         param_analysis = []
         for val in all_counts.index:
             total = all_counts[val]
+            if total == 0:
+                continue
             pruned = pruned_counts.get(val, 0)
             rate = pruned / total * 100 if total > 0 else 0
-            param_analysis.append((val, total, pruned, rate))
-        
+            param_analysis.append((label_fn(val), total, pruned, rate))
+
         pruning_analysis[param] = param_analysis
-    
-    # حفظ النتائج في ملف نصي
+
     pruning_report_path = os.path.join(OUTPUT_DIR, "pruning_analysis.txt")
     with open(pruning_report_path, 'w', encoding='utf-8') as f:
         f.write("=" * 75 + "\n")
-        f.write("✂️ تحليل trials المقتطعة — أي قيم معاملات تؤدي للاقتطاع؟\n")
+        f.write("Pruned Trials Analysis — Which parameter values lead to pruning?\n")
         f.write("=" * 75 + "\n\n")
-        f.write(f"إجمالي trials: {len(all_trials)}\n")
-        f.write(f"مكتملة: {len(complete_trials)}\n")
-        f.write(f"مقتطعة: {len(pruned_trials)}\n")
-        f.write(f"نسبة الاقتطاع: {pruning_rate:.1f}%\n\n")
-        
+        f.write(f"Total trials: {len(all_trials)}\n")
+        f.write(f"Completed: {len(complete_trials)}\n")
+        f.write(f"Pruned: {len(pruned_trials)}\n")
+        f.write(f"Pruning rate: {pruning_rate:.1f}%\n\n")
+
         for param, analysis in pruning_analysis.items():
-            clean = param.replace('params_', '')
+            clean = clean_label(param)
             f.write(f"\n{clean}:\n")
             f.write("-" * 50 + "\n")
-            f.write(f"{'القيمة':>15} | {'إجمالي':>8} | {'مقتطعة':>8} | {'نسبة %':>8}\n")
+            f.write(f"{'Value':>15} | {'Total':>8} | {'Pruned':>8} | {'Rate %':>8}\n")
             f.write("-" * 50 + "\n")
-            
-            # ترتيب حسب نسبة الاقتطاع
+
             analysis_sorted = sorted(analysis, key=lambda x: x[3], reverse=True)
             for val, total, pruned, rate in analysis_sorted:
-                marker = "🔴" if rate > 50 else "🟡" if rate > 25 else "🟢"
-                f.write(f"{str(val):>15} | {total:>8} | {pruned:>8} | {rate:>7.1f}% {marker}\n")
-    
-    print(f"   ✅ تم حفظ تحليل الاقتطاع في: {pruning_report_path}")
-    
-    # 7.3 رسم خاص بنسبة الاقتطاع لكل قيمة معامل
-    for param in numeric_params[:6]:  # أول 6 معاملات رقمية
+                marker = "HIGH" if rate > 50 else "MED" if rate > 25 else "LOW"
+                f.write(f"{str(val):>15} | {total:>8} | {pruned:>8} | {rate:>7.1f}% [{marker}]\n")
+
+    print(f"   ✅ Pruning analysis saved to: {pruning_report_path}")
+
+    # 7.3 Pruning-rate plot for each numeric parameter
+    for param in numeric_params[:6]:
         if param not in pruning_analysis:
             continue
-        
-        fig, ax = plt.subplots(figsize=(10, 6))
+
+        fig, ax = plt.subplots(figsize=(10, 6.5))
         analysis = pruning_analysis[param]
         values = [a[0] for a in analysis]
         rates = [a[3] for a in analysis]
         totals = [a[1] for a in analysis]
-        
-        # رسم بياني
-        bars = ax.bar(range(len(values)), rates, 
-                     color=['red' if r > 50 else 'orange' if r > 25 else 'green' 
+
+        bars = ax.bar(range(len(values)), rates,
+                     color=['red' if r > 50 else 'orange' if r > 25 else 'green'
                             for r in rates],
                      alpha=0.7, edgecolor='black')
-        
-        # إضافة عدد trials فوق الأعمدة
+
         for i, (bar, total) in enumerate(zip(bars, totals)):
             ax.text(bar.get_x() + bar.get_width()/2, bar.get_height() + 1,
-                   f'n={total}', ha='center', va='bottom', fontsize=9)
-        
-        clean_name = param.replace('params_', '')
+                   f'n={total}', ha='center', va='bottom', fontsize=8)
+
+        clean_name = clean_label(param)
         ax.set_xticks(range(len(values)))
-        ax.set_xticklabels([str(v) for v in values], rotation=45)
-        ax.set_xlabel(clean_name, fontsize=11, fontweight='bold')
-        ax.set_ylabel('نسبة الاقتطاع (%)', fontsize=11)
-        ax.set_title(f'نسبة الاقتطاع لكل قيمة {clean_name}', 
-                    fontsize=12, fontweight='bold')
+        ax.set_xticklabels([str(v) for v in values], rotation=40, ha='right', fontsize=8)
+        ax.set_xlabel(clean_name, fontsize=11, fontweight='bold', labelpad=8)
+        ax.set_ylabel('Pruning rate (%)', fontsize=11, labelpad=8)
+        ax.set_title(f'Pruning rate per value of {clean_name}',
+                    fontsize=12, fontweight='bold', pad=14)
         ax.axhline(y=50, color='red', linestyle='--', alpha=0.5, label='50%')
         ax.axhline(y=25, color='orange', linestyle='--', alpha=0.5, label='25%')
         ax.grid(True, alpha=0.3, axis='y')
-        ax.legend()
-        plt.tight_layout()
-        save_figure(fig, f"13_pruning_rate_{clean_name}")
+        ax.legend(framealpha=0.9)
+        fig.tight_layout()
+        save_figure(fig, f"13_pruning_rate_{clean_name.replace(' ', '_')}")
 
 else:
-    print("   ℹ️ لا توجد trials مقتطعة. تخطي هذا التحليل.")
+    print("   ℹ️ No pruned trials found. Skipping this analysis.")
 
 
 # ===================================================================
-# 🆕 القسم 8: الاختبارات الإحصائية
+# 🆕 Section 8: Statistical tests
 # ===================================================================
 print("\n" + "=" * 75)
-print("📊 القسم 4: الاختبارات الإحصائية")
+print("📊 Section 4: Statistical tests")
 print("=" * 75)
 
 stats_report_path = os.path.join(OUTPUT_DIR, "statistical_tests.txt")
 with open(stats_report_path, 'w', encoding='utf-8') as f:
     f.write("=" * 75 + "\n")
-    f.write("📊 تقرير الاختبارات الإحصائية\n")
+    f.write("Statistical Tests Report\n")
     f.write("=" * 75 + "\n\n")
-    
-    # 8.1 الإحصاءات الوصفية
-    print("   → إحصاءات وصفية...")
+
+    # 8.1 Descriptive statistics
+    print("   → Descriptive statistics...")
     psnr_values = df_complete['value'].values
     mean_psnr = np.mean(psnr_values)
     std_psnr = np.std(psnr_values, ddof=1)
@@ -603,91 +785,87 @@ with open(stats_report_path, 'w', encoding='utf-8') as f:
     min_psnr = np.min(psnr_values)
     max_psnr = np.max(psnr_values)
     q25, q75 = np.percentile(psnr_values, [25, 75])
-    
-    # فاصل الثقة
+
     ci_lower, ci_upper = confidence_interval(psnr_values)
-    
-    f.write("1) الإحصاءات الوصفية لـ PSNR (trials المكتملة)\n")
+
+    f.write("1) Descriptive statistics for PSNR (completed trials)\n")
     f.write("-" * 50 + "\n")
-    f.write(f"   عدد trials: {len(psnr_values)}\n")
-    f.write(f"   المتوسط: {mean_psnr:.4f} dB\n")
-    f.write(f"   الانحراف المعياري: {std_psnr:.4f} dB\n")
-    f.write(f"   الوسيط: {median_psnr:.4f} dB\n")
-    f.write(f"   الأدنى: {min_psnr:.4f} dB\n")
-    f.write(f"   الأعلى: {max_psnr:.4f} dB\n")
-    f.write(f"   الربع الأول (Q1): {q25:.4f} dB\n")
-    f.write(f"   الربع الثالث (Q3): {q75:.4f} dB\n")
+    f.write(f"   Number of trials: {len(psnr_values)}\n")
+    f.write(f"   Mean: {mean_psnr:.4f} dB\n")
+    f.write(f"   Standard deviation: {std_psnr:.4f} dB\n")
+    f.write(f"   Median: {median_psnr:.4f} dB\n")
+    f.write(f"   Minimum: {min_psnr:.4f} dB\n")
+    f.write(f"   Maximum: {max_psnr:.4f} dB\n")
+    f.write(f"   1st quartile (Q1): {q25:.4f} dB\n")
+    f.write(f"   3rd quartile (Q3): {q75:.4f} dB\n")
     f.write(f"   IQR: {q75 - q25:.4f} dB\n")
-    f.write(f"   فاصل الثقة 95% (Bootstrap): [{ci_lower:.4f}, {ci_upper:.4f}]\n")
-    f.write(f"   الخطأ المعياري (SE): {std_psnr / np.sqrt(len(psnr_values)):.4f} dB\n\n")
-    
-    print(f"      المتوسط: {mean_psnr:.4f} ± {std_psnr:.4f} dB")
-    print(f"      فاصل الثقة 95%: [{ci_lower:.4f}, {ci_upper:.4f}]")
-    
-    # 8.2 اختبار Wilcoxon: أفضل 25% مقابل أسوأ 25%
-    print("   → اختبار Wilcoxon (أفضل 25% vs أسوأ 25%)...")
+    f.write(f"   95% confidence interval (Bootstrap): [{ci_lower:.4f}, {ci_upper:.4f}]\n")
+    f.write(f"   Standard error (SE): {std_psnr / np.sqrt(len(psnr_values)):.4f} dB\n\n")
+
+    print(f"      Mean: {mean_psnr:.4f} ± {std_psnr:.4f} dB")
+    print(f"      95% CI: [{ci_lower:.4f}, {ci_upper:.4f}]")
+
+    # 8.2 Wilcoxon/Mann-Whitney test: best 25% vs worst 25%
+    print("   → Mann-Whitney U test (best 25% vs worst 25%)...")
     n_top = max(3, len(psnr_values) // 4)
     sorted_psnr = np.sort(psnr_values)
     worst_group = sorted_psnr[:n_top]
     best_group = sorted_psnr[-n_top:]
-    
+
     try:
-        # Wilcoxon signed-rank test (يقارن عينتين مرتبطتين)
-        # لكن هنا العينتان مستقلتان، لذا نستخدم Mann-Whitney U
         statistic, p_value = stats.mannwhitneyu(
             best_group, worst_group, alternative='greater'
         )
-        
-        f.write("2) اختبار Mann-Whitney U (أفضل 25% vs أسوأ 25%)\n")
+
+        f.write("2) Mann-Whitney U test (best 25% vs worst 25%)\n")
         f.write("-" * 50 + "\n")
-        f.write(f"   حجم أفضل مجموعة: {n_top}\n")
-        f.write(f"   حجم أسوأ مجموعة: {n_top}\n")
-        f.write(f"   متوسط أفضل مجموعة: {np.mean(best_group):.4f} dB\n")
-        f.write(f"   متوسط أسوأ مجموعة: {np.mean(worst_group):.4f} dB\n")
-        f.write(f"   الفرق: {np.mean(best_group) - np.mean(worst_group):.4f} dB\n")
-        f.write(f"   إحصائية U: {statistic:.4f}\n")
+        f.write(f"   Best-group size: {n_top}\n")
+        f.write(f"   Worst-group size: {n_top}\n")
+        f.write(f"   Best-group mean: {np.mean(best_group):.4f} dB\n")
+        f.write(f"   Worst-group mean: {np.mean(worst_group):.4f} dB\n")
+        f.write(f"   Difference: {np.mean(best_group) - np.mean(worst_group):.4f} dB\n")
+        f.write(f"   U statistic: {statistic:.4f}\n")
         f.write(f"   p-value: {p_value:.6e}\n")
-        
+
         if p_value < 0.001:
-            f.write("   ✅ فرق معنوي جداً (p < 0.001) — النتائج قابلة للنشر\n")
+            f.write("   ✅ Highly significant difference (p < 0.001) — results are publishable\n")
         elif p_value < 0.05:
-            f.write("   ✅ فرق معنوي (p < 0.05) — النتائج مقبولة\n")
+            f.write("   ✅ Significant difference (p < 0.05) — results are acceptable\n")
         else:
-            f.write("   ⚠️ لا يوجد فرق معنوي (p >= 0.05) — قد تحتاج trials أكثر\n")
+            f.write("   ⚠️ No significant difference (p >= 0.05) — more trials may be needed\n")
         f.write("\n")
-        
+
         print(f"      p-value = {p_value:.6e}")
     except Exception as e:
-        f.write(f"   ⚠️ تعذّر إجراء الاختبار: {e}\n\n")
-    
-    # 8.3 اختبار natural distribution (Shapiro-Wilk)
-    print("   → اختبار Shapiro-Wilk (توزيع طبيعي؟)...")
+        f.write(f"   ⚠️ Could not run the test: {e}\n\n")
+
+    # 8.3 Normality test (Shapiro-Wilk)
+    print("   → Shapiro-Wilk test (is the distribution normal?)...")
     if len(psnr_values) <= 5000 and len(psnr_values) >= 3:
         try:
             shapiro_stat, shapiro_p = stats.shapiro(psnr_values[:5000])
-            f.write("3) اختبار Shapiro-Wilk (هل التوزيع طبيعي؟)\n")
+            f.write("3) Shapiro-Wilk test (is the distribution normal?)\n")
             f.write("-" * 50 + "\n")
-            f.write(f"   إحصائية W: {shapiro_stat:.4f}\n")
+            f.write(f"   W statistic: {shapiro_stat:.4f}\n")
             f.write(f"   p-value: {shapiro_p:.6e}\n")
             if shapiro_p > 0.05:
-                f.write("   ✅ التوزيع طبيعي (p > 0.05)\n")
-                f.write("   → يمكن استخدام اختبارات Parametric (مثل t-test)\n\n")
+                f.write("   ✅ The distribution is normal (p > 0.05)\n")
+                f.write("   → Parametric tests (e.g., t-test) can be used\n\n")
             else:
-                f.write("   ⚠️ التوزيع ليس طبيعياً (p < 0.05)\n")
-                f.write("   → يُفضَّل استخدام اختبارات Non-parametric (مثل Mann-Whitney)\n\n")
+                f.write("   ⚠️ The distribution is not normal (p < 0.05)\n")
+                f.write("   → Non-parametric tests (e.g., Mann-Whitney) are preferred\n\n")
         except Exception as e:
-            f.write(f"   ⚠️ تعذّر: {e}\n\n")
-    
-    # 8.4 مقارنة trials المكتملة والمقتطعة (إن وجدت)
+            f.write(f"   ⚠️ Failed: {e}\n\n")
+
+    # 8.4 Compare completed vs pruned trials (if any)
     if len(df_pruned) > 0:
-        f.write("4) مقارنة trials المكتملة vs المقتطعة\n")
+        f.write("4) Comparison of completed vs pruned trials\n")
         f.write("-" * 50 + "\n")
-        f.write(f"   عدد المكتملة: {len(complete_trials)}\n")
-        f.write(f"   عدد المقتطعة: {len(pruned_trials)}\n")
-        f.write(f"   نسبة الاقتطاع: {pruning_rate:.1f}%\n\n")
-        
-        # هل معاملات معينة ترتبط بالاقتطاع؟
-        f.write("   المعاملات الأكثر ارتباطاً بالاقتطاع:\n")
+        f.write(f"   Number completed: {len(complete_trials)}\n")
+        f.write(f"   Number pruned: {len(pruned_trials)}\n")
+        f.write(f"   Pruning rate: {pruning_rate:.1f}%\n\n")
+
+        f.write("   Parameters most associated with pruning:\n")
         for param in numeric_params:
             if param not in df.columns:
                 continue
@@ -697,117 +875,117 @@ with open(stats_report_path, 'w', encoding='utf-8') as f:
                 try:
                     stat, p = stats.mannwhitneyu(complete_vals, pruned_vals)
                     if p < 0.05:
-                        clean = param.replace('params_', '')
-                        f.write(f"      🔴 {clean}: p = {p:.4f} (فرق معنوي)\n")
+                        clean = clean_label(param)
+                        f.write(f"      [SIGNIFICANT] {clean}: p = {p:.4f}\n")
                 except Exception:
                     pass
         f.write("\n")
-    
-    # 8.5 فاصل الثقة لأفضل trial
-    f.write("5) موثوقية أفضل trial\n")
+
+    # 8.5 Reliability of the best trial
+    f.write("5) Reliability of the best trial\n")
     f.write("-" * 50 + "\n")
     best_psnr = study.best_value
-    f.write(f"   أفضل PSNR: {best_psnr:.4f} dB\n")
-    f.write(f"   مقارنة بالمعدل: +{best_psnr - mean_psnr:.4f} dB\n")
-    f.write(f"   عدد الانحرافات المعيارية فوق المعدل: {(best_psnr - mean_psnr) / std_psnr:.2f}σ\n")
-    
-    if best_psnr > mean_psnr + 2 * std_psnr:
-        f.write("   ✅ أفضل trial أعلى من المتوسط بـ 2σ — نتيجة متميزة\n")
-    elif best_psnr > mean_psnr + std_psnr:
-        f.write("   ✅ أفضل trial أعلى من المتوسط بـ 1σ — نتيجة جيدة\n")
-    else:
-        f.write("   ⚠️ أفضل trial قريب من المتوسط — قد تحتاج trials أكثر\n")
+    f.write(f"   Best PSNR: {best_psnr:.4f} dB\n")
+    f.write(f"   Difference from mean: +{best_psnr - mean_psnr:.4f} dB\n")
+    f.write(f"   Standard deviations above mean: {(best_psnr - mean_psnr) / std_psnr:.2f} sigma\n")
 
-print(f"   ✅ تم حفظ الاختبارات الإحصائية في: {stats_report_path}")
+    if best_psnr > mean_psnr + 2 * std_psnr:
+        f.write("   ✅ Best trial is more than 2 sigma above the mean — outstanding result\n")
+    elif best_psnr > mean_psnr + std_psnr:
+        f.write("   ✅ Best trial is more than 1 sigma above the mean — good result\n")
+    else:
+        f.write("   ⚠️ Best trial is close to the mean — more trials may be needed\n")
+
+print(f"   ✅ Statistical tests saved to: {stats_report_path}")
 
 
 # ===================================================================
-# القسم 9: تقرير نصي شامل
+# Section 9: Comprehensive text report
 # ===================================================================
 print("\n" + "=" * 75)
-print("📝 القسم 5: التقرير النصي الشامل")
+print("📝 Section 5: Comprehensive text report")
 print("=" * 75)
 
 report_path = os.path.join(OUTPUT_DIR, "analysis_report.txt")
 with open(report_path, 'w', encoding='utf-8') as f:
     f.write("=" * 75 + "\n")
-    f.write("📊 تقرير تحليل دراسة Optuna (عام)\n")
+    f.write("Optuna Study Analysis Report (generic)\n")
     f.write("=" * 75 + "\n\n")
-    
-    f.write(f"📚 اسم الدراسة: {STUDY_NAME}\n")
-    f.write(f"📂 مسار التخزين: {STORAGE_PATH}\n")
-    f.write(f"📊 إجمالي trials: {len(all_trials)}\n")
-    f.write(f"✅ مكتملة: {len(complete_trials)}\n")
-    f.write(f"✂️ مقتطعة: {len(pruned_trials)} ({pruning_rate:.1f}%)\n")
-    f.write(f"❌ فاشلة: {len(failed_trials)}\n")
-    f.write(f"🏆 أفضل PSNR: {study.best_value:.4f} dB\n")
-    f.write(f"🎯 أفضل Trial: #{study.best_trial.number}\n\n")
-    
+
+    f.write(f"Study name: {STUDY_NAME}\n")
+    f.write(f"Storage path: {STORAGE_PATH}\n")
+    f.write(f"Total trials: {len(all_trials)}\n")
+    f.write(f"Completed: {len(complete_trials)}\n")
+    f.write(f"Pruned: {len(pruned_trials)} ({pruning_rate:.1f}%)\n")
+    f.write(f"Failed: {len(failed_trials)}\n")
+    f.write(f"Best PSNR: {study.best_value:.4f} dB\n")
+    f.write(f"Best trial: #{study.best_trial.number}\n\n")
+
     f.write("=" * 75 + "\n")
-    f.write("🏆 أفضل المعاملات:\n")
+    f.write("Best parameters:\n")
     f.write("=" * 75 + "\n")
     for key, value in study.best_trial.params.items():
         if isinstance(value, float):
             f.write(f"  {key:>25} : {value:.6e}\n")
         else:
             f.write(f"  {key:>25} : {value}\n")
-    
+
     f.write("\n" + "=" * 75 + "\n")
-    f.write("📈 معامل الارتباط بين كل معامل و PSNR (مرتب):\n")
+    f.write("Correlation of each parameter with PSNR (sorted):\n")
     f.write("=" * 75 + "\n")
     if len(numeric_params) > 0:
         corr_data = df_complete[numeric_params + ['value']].corr()['value'].drop('value')
         corr_data = corr_data.sort_values(ascending=False)
         for param, corr in corr_data.items():
-            clean = param.replace('params_', '')
+            clean = clean_label(param)
             if abs(corr) > 0.5:
-                marker = "🟢" if corr > 0 else "🔴"
+                marker = "[STRONG+]" if corr > 0 else "[STRONG-]"
             elif abs(corr) > 0.3:
-                marker = "🟡" if corr > 0 else "🟠"
+                marker = "[MOD+]" if corr > 0 else "[MOD-]"
             else:
-                marker = "⚪"
+                marker = "[WEAK]"
             f.write(f"  {marker} {clean:>25} : {corr:+.4f}\n")
-    
+
     f.write("\n" + "=" * 75 + "\n")
-    f.write("💡 توصيات لاختيار أفضل المعاملات:\n")
+    f.write("Recommendations for choosing the best parameters:\n")
     f.write("=" * 75 + "\n")
     if len(numeric_params) > 0:
         for param, corr in corr_data.items():
-            clean = param.replace('params_', '')
+            clean = clean_label(param)
             if abs(corr) > 0.3:
                 if corr > 0:
-                    f.write(f"  ✅ زيادة {clean} يحسّن PSNR (r = {corr:+.3f})\n")
+                    f.write(f"  ✅ Increasing {clean} improves PSNR (r = {corr:+.3f})\n")
                 else:
-                    f.write(f"  ✅ تقليل {clean} يحسّن PSNR (r = {corr:+.3f})\n")
+                    f.write(f"  ✅ Decreasing {clean} improves PSNR (r = {corr:+.3f})\n")
 
-print(f"✅ تم حفظ التقرير في: {report_path}")
+print(f"✅ Report saved to: {report_path}")
 
-# حفظ DataFrame كامل
+# Save the full DataFrame
 csv_path = os.path.join(OUTPUT_DIR, "all_trials_full.csv")
 df_complete.to_csv(csv_path, index=False, encoding='utf-8-sig')
-print(f"✅ تم حفظ كل المحاولات في: {csv_path}")
+print(f"✅ All trials saved to: {csv_path}")
 
 
 # ===================================================================
-# الملخص النهائي
+# Final summary
 # ===================================================================
 print("\n" + "=" * 75)
-print("🎉 تم الانتهاء من التحليل الشامل!")
+print("🎉 Comprehensive analysis complete!")
 print("=" * 75)
-print(f"📂 جميع الملفات في: {OUTPUT_DIR}")
-print("\n📁 الملفات المنتجة:")
-print("   01_optimization_history.pdf/png")
-print("   02_param_importance.pdf/png")
-print("   03_slice_plot.pdf/png")
-print("   04_contour_plot.pdf/png")
-print("   05_parallel_coordinates.pdf/png")
-print("   06_custom_scatter_plots.pdf/png")
-print("   07_correlation_heatmap.pdf/png")
-print("   08_top10_trials.pdf/png")
-print("   12_pruned_vs_complete_distribution.pdf/png  ← 🆕 مقارنة")
-print("   13_pruning_rate_*.pdf/png                     ← 🆕 نسب الاقتطاع")
-print("   analysis_report.txt                           ← تقرير شامل")
-print("   pruning_analysis.txt                          ← 🆕 تحليل الاقتطاع")
-print("   statistical_tests.txt                         ← 🆕 اختبارات إحصائية")
+print(f"📂 All files are in: {OUTPUT_DIR}")
+print("\n📁 Generated files (each figure as .pdf / .png / .jpeg):")
+print("   01_optimization_history.pdf/png/jpeg")
+print("   02_param_importance.pdf/png/jpeg")
+print("   03_slice_plot.pdf/png/jpeg")
+print("   04_contour_plot.pdf/png/jpeg")
+print("   05_parallel_coordinates.pdf/png/jpeg")
+print("   06_custom_scatter_plots.pdf/png/jpeg")
+print("   07_correlation_heatmap.pdf/png/jpeg")
+print("   08_top10_trials.pdf/png/jpeg")
+print("   12_pruned_vs_complete_distribution.pdf/png/jpeg")
+print("   13_pruning_rate_*.pdf/png/jpeg")
+print("   analysis_report.txt")
+print("   pruning_analysis.txt")
+print("   statistical_tests.txt")
 print("   all_trials_full.csv")
 print("=" * 75)

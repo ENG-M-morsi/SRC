@@ -1,50 +1,50 @@
 ===========================================================================
-📊 تقرير الاختبارات الإحصائية
+Statistical Tests Report
 ===========================================================================
 
-1) الإحصاءات الوصفية لـ PSNR (trials المكتملة)
+1) Descriptive statistics for PSNR (completed trials)
 --------------------------------------------------
-   عدد trials: 19
-   المتوسط: 29.2446 dB
-   الانحراف المعياري: 1.6900 dB
-   الوسيط: 29.9851 dB
-   الأدنى: 23.7475 dB
-   الأعلى: 30.3066 dB
-   الربع الأول (Q1): 28.8693 dB
-   الربع الثالث (Q3): 30.1827 dB
+   Number of trials: 19
+   Mean: 29.2446 dB
+   Standard deviation: 1.6900 dB
+   Median: 29.9851 dB
+   Minimum: 23.7475 dB
+   Maximum: 30.3066 dB
+   1st quartile (Q1): 28.8693 dB
+   3rd quartile (Q3): 30.1827 dB
    IQR: 1.3133 dB
-   فاصل الثقة 95% (Bootstrap): [28.4303, 29.8848]
-   الخطأ المعياري (SE): 0.3877 dB
+   95% confidence interval (Bootstrap): [28.4303, 29.8848]
+   Standard error (SE): 0.3877 dB
 
-2) اختبار Mann-Whitney U (أفضل 25% vs أسوأ 25%)
+2) Mann-Whitney U test (best 25% vs worst 25%)
 --------------------------------------------------
-   حجم أفضل مجموعة: 4
-   حجم أسوأ مجموعة: 4
-   متوسط أفضل مجموعة: 30.2638 dB
-   متوسط أسوأ مجموعة: 26.5896 dB
-   الفرق: 3.6742 dB
-   إحصائية U: 16.0000
+   Best-group size: 4
+   Worst-group size: 4
+   Best-group mean: 30.2638 dB
+   Worst-group mean: 26.5896 dB
+   Difference: 3.6742 dB
+   U statistic: 16.0000
    p-value: 1.428571e-02
-   ✅ فرق معنوي (p < 0.05) — النتائج مقبولة
+   ✅ Significant difference (p < 0.05) — results are acceptable
 
-3) اختبار Shapiro-Wilk (هل التوزيع طبيعي؟)
+3) Shapiro-Wilk test (is the distribution normal?)
 --------------------------------------------------
-   إحصائية W: 0.6538
+   W statistic: 0.6538
    p-value: 1.642538e-05
-   ⚠️ التوزيع ليس طبيعياً (p < 0.05)
-   → يُفضَّل استخدام اختبارات Non-parametric (مثل Mann-Whitney)
+   ⚠️ The distribution is not normal (p < 0.05)
+   → Non-parametric tests (e.g., Mann-Whitney) are preferred
 
-4) مقارنة trials المكتملة vs المقتطعة
+4) Comparison of completed vs pruned trials
 --------------------------------------------------
-   عدد المكتملة: 19
-   عدد المقتطعة: 11
-   نسبة الاقتطاع: 35.5%
+   Number completed: 19
+   Number pruned: 11
+   Pruning rate: 35.5%
 
-   المعاملات الأكثر ارتباطاً بالاقتطاع:
+   Parameters most associated with pruning:
 
-5) موثوقية أفضل trial
+5) Reliability of the best trial
 --------------------------------------------------
-   أفضل PSNR: 30.3066 dB
-   مقارنة بالمعدل: +1.0619 dB
-   عدد الانحرافات المعيارية فوق المعدل: 0.63σ
-   ⚠️ أفضل trial قريب من المتوسط — قد تحتاج trials أكثر
+   Best PSNR: 30.3066 dB
+   Difference from mean: +1.0619 dB
+   Standard deviations above mean: 0.63 sigma
+   ⚠️ Best trial is close to the mean — more trials may be needed

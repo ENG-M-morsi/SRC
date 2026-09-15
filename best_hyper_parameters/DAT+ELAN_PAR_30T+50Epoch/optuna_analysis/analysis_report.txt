@@ -1,18 +1,18 @@
 ===========================================================================
-📊 تقرير تحليل دراسة Optuna (عام)
+Optuna Study Analysis Report (generic)
 ===========================================================================
 
-📚 اسم الدراسة: hutcn_hyperopt_study
-📂 مسار التخزين: D:\Mohamed Morsi\src\best_hyper_parameters\DAT+ELAN_PAR_30T+50Epoch\optuna_study.db
-📊 إجمالي trials: 31
-✅ مكتملة: 19
-✂️ مقتطعة: 11 (35.5%)
-❌ فاشلة: 0
-🏆 أفضل PSNR: 30.3066 dB
-🎯 أفضل Trial: #23
+Study name: hutcn_hyperopt_study
+Storage path: D:\Mohamed Morsi\src\best_hyper_parameters\DAT+ELAN_PAR_30T+50Epoch\optuna_study.db
+Total trials: 31
+Completed: 19
+Pruned: 11 (35.5%)
+Failed: 0
+Best PSNR: 30.3066 dB
+Best trial: #23
 
 ===========================================================================
-🏆 أفضل المعاملات:
+Best parameters:
 ===========================================================================
                     n_feats : 88
               num_heads_dat : 8
@@ -30,12 +30,12 @@
                weight_decay : 6.181416e-05
 
 ===========================================================================
-📈 معامل الارتباط بين كل معامل و PSNR (مرتب):
+Correlation of each parameter with PSNR (sorted):
 ===========================================================================
-  ⚪                        lr : -0.0936
-  🔴              weight_decay : -0.6352
+  [WEAK]                        lr : -0.0936
+  [STRONG-]              weight decay : -0.6352
 
 ===========================================================================
-💡 توصيات لاختيار أفضل المعاملات:
+Recommendations for choosing the best parameters:
 ===========================================================================
-  ✅ تقليل weight_decay يحسّن PSNR (r = -0.635)
+  ✅ Decreasing weight decay improves PSNR (r = -0.635)
