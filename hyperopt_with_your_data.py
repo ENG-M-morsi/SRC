@@ -1,6 +1,5 @@
 # ===================================================================
-# hyperopt_with_your_data.py — بحث شامل مع معاملات منفصلة
-# ✅ النسخة المحسّنة: تدعم الاستئناف بعد انقطاع الكهرباء
+# hyperopt_with_your_data.py — بحث شامل مع معاملات منفصلة + استكمال تلقائي
 # ===================================================================
 import optuna
 import torch
@@ -11,8 +10,6 @@ import os
 import sys
 import copy
 import json
-import numpy as np
-import random
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -24,9 +21,11 @@ from option import args as base_args
 from model.dhtcun import HUTCN
 
 # ===================================================================
-# إعدادات الاستئناف
+# إعدادات البحث (يمكنك تعديلها من هنا)
 # ===================================================================
-STUDY_NAME = "hutcn_hyperopt_study"
+N_TRIALS = 30               # ← إجمالي عدد المحاولات المطلوبة
+EPOCHS_PER_TRIAL = 50       # ← عدد الحقب لكل محاولة
+STUDY_NAME = "hutcn_hyperopt_separate_v1"    # ← غيّر الاسم لبدء دراسة جديدة
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "optuna_study.db")
 STORAGE_URL = f"sqlite:///{STORAGE_PATH}"
@@ -51,7 +50,7 @@ class HuberLoss(nn.Module):
         return torch.mean(mask * (x - y)**2 + (1 - mask) * (2 * self.delta * diff - self.delta**2))
 
 # ===================================================================
-# دالة تحميل البيانات
+# دالة إنشاء DataLoaders
 # ===================================================================
 def get_loaders_from_args(trial_params, base_args):
     args = copy.deepcopy(base_args)
@@ -69,7 +68,7 @@ def get_loaders_from_args(trial_params, base_args):
 # دالة الهدف الرئيسية
 # ===================================================================
 def objective(trial):
-    # ---------- (أ) معاملات بنية النموذج ----------
+    # ---------- معاملات بنية النموذج ----------
     nf = trial.suggest_int('n_feats', 32, 128, step=8)
 
     # --- معاملات DAT ---
@@ -86,20 +85,20 @@ def objective(trial):
     ws_elan = trial.suggest_categorical('ws_elan', [4, 6, 8, 12, 16])
     num_blocks_elan = trial.suggest_int('num_blocks_elan', 1, 4, step=1)
 
-    # --- معاملات مشتركة ---
-    batch_size = trial.suggest_categorical('batch_size', [4, 8])
+    # --- معاملات عامة ---
     patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224])
     if ws_dat > patch_size or ws_elan > patch_size:
         raise optuna.TrialPruned()
+    batch_size = trial.suggest_categorical('batch_size', [4, 8])
 
-    # ---------- (ب) معاملات التدريب ----------
+    # ---------- معاملات التدريب ----------
     optimizer_name = trial.suggest_categorical('optimizer', ['ADAM', 'AdamW'])
     scheduler_name = trial.suggest_categorical('scheduler', ['fixed', 'cosine', 'step'])
     loss_name = trial.suggest_categorical('loss', ['L1', 'L2', 'Charbonnier', 'Huber'])
     lr = trial.suggest_float('lr', 1e-5, 5e-4, log=True)
     weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
 
-    # ---------- (ج) بناء النموذج ----------
+    # ---------- بناء النموذج ----------
     model = HUTCN(
         in_nc=3,
         nf=nf,
@@ -117,14 +116,14 @@ def objective(trial):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
-    # ---------- (د) المُحسّن ----------
+    # ---------- المُحسّن ----------
     if optimizer_name == 'ADAM':
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
     else:
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
-    # ---------- (هـ) جدول توهين ----------
-    EPOCHS = 50
+    # ---------- جدول التوهين ----------
+    EPOCHS = EPOCHS_PER_TRIAL
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':
@@ -132,7 +131,7 @@ def objective(trial):
     else:
         scheduler = lrs.StepLR(optimizer, step_size=3, gamma=0.5)
 
-    # ---------- (و) دالة الخسارة ----------
+    # ---------- دالة الخسارة ----------
     if loss_name == 'L1':
         criterion = nn.L1Loss()
     elif loss_name == 'L2':
@@ -142,14 +141,17 @@ def objective(trial):
     else:
         criterion = HuberLoss(delta=0.01)
 
-    # ---------- (ز) تحميل البيانات ----------
-    trial_params = {'patch_size': patch_size, 'batch_size': batch_size}
+    # ---------- تحميل البيانات ----------
+    trial_params = {
+        'patch_size': patch_size,
+        'batch_size': batch_size
+    }
     train_loader, test_loaders = get_loaders_from_args(trial_params, base_args)
     val_loader = test_loaders[0] if test_loaders else None
     if val_loader is None:
         raise optuna.TrialPruned()
 
-    # ---------- (ح) حلقة التدريب ----------
+    # ---------- حلقة التدريب ----------
     best_psnr = 0.0
     for epoch in range(1, EPOCHS + 1):
         model.train()
@@ -162,7 +164,7 @@ def objective(trial):
             optimizer.step()
 
             if batch_idx % 50 == 0:
-                print(f'Trial {trial.number} | Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item():.4f}')
+                print(f'[Trial {trial.number}] Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item():.4f}')
 
         if scheduler is not None:
             scheduler.step()
@@ -179,6 +181,7 @@ def objective(trial):
                 psnr_sum += psnr.item()
 
         avg_psnr = psnr_sum / len(val_loader)
+        print(f'[Trial {trial.number}] Epoch {epoch}: PSNR = {avg_psnr:.3f} dB')
 
         trial.report(avg_psnr, epoch)
         if trial.should_prune():
@@ -190,13 +193,11 @@ def objective(trial):
     return best_psnr
 
 # ===================================================================
-# تشغيل البحث (مع دعم الاستئناف)
+# تشغيل البحث (مع خاصية الاستكمال التلقائي)
 # ===================================================================
 if __name__ == "__main__":
-    N_TRIALS = 30  # إجمالي عدد المحاولات المطلوبة
-
     # --------------------------------------------------------------
-    # ✅ إنشاء أو تحميل الدراسة السابقة (Persistence)
+    # ✅ إنشاء أو تحميل الدراسة (Persistence)
     # --------------------------------------------------------------
     study = optuna.create_study(
         study_name=STUDY_NAME,
@@ -204,10 +205,10 @@ if __name__ == "__main__":
         direction='maximize',
         sampler=optuna.samplers.TPESampler(seed=42),
         pruner=optuna.pruners.MedianPruner(n_warmup_steps=3),
-        load_if_exists=True   # ← يحمّل الدراسة إن كانت موجودة
+        load_if_exists=True          # ← يحمّل الدراسة إن كانت موجودة
     )
 
-    # عرض ملخص للدراسة الحالية (إن كانت موجودة)
+    # عرض ملخص للدراسة الحالية
     completed_trials = len([t for t in study.trials
                             if t.state == optuna.trial.TrialState.COMPLETE])
     total_trials = len(study.trials)
@@ -228,16 +229,12 @@ if __name__ == "__main__":
         print("✅ تم إكمال جميع المحاولات المطلوبة مسبقاً.")
     else:
         print(f"🚀 بدء/استئناف البحث ({remaining_trials} محاولة متبقية)...")
-
         try:
-            # ----------------------------------------------------------
-            # ✅ حلقة البحث الآمنة (تدعم الإيقاف بـ Ctrl+C)
-            # ----------------------------------------------------------
             study.optimize(
                 objective,
                 n_trials=remaining_trials,
                 show_progress_bar=True,
-                catch=(RuntimeError,)  # تجاهل أخطاء CUDA المؤقتة
+                catch=(RuntimeError,)   # تجاهل أخطاء CUDA المؤقتة
             )
         except KeyboardInterrupt:
             print("\n\n⚠️ تم إيقاف البحث يدوياً (Ctrl+C).")
@@ -262,7 +259,7 @@ if __name__ == "__main__":
         json.dump(study.best_params, f, indent=4, ensure_ascii=False)
     print(f"✅ تم حفظ أفضل المعاملات في: {output_json}")
 
-    # (اختياري) حفظ جميع المحاولات في CSV للمراجعة
+    # (اختياري) حفظ جميع المحاولات في CSV
     try:
         df = study.trials_dataframe()
         csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
