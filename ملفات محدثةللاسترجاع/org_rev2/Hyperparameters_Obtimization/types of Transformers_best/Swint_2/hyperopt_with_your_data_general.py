@@ -1,5 +1,6 @@
 # ===================================================================
-# hyperopt_with_your_data.py — بحث شامل مع معاملات منفصلة + استكمال تلقائي
+# hyperopt_with_your_data.py — بحث شامل مع SwinT و HUTCN
+# متوافق مع ملفات dhtcu_block.py, dhtcun.py, custom_attention_blocks.py
 # ===================================================================
 import optuna
 import torch
@@ -9,8 +10,7 @@ import torch.optim.lr_scheduler as lrs
 import os
 import sys
 import copy
-import json
-
+import json    ####################
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import utility
@@ -19,13 +19,16 @@ import model as model_module
 import loss as loss_module
 from option import args as base_args
 from model.dhtcun import HUTCN
+from model import dhtcu_block as B
 
-# ===================================================================
-# إعدادات البحث (يمكنك تعديلها من هنا)
-# ===================================================================
-N_TRIALS = 30               # ← إجمالي عدد المحاولات المطلوبة
-EPOCHS_PER_TRIAL = 50       # ← عدد الحقب لكل محاولة
-STUDY_NAME = "hutcn_hyperopt_separate_v1"    # ← غيّر الاسم لبدء دراسة جديدة
+# ═══════════════════════════════════════════════════════════
+# 🆕 إضافة هذه الأسطر (لا تحذف شيئاً)
+# ═══════════════════════════════════════════════════════════
+N_TRIALS = 50
+EPOCHS_PER_TRIAL = 50
+N_STARTUP_TRIALS = 5
+N_WARMUP_STEPS = 3
+STUDY_NAME = "hutcn_hyperopt_study"
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "optuna_study.db")
 STORAGE_URL = f"sqlite:///{STORAGE_PATH}"
@@ -50,14 +53,15 @@ class HuberLoss(nn.Module):
         return torch.mean(mask * (x - y)**2 + (1 - mask) * (2 * self.delta * diff - self.delta**2))
 
 # ===================================================================
-# دالة إنشاء DataLoaders
+# دالة إنشاء DataLoaders (مصححة)
 # ===================================================================
 def get_loaders_from_args(trial_params, base_args):
     args = copy.deepcopy(base_args)
+    # إعدادات البيانات الصحيحة (كقوائم لتجنب خطأ data.d)
     args.data_train = ['DIV2K']
     args.data_test = ['DIV2K']
     args.data_range = '1-800/896-900'
-    args.scale = [4]
+    args.scale = [4]  # قائمة أعداد صحيحة
     args.dir_data = r'D:\Mohamed Morsi\DATA'
     args.patch_size = trial_params['patch_size']
     args.batch_size = trial_params['batch_size']
@@ -68,28 +72,18 @@ def get_loaders_from_args(trial_params, base_args):
 # دالة الهدف الرئيسية
 # ===================================================================
 def objective(trial):
-    # ---------- معاملات بنية النموذج ----------
-    nf = trial.suggest_int('n_feats', 32, 128, step=8)
-
-    # --- معاملات DAT ---
-    num_heads_dat = trial.suggest_categorical('num_heads_dat', [2, 4, 8])
-    if nf % num_heads_dat != 0:
+    # ---------- معاملات النموذج ----------
+    nf = trial.suggest_int('n_feats', 64, 128, step=8)
+    num_heads = trial.suggest_categorical('num_heads', [2, 4, 8, 16])
+    if nf % num_heads != 0:
         raise optuna.TrialPruned()
-    ws_dat = trial.suggest_categorical('ws_dat', [4, 6, 8, 12, 16])
-    num_blocks_dat = trial.suggest_int('num_blocks_dat', 1, 4, step=1)
 
-    # --- معاملات ELAN ---
-    num_heads_elan = trial.suggest_categorical('num_heads_elan', [2, 4, 8])
-    if nf % num_heads_elan != 0:
-        raise optuna.TrialPruned()
-    ws_elan = trial.suggest_categorical('ws_elan', [4, 6, 8, 12, 16])
-    num_blocks_elan = trial.suggest_int('num_blocks_elan', 1, 4, step=1)
+    window_size = trial.suggest_categorical('window_size', [8, 12, 16])
+    num_blocks = trial.suggest_int('num_blocks', 2, 4, step=1)
 
-    # --- معاملات عامة ---
     patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224])
-    if ws_dat > patch_size or ws_elan > patch_size:
+    if window_size > patch_size:
         raise optuna.TrialPruned()
-    batch_size = trial.suggest_categorical('batch_size', [4, 8])
 
     # ---------- معاملات التدريب ----------
     optimizer_name = trial.suggest_categorical('optimizer', ['ADAM', 'AdamW'])
@@ -102,33 +96,30 @@ def objective(trial):
     model = HUTCN(
         in_nc=3,
         nf=nf,
-        num_modules=1,
+        num_modules=1,          # نستخدم كتلة واحدة للسرعة
         out_nc=3,
         upscale=4,
-        num_heads_dat=num_heads_dat,
-        ws_dat=ws_dat,
-        num_blocks_dat=num_blocks_dat,
-        num_heads_elan=num_heads_elan,
-        ws_elan=ws_elan,
-        num_blocks_elan=num_blocks_elan
+        num_heads=num_heads,
+        window_size=window_size,
+        num_blocks=num_blocks
     )
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
-    # ---------- المُحسّن ----------
+    # ---------- المحسّن ----------
     if optimizer_name == 'ADAM':
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
     else:
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
     # ---------- جدول التوهين ----------
-    EPOCHS = EPOCHS_PER_TRIAL
+    EPOCHS = 10  # يمكن تعديلها حسب الحاجة
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':
         scheduler = lrs.CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=1e-7)
-    else:
+    else:  # step
         scheduler = lrs.StepLR(optimizer, step_size=3, gamma=0.5)
 
     # ---------- دالة الخسارة ----------
@@ -138,13 +129,13 @@ def objective(trial):
         criterion = nn.MSELoss()
     elif loss_name == 'Charbonnier':
         criterion = CharbonnierLoss(eps=1e-3)
-    else:
+    else:  # Huber
         criterion = HuberLoss(delta=0.01)
 
     # ---------- تحميل البيانات ----------
     trial_params = {
         'patch_size': patch_size,
-        'batch_size': batch_size
+        'batch_size': 8  # يمكن جعله متغيراً أيضاً
     }
     train_loader, test_loaders = get_loaders_from_args(trial_params, base_args)
     val_loader = test_loaders[0] if test_loaders else None
@@ -164,7 +155,7 @@ def objective(trial):
             optimizer.step()
 
             if batch_idx % 50 == 0:
-                print(f'[Trial {trial.number}] Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item():.4f}')
+                print(f'Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item():.4f}')
 
         if scheduler is not None:
             scheduler.step()
@@ -181,7 +172,6 @@ def objective(trial):
                 psnr_sum += psnr.item()
 
         avg_psnr = psnr_sum / len(val_loader)
-        print(f'[Trial {trial.number}] Epoch {epoch}: PSNR = {avg_psnr:.3f} dB')
 
         trial.report(avg_psnr, epoch)
         if trial.should_prune():
@@ -193,78 +183,41 @@ def objective(trial):
     return best_psnr
 
 # ===================================================================
-# تشغيل البحث (مع خاصية الاستكمال التلقائي)
+# تشغيل البحث
 # ===================================================================
 if __name__ == "__main__":
-    # --------------------------------------------------------------
-    # ✅ إنشاء أو تحميل الدراسة (Persistence)
-    # --------------------------------------------------------------
+    
+    # 1️⃣ إنشاء أو تحميل الدراسة
     study = optuna.create_study(
-        study_name=STUDY_NAME,
-        storage=STORAGE_URL,
+        study_name=STUDY_NAME,                   # ← جديد
+        storage=STORAGE_URL,                      # ← جديد
         direction='maximize',
         sampler=optuna.samplers.TPESampler(seed=42),
-        pruner=optuna.pruners.MedianPruner(n_warmup_steps=3),
-        load_if_exists=True          # ← يحمّل الدراسة إن كانت موجودة
+        pruner=optuna.pruners.MedianPruner(
+            n_startup_trials=N_STARTUP_TRIALS,
+            n_warmup_steps=N_WARMUP_STEPS,
+        ),
+        load_if_exists=True                       # ← جديد
     )
 
-    # عرض ملخص للدراسة الحالية
-    completed_trials = len([t for t in study.trials
-                            if t.state == optuna.trial.TrialState.COMPLETE])
-    total_trials = len(study.trials)
+    # 2️⃣ حساب المحاولات المتبقية
+    complete_trials = [t for t in study.trials 
+                       if t.state == optuna.trial.TrialState.COMPLETE]
+    remaining = N_TRIALS - len(complete_trials)
 
-    print("=" * 70)
-    print(f"📚 اسم الدراسة: {STUDY_NAME}")
-    print(f"📂 مسار التخزين: {STORAGE_PATH}")
-    print(f"✅ محاولات مكتملة سابقاً: {completed_trials}")
-    print(f"📊 إجمالي المحاولات المسجلة: {total_trials}")
-    if completed_trials > 0:
-        print(f"🏆 أفضل PSNR سابق: {study.best_value:.3f} dB")
-        print(f"🎯 أفضل trial: {study.best_trial.number}")
-    print("=" * 70)
-
-    # حساب عدد المحاولات المتبقية
-    remaining_trials = N_TRIALS - completed_trials
-    if remaining_trials <= 0:
-        print("✅ تم إكمال جميع المحاولات المطلوبة مسبقاً.")
+    if remaining <= 0:
+        print(f"✅ اكتمل البحث. أفضل PSNR: {study.best_value:.4f} dB")
     else:
-        print(f"🚀 بدء/استئناف البحث ({remaining_trials} محاولة متبقية)...")
+        print(f"🚀 بدء/استئناف البحث ({remaining} محاولة متبقية)...")
         try:
-            study.optimize(
-                objective,
-                n_trials=remaining_trials,
-                show_progress_bar=True,
-                catch=(RuntimeError,)   # تجاهل أخطاء CUDA المؤقتة
-            )
+            study.optimize(objective, n_trials=remaining, show_progress_bar=True)
         except KeyboardInterrupt:
-            print("\n\n⚠️ تم إيقاف البحث يدوياً (Ctrl+C).")
-            print("💾 تم حفظ جميع النتائج تلقائياً في قاعدة البيانات.")
-            print("🔄 لتكملة البحث، أعد تشغيل نفس الأمر.")
+            print("\n⚠️ تم الإيقاف. النتائج محفوظة في قاعدة البيانات.")
 
-    # ==============================================================
-    # عرض وحفظ النتائج النهائية
-    # ==============================================================
-    print("\n" + "=" * 70)
-    print("🏆 أفضل المعاملات حتى الآن:")
-    print("=" * 70)
-    for key, value in study.best_params.items():
-        print(f"  {key:>20} : {value}")
-    print(f"\n📈 أفضل PSNR على مجموعة التحقق: {study.best_value:.3f} dB")
-    print("=" * 70)
-
-    # حفظ النتائج في JSON
-    output_json = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'best_params_optimized_separate.json')
-    with open(output_json, 'w', encoding='utf-8') as f:
-        json.dump(study.best_params, f, indent=4, ensure_ascii=False)
-    print(f"✅ تم حفظ أفضل المعاملات في: {output_json}")
-
-    # (اختياري) حفظ جميع المحاولات في CSV
-    try:
-        df = study.trials_dataframe()
-        csv_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                'optuna_all_trials.csv')
-        df.to_csv(csv_path, index=False, encoding='utf-8-sig')
-        print(f"📊 تم حفظ جميع المحاولات في: {csv_path}")
-    except Exception as e:
-        print(f"⚠️ تعذّر حفظ ملف CSV: {e}")
+    # 3️⃣ حفظ النتائج
+    if len(study.trials) > 0:
+        with open('best_params_optimized.json', 'w') as f:
+            json.dump(study.best_params, f, indent=4)
+        study.trials_dataframe().to_csv('optuna_all_trials.csv', 
+                                         index=False, encoding='utf-8-sig')
+        print("✅ تم حفظ النتائج")
