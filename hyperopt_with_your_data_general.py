@@ -10,7 +10,7 @@ import torch.optim.lr_scheduler as lrs
 import os
 import sys
 import copy
-import json
+import json    ####################
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import utility
@@ -26,8 +26,8 @@ from model import dhtcu_block as B
 # ═══════════════════════════════════════════════════════════
 N_TRIALS = 50
 EPOCHS_PER_TRIAL = 50
-N_STARTUP_TRIALS = 5
-N_WARMUP_STEPS = 3
+N_STARTUP_TRIALS = 10
+N_WARMUP_STEPS = 6
 STUDY_NAME = "hutcn_hyperopt_study"
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "optuna_study.db")
