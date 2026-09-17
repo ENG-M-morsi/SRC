@@ -25,8 +25,8 @@ from model.custom_attention_blocks import OmniSR
 # ═══════════════════════════════════════════════════════════
 N_TRIALS = 50
 EPOCHS_PER_TRIAL = 50
-N_STARTUP_TRIALS = 5
-N_WARMUP_STEPS = 3
+N_STARTUP_TRIALS = 10
+N_WARMUP_STEPS = 6
 STUDY_NAME = "hutcn_hyperopt_study"
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "optuna_study.db")
