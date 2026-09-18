@@ -189,35 +189,103 @@ if __name__ == "__main__":
     
     # 1️⃣ إنشاء أو تحميل الدراسة
     study = optuna.create_study(
-        study_name=STUDY_NAME,                   # ← جديد
-        storage=STORAGE_URL,                      # ← جديد
+        study_name=STUDY_NAME,
+        storage=STORAGE_URL,
         direction='maximize',
         sampler=optuna.samplers.TPESampler(seed=42),
         pruner=optuna.pruners.MedianPruner(
             n_startup_trials=N_STARTUP_TRIALS,
             n_warmup_steps=N_WARMUP_STEPS,
         ),
-        load_if_exists=True                       # ← جديد
+        load_if_exists=True
     )
 
-    # 2️⃣ حساب المحاولات المتبقية
+    # 2️⃣ حساب الإحصاءات الحالية (بغض النظر عن الحالة)
     complete_trials = [t for t in study.trials 
                        if t.state == optuna.trial.TrialState.COMPLETE]
-    remaining = N_TRIALS - len(complete_trials)
+    pruned_trials   = [t for t in study.trials 
+                       if t.state == optuna.trial.TrialState.PRUNED]
+    failed_trials   = [t for t in study.trials 
+                       if t.state == optuna.trial.TrialState.FAIL]
+    running_trials  = [t for t in study.trials 
+                       if t.state == optuna.trial.TrialState.RUNNING]
 
+    total_so_far = len(study.trials)
+    remaining = max(0, N_TRIALS - total_so_far)
+
+    # 3️⃣ عرض ملخص واضح
+    print("=" * 70)
+    print(f"📚 اسم الدراسة: {STUDY_NAME}")
+    print(f"🎯 الهدف: {N_TRIALS} trial إجمالي (COMPLETE + PRUNED + FAIL)")
+    print("=" * 70)
+    print(f"📊 الحالة الحالية في قاعدة البيانات:")
+    print(f"   ✅ COMPLETE : {len(complete_trials)}")
+    print(f"   ✂️ PRUNED   : {len(pruned_trials)}")
+    print(f"   ❌ FAILED   : {len(failed_trials)}")
+    print(f"   🔄 RUNNING  : {len(running_trials)}")
+    print(f"   ─────────────────────")
+    print(f"   📦 الإجمالي : {total_so_far} / {N_TRIALS}")
+    print(f"   🎯 المتبقي  : {remaining}")
+    if len(complete_trials) > 0:
+        print(f"   🏆 أفضل PSNR: {study.best_value:.4f} dB "
+              f"(Trial #{study.best_trial.number})")
+    print("=" * 70)
+
+    # 4️⃣ تشغيل / استئناف البحث
     if remaining <= 0:
-        print(f"✅ اكتمل البحث. أفضل PSNR: {study.best_value:.4f} dB")
+        print("\n✅ تم إكمال جميع المحاولات المطلوبة.")
+        print("   💡 لبدء بحث جديد: احذف optuna_study.db أو غيّر STUDY_NAME")
     else:
-        print(f"🚀 بدء/استئناف البحث ({remaining} محاولة متبقية)...")
+        print(f"\n🚀 بدء/استئناف البحث ({remaining} trial متبقٍ)...\n")
         try:
-            study.optimize(objective, n_trials=remaining, show_progress_bar=True)
+            study.optimize(
+                objective,
+                n_trials=remaining,
+                show_progress_bar=True,
+                catch=(RuntimeError,)
+            )
         except KeyboardInterrupt:
-            print("\n⚠️ تم الإيقاف. النتائج محفوظة في قاعدة البيانات.")
+            print("\n" + "=" * 70)
+            print("⚠️ تم الإيقاف يدوياً (Ctrl+C).")
+            print("💾 جميع النتائج محفوظة في قاعدة البيانات.")
+            print("🔄 لتكملة البحث: أعد تشغيل نفس الأمر.")
+            print("=" * 70)
 
-    # 3️⃣ حفظ النتائج
-    if len(study.trials) > 0:
-        with open('best_params_optimized.json', 'w') as f:
-            json.dump(study.best_params, f, indent=4)
-        study.trials_dataframe().to_csv('optuna_all_trials.csv', 
-                                         index=False, encoding='utf-8-sig')
-        print("✅ تم حفظ النتائج")
+    # 5️⃣ حفظ النتائج النهائية
+    if len(complete_trials) > 0 or len(study.trials) > 0:
+        complete_now = [t for t in study.trials 
+                        if t.state == optuna.trial.TrialState.COMPLETE]
+        
+        print("\n" + "=" * 70)
+        print("🏆 أفضل المعاملات النهائية:")
+        print("=" * 70)
+        for key, value in study.best_params.items():
+            if isinstance(value, float):
+                print(f"  {key:>25} : {value:.6e}")
+            else:
+                print(f"  {key:>25} : {value}")
+        print(f"\n📈 أفضل PSNR: {study.best_value:.4f} dB")
+        print("=" * 70)
+        
+        # الإحصاءات النهائية
+        print(f"\n📊 الإحصاءات النهائية:")
+        print(f"   إجمالي trials : {len(study.trials)}")
+        print(f"   ✅ COMPLETE   : {len(complete_now)}")
+        print(f"   ✂️ PRUNED     : {len([t for t in study.trials if t.state == optuna.trial.TrialState.PRUNED])}")
+        print(f"   ❌ FAILED     : {len([t for t in study.trials if t.state == optuna.trial.TrialState.FAIL])}")
+        
+        # حفظ JSON
+        with open('best_params_optimized.json', 'w', encoding='utf-8') as f:
+            json.dump(study.best_params, f, indent=4, ensure_ascii=False)
+        print(f"\n✅ تم حفظ أفضل المعاملات في best_params_optimized.json")
+        
+        # حفظ CSV
+        try:
+            study.trials_dataframe().to_csv(
+                'optuna_all_trials.csv', 
+                index=False, 
+                encoding='utf-8-sig'
+            )
+            print(f"✅ تم حفظ جميع المحاولات في optuna_all_trials.csv")
+        except Exception as e:
+            print(f"⚠️ تعذّر حفظ CSV: {e}")
