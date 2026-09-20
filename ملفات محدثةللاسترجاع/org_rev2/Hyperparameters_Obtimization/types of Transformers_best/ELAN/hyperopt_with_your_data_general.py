@@ -1,5 +1,6 @@
 # ===================================================================
 # hyperopt_with_your_data.py — بحث شامل مع ELAN
+# النسخة النهائية: مع إدارة الذاكرة + حماية OOM + تجاهل FAILED
 # ===================================================================
 import optuna
 import torch
@@ -9,7 +10,7 @@ import torch.optim.lr_scheduler as lrs
 import os
 import sys
 import copy
-import json       #######################
+import json
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -22,17 +23,23 @@ from model.dhtcun import HUTCN
 from model import dhtcu_block as B
 from model.custom_attention_blocks import ELAN
 
-# ═══════════════════════════════════════════════════════════
-# 🆕 إضافة هذه الأسطر (لا تحذف شيئاً)
-# ═══════════════════════════════════════════════════════════
-N_TRIALS = 50
-EPOCHS_PER_TRIAL = 50
-N_STARTUP_TRIALS = 10
-N_WARMUP_STEPS = 6
+# ═══════════════════════════════════════════════════════════════════
+# 🆕 إعدادات البحث (عدّل من هنا فقط)
+# ═══════════════════════════════════════════════════════════════════
+N_TRIALS = 50                     # إجمالي عدد المحاولات الصالحة
+EPOCHS_PER_TRIAL = 50             # عدد الـ epochs لكل trial
+N_STARTUP_TRIALS = 10             # ابدأ الاقتطاع بعد 10 trials
+N_WARMUP_STEPS = 6                # لا تقتطع قبل 6 epochs
+
+# 🆕 عتبة الذاكرة (عدّلها حسب GPU لديك)
+# GTX 1060 (6GB): 3.0 | RTX 2070 (8GB): 5.0 | RTX 3090 (24GB): 15.0
+MEMORY_THRESHOLD = 5.0
+
 STUDY_NAME = "hutcn_hyperopt_study"
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "optuna_study.db")
 STORAGE_URL = f"sqlite:///{STORAGE_PATH}"
+
 
 # ===================================================================
 # دوال الخسارة
@@ -44,6 +51,7 @@ class CharbonnierLoss(nn.Module):
     def forward(self, x, y):
         return torch.mean(torch.sqrt((x - y)**2 + self.eps**2))
 
+
 class HuberLoss(nn.Module):
     def __init__(self, delta=0.01):
         super(HuberLoss, self).__init__()
@@ -52,6 +60,64 @@ class HuberLoss(nn.Module):
         diff = torch.abs(x - y)
         mask = (diff < self.delta).float()
         return torch.mean(mask * (x - y)**2 + (1 - mask) * (2 * self.delta * diff - self.delta**2))
+
+
+# ===================================================================
+# 🆕 دالة تقدير الذاكرة
+# ===================================================================
+def estimate_memory_score(nf, num_heads, num_blocks, window_size, 
+                          patch_size, batch_size):
+    """
+    تقدير غير مباشر لاستهلاك الذاكرة (رقم نسبي وليس GB).
+    كلما زاد الرقم، زادت احتمالية OOM.
+    
+    يعتمد على:
+    - حجم مصفوفة الانتباه في GMSA
+    - عدد النوافذ
+    - عدد الرؤوس
+    - عدد الكتل
+    - عدد القنوات
+    """
+    lr_size = patch_size // 4        # حجم الـ LR (upscale=4)
+    max_ws = window_size * 2          # أكبر نافذة في GMSA (ws*2)
+    max_ws = min(max_ws, lr_size)     # لا تتجاوز حجم الصورة
+    
+    # عدد النوافذ = (H/ws) × (W/ws)
+    n_windows_side = max(1, lr_size // max_ws)
+    n_windows = n_windows_side ** 2
+    
+    # حجم مصفوفة الانتباه الكلية (بالعناصر)
+    # (B × n_windows) × num_heads × ws² × ws²
+    attn_elements = (batch_size * n_windows * num_heads * 
+                     (max_ws ** 2) * (max_ws ** 2))
+    
+    # معامل الذاكرة:
+    # - Attention matrices (× 4 للـ backprop)
+    # - عدد الكتل
+    # - عدد القنوات
+    # - عدد الرؤوس (يضاعف عدد المصفوفات)
+    memory_score = (attn_elements * num_blocks * 4) / 1e8
+    
+    # إضافة تأثير عدد القنوات
+    memory_score *= (nf / 64) ** 0.5
+    
+    # إضافة تأثير الرؤوس (كل رأس = مصفوفة مستقلة)
+    memory_score *= (num_heads / 4) ** 0.3
+    
+    return memory_score
+
+
+def get_safe_batch_size(memory_score, max_score_threshold=5.0):
+    """
+    اقتراح batch_size آمن بناءً على تقدير الذاكرة.
+    """
+    if memory_score <= max_score_threshold:
+        return 8   # آمن
+    elif memory_score <= max_score_threshold * 2:
+        return 4   # متوسط
+    else:
+        return None  # خطير جداً - ارفض
+
 
 # ===================================================================
 # دالة إنشاء DataLoaders (مصححة)
@@ -62,15 +128,16 @@ def get_loaders_from_args(trial_params, base_args):
     args.data_train = ['DIV2K']
     args.data_test = ['DIV2K']
     args.data_range = '1-800/896-900'
-    args.scale = [4]  # قائمة أعداد صحيحة
+    args.scale = [4]
     args.dir_data = r'D:\Mohamed Morsi\DATA'
     args.patch_size = trial_params['patch_size']
     args.batch_size = trial_params['batch_size']
     loader = data.Data(args)
     return loader.loader_train, loader.loader_test
 
+
 # ===================================================================
-# دالة الهدف الرئيسية
+# دالة الهدف الرئيسية (مع فحص الذاكرة وحماية OOM)
 # ===================================================================
 def objective(trial):
     # ---------- معاملات بنية النموذج ----------
@@ -88,6 +155,32 @@ def objective(trial):
     if window_size > patch_size:
         raise optuna.TrialPruned()
 
+    # ═══════════════════════════════════════════════════════════════
+    # 🆕 فحص الذاكرة قبل بناء النموذج (الجزء الحاسم)
+    # ═══════════════════════════════════════════════════════════════
+    PROPOSED_BATCH = 8
+    memory_score = estimate_memory_score(
+        nf, num_heads, num_blocks, window_size, patch_size, PROPOSED_BATCH
+    )
+
+    print(f'   📊 [Trial {trial.number}] Memory score = {memory_score:.2f} '
+          f'(nf={nf}, heads={num_heads}, blocks={num_blocks}, '
+          f'ws={window_size}, patch={patch_size})')
+
+    # ⚠️ إذا تجاوزت العتبة، اقتطع الـ trial فوراً (دون استهلاك ذاكرة)
+    if memory_score > MEMORY_THRESHOLD:
+        print(f'   ✂️ [Trial {trial.number}] Pruned: memory too high '
+              f'({memory_score:.2f} > {MEMORY_THRESHOLD})')
+        raise optuna.TrialPruned()
+
+    # اقتراح batch_size آمن
+    safe_batch = get_safe_batch_size(memory_score, MEMORY_THRESHOLD)
+    if safe_batch is None:
+        print(f'   ✂️ [Trial {trial.number}] Pruned: unsafe memory')
+        raise optuna.TrialPruned()
+    # ═══════════════════════════════════════════════════════════════
+
+    # ---------- معاملات التدريب ----------
     optimizer_name = trial.suggest_categorical('optimizer', ['ADAM', 'AdamW'])
     scheduler_name = trial.suggest_categorical('scheduler', ['fixed', 'cosine', 'step'])
     loss_name = trial.suggest_categorical('loss', ['L1', 'L2', 'Charbonnier', 'Huber'])
@@ -116,7 +209,7 @@ def objective(trial):
     else:
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
-    EPOCHS = 10
+    EPOCHS = EPOCHS_PER_TRIAL
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':
@@ -134,55 +227,77 @@ def objective(trial):
     else:
         criterion = HuberLoss(delta=0.01)
 
-    # ---------- تحميل البيانات ----------
+    # ---------- تحميل البيانات (مع batch الآمن) ----------
     trial_params = {
         'patch_size': patch_size,
-        'batch_size': 8
+        'batch_size': safe_batch   # ← استخدام batch الآمن
     }
     train_loader, test_loaders = get_loaders_from_args(trial_params, base_args)
     val_loader = test_loaders[0] if test_loaders else None
     if val_loader is None:
         raise optuna.TrialPruned()
 
-    # ---------- حلقة التدريب ----------
+    # ═══════════════════════════════════════════════════════════════
+    # 🆕 حلقة التدريب مع حماية OOM
+    # ═══════════════════════════════════════════════════════════════
     best_psnr = 0.0
-    for epoch in range(1, EPOCHS + 1):
-        model.train()
-        for batch_idx, (lr, hr, _) in enumerate(train_loader):
-            lr, hr = lr.to(device), hr.to(device)
-            optimizer.zero_grad()
-            sr = model(lr)
-            loss = criterion(sr, hr)
-            loss.backward()
-            optimizer.step()
 
-        if scheduler is not None:
-            scheduler.step()
-
-        # التقييم
-        model.eval()
-        psnr_sum = 0.0
-        with torch.no_grad():
-            for lr, hr, _ in val_loader:
+    try:
+        for epoch in range(1, EPOCHS + 1):
+            model.train()
+            for batch_idx, (lr, hr, _) in enumerate(train_loader):
                 lr, hr = lr.to(device), hr.to(device)
+                optimizer.zero_grad()
                 sr = model(lr)
-                mse = torch.mean((sr - hr) ** 2)
-                psnr = 10 * torch.log10(1.0 / (mse + 1e-8))
-                psnr_sum += psnr.item()
+                loss = criterion(sr, hr)
+                loss.backward()
+                optimizer.step()
 
-        avg_psnr = psnr_sum / len(val_loader)
-        trial.report(avg_psnr, epoch)
-        if trial.should_prune():
-            raise optuna.TrialPruned()
-        best_psnr = max(best_psnr, avg_psnr)
+            if scheduler is not None:
+                scheduler.step()
+
+            # التقييم
+            model.eval()
+            psnr_sum = 0.0
+            with torch.no_grad():
+                for lr, hr, _ in val_loader:
+                    lr, hr = lr.to(device), hr.to(device)
+                    sr = model(lr)
+                    mse = torch.mean((sr - hr) ** 2)
+                    psnr = 10 * torch.log10(1.0 / (mse + 1e-8))
+                    psnr_sum += psnr.item()
+
+            avg_psnr = psnr_sum / len(val_loader)
+            print(f'   📈 [Trial {trial.number}] Epoch {epoch}/{EPOCHS}: '
+                  f'PSNR = {avg_psnr:.3f} dB')
+
+            trial.report(avg_psnr, epoch)
+            if trial.should_prune():
+                print(f'   ✂️ [Trial {trial.number}] Pruned by Optuna '
+                      f'at epoch {epoch}')
+                raise optuna.TrialPruned()
+
+            best_psnr = max(best_psnr, avg_psnr)
+
+    except torch.cuda.OutOfMemoryError:
+        # 🆕 معالجة OOM: تحويله إلى PRUNED بدلاً من FAILED
+        print(f'   ⚠️ [Trial {trial.number}] OOM at runtime! '
+              f'Marking as pruned.')
+        torch.cuda.empty_cache()
+        raise optuna.TrialPruned()
+
+    finally:
+        # 🆕 تنظيف الذاكرة دائماً بعد كل trial
+        torch.cuda.empty_cache()
 
     return best_psnr
+
 
 # ===================================================================
 # تشغيل البحث
 # ===================================================================
 if __name__ == "__main__":
-    
+
     # 1️⃣ إنشاء أو تحميل الدراسة
     study = optuna.create_study(
         study_name=STUDY_NAME,
@@ -196,31 +311,37 @@ if __name__ == "__main__":
         load_if_exists=True
     )
 
-    # 2️⃣ حساب الإحصاءات الحالية (بغض النظر عن الحالة)
-    complete_trials = [t for t in study.trials 
+    # 2️⃣ حساب الإحصاءات الحالية
+    complete_trials = [t for t in study.trials
                        if t.state == optuna.trial.TrialState.COMPLETE]
-    pruned_trials   = [t for t in study.trials 
+    pruned_trials   = [t for t in study.trials
                        if t.state == optuna.trial.TrialState.PRUNED]
-    failed_trials   = [t for t in study.trials 
+    failed_trials   = [t for t in study.trials
                        if t.state == optuna.trial.TrialState.FAIL]
-    running_trials  = [t for t in study.trials 
+    running_trials  = [t for t in study.trials
                        if t.state == optuna.trial.TrialState.RUNNING]
 
-    total_so_far = len(study.trials)
-    remaining = max(0, N_TRIALS - total_so_far)
+    # 🆕 تجاهل FAILED في العد الإجمالي
+    valid_trials = [t for t in study.trials
+                    if t.state in [optuna.trial.TrialState.COMPLETE,
+                                   optuna.trial.TrialState.PRUNED]]
+    total_valid = len(valid_trials)
+    total_all = len(study.trials)
+    remaining = max(0, N_TRIALS - total_valid)
 
     # 3️⃣ عرض ملخص واضح
     print("=" * 70)
     print(f"📚 اسم الدراسة: {STUDY_NAME}")
-    print(f"🎯 الهدف: {N_TRIALS} trial إجمالي (COMPLETE + PRUNED + FAIL)")
+    print(f"🎯 الهدف: {N_TRIALS} trial صالح (COMPLETE + PRUNED)")
     print("=" * 70)
     print(f"📊 الحالة الحالية في قاعدة البيانات:")
     print(f"   ✅ COMPLETE : {len(complete_trials)}")
     print(f"   ✂️ PRUNED   : {len(pruned_trials)}")
-    print(f"   ❌ FAILED   : {len(failed_trials)}")
+    print(f"   ❌ FAILED   : {len(failed_trials)}  (مُتجاهَلة في العد)")
     print(f"   🔄 RUNNING  : {len(running_trials)}")
     print(f"   ─────────────────────")
-    print(f"   📦 الإجمالي : {total_so_far} / {N_TRIALS}")
+    print(f"   📦 صالحة    : {total_valid} / {N_TRIALS}")
+    print(f"   📦 الإجمالي : {total_all} (شامل FAILED)")
     print(f"   🎯 المتبقي  : {remaining}")
     if len(complete_trials) > 0:
         print(f"   🏆 أفضل PSNR: {study.best_value:.4f} dB "
@@ -238,7 +359,7 @@ if __name__ == "__main__":
                 objective,
                 n_trials=remaining,
                 show_progress_bar=True,
-                catch=(RuntimeError,)
+                catch=(RuntimeError,)   # تجاهل أخطاء CUDA المؤقتة
             )
         except KeyboardInterrupt:
             print("\n" + "=" * 70)
@@ -248,10 +369,9 @@ if __name__ == "__main__":
             print("=" * 70)
 
     # 5️⃣ حفظ النتائج النهائية
-    if len(complete_trials) > 0 or len(study.trials) > 0:
-        complete_now = [t for t in study.trials 
-                        if t.state == optuna.trial.TrialState.COMPLETE]
-        
+    complete_now = [t for t in study.trials
+                    if t.state == optuna.trial.TrialState.COMPLETE]
+    if len(complete_now) > 0:
         print("\n" + "=" * 70)
         print("🏆 أفضل المعاملات النهائية:")
         print("=" * 70)
@@ -262,26 +382,36 @@ if __name__ == "__main__":
                 print(f"  {key:>25} : {value}")
         print(f"\n📈 أفضل PSNR: {study.best_value:.4f} dB")
         print("=" * 70)
-        
+
         # الإحصاءات النهائية
         print(f"\n📊 الإحصاءات النهائية:")
         print(f"   إجمالي trials : {len(study.trials)}")
         print(f"   ✅ COMPLETE   : {len(complete_now)}")
         print(f"   ✂️ PRUNED     : {len([t for t in study.trials if t.state == optuna.trial.TrialState.PRUNED])}")
         print(f"   ❌ FAILED     : {len([t for t in study.trials if t.state == optuna.trial.TrialState.FAIL])}")
-        
+
         # حفظ JSON
-        with open('best_params_optimized.json', 'w', encoding='utf-8') as f:
+        output_json = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'best_params_optimized.json'
+        )
+        with open(output_json, 'w', encoding='utf-8') as f:
             json.dump(study.best_params, f, indent=4, ensure_ascii=False)
-        print(f"\n✅ تم حفظ أفضل المعاملات في best_params_optimized.json")
-        
+        print(f"\n✅ تم حفظ أفضل المعاملات في: {output_json}")
+
         # حفظ CSV
         try:
+            csv_path = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'optuna_all_trials.csv'
+            )
             study.trials_dataframe().to_csv(
-                'optuna_all_trials.csv', 
-                index=False, 
+                csv_path,
+                index=False,
                 encoding='utf-8-sig'
             )
-            print(f"✅ تم حفظ جميع المحاولات في optuna_all_trials.csv")
+            print(f"✅ تم حفظ جميع المحاولات في: {csv_path}")
         except Exception as e:
             print(f"⚠️ تعذّر حفظ CSV: {e}")
+    else:
+        print("\n⚠️ لا توجد trials مكتملة بعد.")
