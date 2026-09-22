@@ -14,7 +14,7 @@ import random
 import json    ####################
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
+import copy          # ← 🆕 أضف هذا السطر
 import utility
 import data
 import model as model_module

@@ -12,6 +12,8 @@ import importlib
 import numpy as np
 import random
 import json    ####################
+import copy          # ← 🆕 أضف هذا السطر
+
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
