@@ -12,7 +12,7 @@ import sys
 import copy
 import json    ####################
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
+import copy
 import utility
 import data
 import model as model_module
@@ -115,7 +115,7 @@ def objective(trial):
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
     # ---------- جدول توهين معدل التعلم ----------
-    EPOCHS = 10  # عدد قليل للتجربة السريعة
+    EPOCHS = EPOCHS_PER_TRIAL  # عدد قليل للتجربة السريعة
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':

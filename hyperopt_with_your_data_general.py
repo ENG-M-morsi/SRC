@@ -130,7 +130,7 @@ def objective(trial):
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
     # ---------- (و) جدول توهين معدل التعلم ----------
-    EPOCHS = 10
+    EPOCHS = EPOCHS_PER_TRIAL
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':

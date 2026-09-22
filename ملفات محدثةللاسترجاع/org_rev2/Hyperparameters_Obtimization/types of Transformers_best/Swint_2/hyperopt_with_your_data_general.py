@@ -114,7 +114,7 @@ def objective(trial):
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
     # ---------- جدول التوهين ----------
-    EPOCHS = 10  # يمكن تعديلها حسب الحاجة
+    EPOCHS = EPOCHS_PER_TRIAL  # يمكن تعديلها حسب الحاجة
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':
