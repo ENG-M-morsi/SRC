@@ -2,8 +2,8 @@ import torch.nn as nn
 from collections import OrderedDict  # ✅ أضف هذا السطر
 import torch
 import torch.nn.functional as F
-# from . import SGBlock,FNet,Spartial_Attention,SwinT
-from .custom_attention_blocks import HAT
+#from . import SGBlock,FNet,Spartial_Attention,SwinT
+from .custom_attention_blocks import OmniSR
 
 def conv_layer(in_channels, out_channels, kernel_size, stride=1, dilation=1, groups=1):
     padding = int((kernel_size - 1) / 2) * dilation
@@ -250,13 +250,13 @@ class TCN(nn.Module):
         super(TCN, self).__init__()
         #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
         #self.swinT = SwinT.SwinT(n_feats=in_channels)
-        self.hat = HAT(dim=in_channels, num_blocks=4, window_size=12, num_heads=4)
+        self.omnisr = OmniSR(dim=in_channels, num_heads=4, ws=16, num_blocks=2)
 
     def forward(self, x, H, W):
-        # الـ x هنا هو خرج TESA (بأبعاد B, C, H, W)
-        x_hat = self.hat(x, H, W)       # (B, C, H, W)
-        return x_hat
-        #return self.conv3(x_hat)
+        # x shape: (B, C, H, W)
+        x_out = self.omnisr(x, H, W)
+        return x_out
+        #return self.conv3(x_out)
 
 
 class P_HTCB(nn.Module):
@@ -292,17 +292,25 @@ class P_HTCB(nn.Module):
         B, C, H, W = x.shape
         # Eq.2
         h_tesa = self.tesa_in(x)
+
         # Eq.3 — TCN1 و TCN2 بالتوازي على نفس الدخل
-        h_tcn1 = self.tcn1(h_tesa, H, W)   # ✅ تم تمرير H, W
-        #h_tcn2 = self.tcn2(h_tesa, H, W)   # ✅ تم تمرير H, W
+        h_tcn1 = self.tcn1(h_tesa, H, W)
+        #h_tcn2 = self.tcn2(h_tesa, H, W)
+
         # Eq.4+5 — Addition ثم Conv1x1
-        #h_add  = h_tcn1 + h_tcn2
+        # [تصحيح #5]: كان cat([h_tcn1, h_tcn2]) → تم تصحيحه إلى Addition
+        # الورقة Eq.4: HCon_i/p = HTCN1 + HTCN2
+        #h_add  = h_tcn1 + h_tcn2                      # nf channels
         h_add  = h_tcn1
-        h_conv = self.c(h_add)
+        h_conv = self.c(h_add)                         # nf → nf
+
         # Eq.6 — TESA أخيرة
         out = self.tesa_out(h_conv)
+
+        # [تصحيح #4]: إضافة Residual connection المفقودة
+        # الورقة Figure 3 تُظهر ⊕ بين خرج TESA الأخيرة والـ input
         return out + x
-    
+
 def pixelshuffle_block(in_channels, out_channels, upscale_factor=2, kernel_size=3, stride=1):
     conv = conv_layer(in_channels, out_channels * (upscale_factor ** 2), kernel_size, stride)
     pixel_shuffle = nn.PixelShuffle(upscale_factor)

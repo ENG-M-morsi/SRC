@@ -1,5 +1,5 @@
 # ===================================================================
-# hyperopt_with_your_data.py — بحث شامل مع HAT (Hybrid Attention Transformer)
+# hyperopt_with_your_data.py — بحث شامل مع OmniSR
 # ===================================================================
 import optuna
 import torch
@@ -8,15 +8,9 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lrs
 import os
 import sys
-import importlib
-import numpy as np
-import random
 import json    ####################
-import copy          # ← 🆕 أضف هذا السطر
-
-
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
+import copy
 import utility
 import data
 import model as model_module
@@ -24,8 +18,7 @@ import loss as loss_module
 from option import args as base_args
 from model.dhtcun import HUTCN
 from model import dhtcu_block as B
-from model.custom_attention_blocks import HAT  # ✅ استيراد HAT
-import pdb
+from model.custom_attention_blocks import OmniSR
 
 # ═══════════════════════════════════════════════════════════
 # 🆕 إضافة هذه الأسطر (لا تحذف شيئاً)
@@ -40,7 +33,7 @@ STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 STORAGE_URL = f"sqlite:///{STORAGE_PATH}"
 
 # ===================================================================
-# 1. دوال الخسارة الإضافية (Charbonnier & Huber) كما في السابق
+# 1. دوال الخسارة الإضافية
 # ===================================================================
 class CharbonnierLoss(nn.Module):
     def __init__(self, eps=1e-3):
@@ -75,23 +68,21 @@ def get_loaders_from_args(trial_params, base_args):
     return loader.loader_train, loader.loader_test
 
 # ===================================================================
-# 3. دالة الهدف الرئيسية (Objective) — مع HAT
+# 3. دالة الهدف الرئيسية
 # ===================================================================
 def objective(trial):
     # ---------- (أ) معاملات بنية النموذج ----------
     nf = trial.suggest_int('n_feats', 64, 128, step=8)
 
+    # ✅ num_heads: قائمة ثابتة
     num_heads_options = [2, 4, 8, 16]
     num_heads = trial.suggest_categorical('num_heads', num_heads_options)
     if nf % num_heads != 0:
         raise optuna.TrialPruned()
 
-    # عدد الكتل داخل HAT (num_blocks في HAT)
-    num_blocks = trial.suggest_int('num_blocks', 2, 4, step=1)
-
+    num_blocks = trial.suggest_int('num_blocks', 1, 4, step=1)
     window_size = trial.suggest_categorical('window_size', [8, 12, 16])
-
-    num_modules = 1  # عدد كتل P_HTCB (ثابت)
+    num_modules = 1
 
     # ---------- (ب) patch_size ----------
     patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224, 256])
@@ -107,16 +98,15 @@ def objective(trial):
     weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
 
     # ---------- (د) بناء النموذج ----------
-    # HUTCN لا يأخذ num_heads
     model = HUTCN(in_nc=3, nf=nf, num_modules=num_modules, out_nc=3, upscale=4)
 
-    # ✅ إعادة تعريف HAT داخل كل TCN بالمعاملات الجديدة
+    # ✅ إعادة تعريف OmniSR داخل كل TCN
     for module in model.modules():
         if isinstance(module, B.TCN):
-            module.hat = HAT(
+            module.omnisr = OmniSR(
                 dim=nf,
                 num_heads=num_heads,
-                window_size=window_size,
+                ws=window_size,
                 num_blocks=num_blocks
             )
 
