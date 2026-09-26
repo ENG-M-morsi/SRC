@@ -1,5 +1,6 @@
 # ===================================================================
-# hyperopt_with_your_data.py — بحث شامل مع OmniSR
+# hyperopt_with_your_data.py — بحث شامل مع SwinT و HUTCN
+# (يدعم المعاملات: nf, num_heads, depth, window_size, mlp_ratio)
 # ===================================================================
 import optuna
 import torch
@@ -8,9 +9,10 @@ import torch.optim as optim
 import torch.optim.lr_scheduler as lrs
 import os
 import sys
+import copy
 import json    ####################
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import copy
+
 import utility
 import data
 import model as model_module
@@ -18,7 +20,7 @@ import loss as loss_module
 from option import args as base_args
 from model.dhtcun import HUTCN
 from model import dhtcu_block as B
-from model.custom_attention_blocks import OmniSR
+
 
 # ═══════════════════════════════════════════════════════════
 # 🆕 إضافة هذه الأسطر (لا تحذف شيئاً)
@@ -33,7 +35,7 @@ STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 STORAGE_URL = f"sqlite:///{STORAGE_PATH}"
 
 # ===================================================================
-# 1. دوال الخسارة الإضافية
+# دوال الخسارة الإضافية
 # ===================================================================
 class CharbonnierLoss(nn.Module):
     def __init__(self, eps=1e-3):
@@ -67,60 +69,57 @@ def get_loaders_from_args(trial_params, base_args):
     loader = data.Data(args)
     return loader.loader_train, loader.loader_test
 
+
 # ===================================================================
-# 3. دالة الهدف الرئيسية
+# دالة الهدف الرئيسية
 # ===================================================================
 def objective(trial):
-    # ---------- (أ) معاملات بنية النموذج ----------
-    nf = trial.suggest_int('n_feats', 64, 128, step=8)
-
-    # ✅ num_heads: قائمة ثابتة
-    num_heads_options = [2, 4, 8, 16]
-    num_heads = trial.suggest_categorical('num_heads', num_heads_options)
+    # ---------- معاملات بنية النموذج ----------
+    nf = trial.suggest_int('n_feats', 32, 96, step=8)
+    num_heads = trial.suggest_categorical('num_heads', [2, 4, 8])
     if nf % num_heads != 0:
         raise optuna.TrialPruned()
 
-    num_blocks = trial.suggest_int('num_blocks', 1, 4, step=1)
+    depth = trial.suggest_int('depth', 1, 3, step=1)
     window_size = trial.suggest_categorical('window_size', [8, 12, 16])
-    num_modules = 1
+    mlp_ratio = trial.suggest_float('mlp_ratio', 1.5, 2.5, step=0.25)
 
-    # ---------- (ب) patch_size ----------
-    patch_size = trial.suggest_categorical('patch_size', [128, 160, 192, 224, 256])
-    #patch_size = 192
+    patch_size = trial.suggest_categorical('patch_size', [128, 160, 192])
     if window_size > patch_size:
         raise optuna.TrialPruned()
 
-    # ---------- (ج) معاملات التدريب ----------
+    # ---------- معاملات التدريب ----------
     optimizer_name = trial.suggest_categorical('optimizer', ['ADAM', 'AdamW'])
     scheduler_name = trial.suggest_categorical('scheduler', ['fixed', 'cosine', 'step'])
     loss_name = trial.suggest_categorical('loss', ['L1', 'L2', 'Charbonnier', 'Huber'])
     lr = trial.suggest_float('lr', 1e-5, 5e-4, log=True)
     weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
 
-    # ---------- (د) بناء النموذج ----------
-    model = HUTCN(in_nc=3, nf=nf, num_modules=num_modules, out_nc=3, upscale=4)
-
-    # ✅ إعادة تعريف OmniSR داخل كل TCN
-    for module in model.modules():
-        if isinstance(module, B.TCN):
-            module.omnisr = OmniSR(
-                dim=nf,
-                num_heads=num_heads,
-                ws=window_size,
-                num_blocks=num_blocks
-            )
+    # ---------- بناء النموذج ----------
+    model = HUTCN(
+        in_nc=3,
+        nf=nf,
+        num_modules=1,          # نستخدم كتلة واحدة للسرعة
+        out_nc=3,
+        upscale=4,
+        num_heads=num_heads,
+        depth=depth,
+        window_size=window_size,
+        mlp_ratio=mlp_ratio,
+        resolution=48
+    )
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
-    # ---------- (هـ) المُحسّن ----------
+    # ---------- المحسّن ----------
     if optimizer_name == 'ADAM':
         optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
     else:
         optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay, betas=(0.9, 0.99))
 
-    # ---------- (و) جدول توهين معدل التعلم ----------
-    EPOCHS = EPOCHS_PER_TRIAL
+    # ---------- جدول التوهين ----------
+    EPOCHS = 10
     if scheduler_name == 'fixed':
         scheduler = None
     elif scheduler_name == 'cosine':
@@ -128,7 +127,7 @@ def objective(trial):
     else:
         scheduler = lrs.StepLR(optimizer, step_size=3, gamma=0.5)
 
-    # ---------- (ز) دالة الخسارة ----------
+    # ---------- دالة الخسارة ----------
     if loss_name == 'L1':
         criterion = nn.L1Loss()
     elif loss_name == 'L2':
@@ -138,17 +137,17 @@ def objective(trial):
     else:
         criterion = HuberLoss(delta=0.01)
 
-    # ---------- (ح) تحميل البيانات ----------
+    # ---------- تحميل البيانات ----------
     trial_params = {
         'patch_size': patch_size,
-        'batch_size': 8
+        'batch_size': 4
     }
     train_loader, test_loaders = get_loaders_from_args(trial_params, base_args)
     val_loader = test_loaders[0] if test_loaders else None
     if val_loader is None:
         raise optuna.TrialPruned()
 
-    # ---------- (ط) حلقة التدريب ----------
+    # ---------- حلقة التدريب ----------
     best_psnr = 0.0
     for epoch in range(1, EPOCHS + 1):
         model.train()
@@ -159,6 +158,9 @@ def objective(trial):
             loss = criterion(sr, hr)
             loss.backward()
             optimizer.step()
+
+            if batch_idx % 50 == 0:
+                print(f'Epoch {epoch}, Batch {batch_idx}, Loss: {loss.item():.4f}')
 
         if scheduler is not None:
             scheduler.step()
@@ -175,10 +177,13 @@ def objective(trial):
                 psnr_sum += psnr.item()
 
         avg_psnr = psnr_sum / len(val_loader)
+
         trial.report(avg_psnr, epoch)
         if trial.should_prune():
             raise optuna.TrialPruned()
-        best_psnr = max(best_psnr, avg_psnr)
+
+        if avg_psnr > best_psnr:
+            best_psnr = avg_psnr
 
     return best_psnr
 

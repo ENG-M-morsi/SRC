@@ -67,6 +67,8 @@ def get_loaders_from_args(trial_params, base_args):
     args.patch_size = trial_params['patch_size']
     args.batch_size = trial_params['batch_size']
     loader = data.Data(args)
+    return loader.loader_train, loader.loader_test
+
 
 # ===================================================================
 # دالة الهدف الرئيسية

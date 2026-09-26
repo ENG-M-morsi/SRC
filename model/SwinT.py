@@ -11,28 +11,19 @@ def default_conv(in_channels, out_channels, kernel_size, bias=True):
         padding=(kernel_size // 2), bias=bias)
 
 class SwinT(nn.Module):
-    def __init__(
-            # self, conv, n_feats, kernel_size,
-            # bias=True, bn=False, act=nn.ReLU(True)):
-            self,  n_feats=50):
-
+    def __init__(self, n_feats=50, num_heads=3, depth=1, window_size=24, mlp_ratio=2.0, resolution=48):
         super(SwinT, self).__init__()
+        self.n_feats = n_feats
+        self.num_heads = num_heads
+        self.depth = depth
+        self.window_size = window_size
+        self.resolution = resolution
+        self.mlp_ratio = mlp_ratio
+
+        # تأكد من أن n_feats قابل للقسمة على num_heads
+        assert n_feats % num_heads == 0, f"n_feats ({n_feats}) must be divisible by num_heads ({num_heads})"
+
         m = []
-        # [تصحيح #6]: الورقة Section III.C تقول صراحةً:
-        # "Unlike the original STL which uses the components twice,
-        #  we have used the components inside STL just once"
-        # إذن depth=1 وليس depth=2
-        depth = 1
-        # [تصحيح #7]: num_heads=3 مع nf=50 يعطي 50÷3=16.67 (ليس integer!)
-        # يجب أن dim÷num_heads يكون عدداً صحيحاً
-        # num_heads=5 → head_dim = n_feats÷5 = 50÷5 = 10 ✅
-        # ملاحظة: عند تشغيل nf=93 → 93÷5=18.6 ليس integer
-        # لذلك num_heads يجب أن يُضبط ديناميكياً حسب n_feats
-        #num_heads = max(1, n_feats // 10)  # head_dim=10 دائماً صحيح
-        num_heads = 3
-        window_size = 24
-        resolution = 48
-        mlp_ratio = 2.0
         m.append(BasicLayer(dim=n_feats,
                             depth=depth,
                             resolution=resolution,
@@ -126,6 +117,8 @@ class SwinTransformerBlock(nn.Module):
     def calculate_mask(self, x_size):
         # calculate attention mask for SW-MSA
         H, W = x_size
+        if H % self.window_size == 0 and W % self.window_size == 0:
+            return None
         img_mask = torch.zeros((1, H, W, 1))  # 1 H W 1
         h_slices = (slice(0, -self.window_size),
                     slice(-self.window_size, -self.shift_size),
@@ -147,44 +140,42 @@ class SwinTransformerBlock(nn.Module):
         return attn_mask
 
     def forward(self, x, x_size):
-        H, W = x_size
+        H, W    = x_size
         B, L, C = x.shape
-
         shortcut = x
         x = self.norm1(x)
         x = x.view(B, H, W, C)
 
-        # cyclic shift
         if self.shift_size > 0:
-            shifted_x = torch.roll(x, shifts=(-self.shift_size, -self.shift_size), dims=(1, 2))
+            shifted_x = torch.roll(x,
+                shifts=(-self.shift_size, -self.shift_size), dims=(1, 2))
         else:
             shifted_x = x
 
-        # partition windows
-        x_windows = window_partition(shifted_x, self.window_size)  # nW*B, window_size, window_size, C
-        x_windows = x_windows.view(-1, self.window_size * self.window_size, C)  # nW*B, window_size*window_size, C
+        x_windows = window_partition(shifted_x, self.window_size)
+        x_windows = x_windows.view(-1, self.window_size * self.window_size, C)
 
-        # W-MSA/SW-MSA (to be compatible for testing on images whose shapes are the multiple of window size
         if self.resolution == x_size:
-            attn_windows = self.attn(x_windows, mask=self.attn_mask)  # nW*B, window_size*window_size, C
+            attn_windows = self.attn(x_windows, mask=self.attn_mask)
         else:
-            attn_windows = self.attn(x_windows, mask=self.calculate_mask(x_size).to(x.device))
+            # التعديل هنا: حساب الماسك فقط عند الحاجة، وتمرير None إذا كان غير ضروري
+            mask = self.calculate_mask(x_size)
+            if mask is not None:
+                mask = mask.to(x.device)
+            attn_windows = self.attn(x_windows, mask=mask)
 
-        # merge windows
         attn_windows = attn_windows.view(-1, self.window_size, self.window_size, C)
-        shifted_x = window_reverse(attn_windows, self.window_size, H, W)  # B H' W' C
+        shifted_x = window_reverse(attn_windows, self.window_size, H, W)
 
-        # reverse cyclic shift
         if self.shift_size > 0:
-            x = torch.roll(shifted_x, shifts=(self.shift_size, self.shift_size), dims=(1, 2))
+            x = torch.roll(shifted_x,
+                shifts=(self.shift_size, self.shift_size), dims=(1, 2))
         else:
             x = shifted_x
         x = x.view(B, H * W, C)
 
-        # FFN
         x = shortcut + x
         x = x + self.mlp(self.norm2(x))
-        # x = x + self.mlp(x)
         return x
 
 class WindowAttention(nn.Module):
