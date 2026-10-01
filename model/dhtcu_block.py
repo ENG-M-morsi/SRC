@@ -2,7 +2,10 @@ import torch.nn as nn
 from collections import OrderedDict  # ✅ أضف هذا السطر
 import torch
 import torch.nn.functional as F
-from . import SGBlock,FNet,Spartial_Attention,SwinT
+#from . import SGBlock,FNet,Spartial_Attention,SwinT
+from .custom_attention_blocks import SwinT
+
+
 def conv_layer(in_channels, out_channels, kernel_size, stride=1, dilation=1, groups=1):
     padding = int((kernel_size - 1) / 2) * dilation
     return nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding=padding, bias=True, dilation=dilation,
@@ -244,15 +247,21 @@ class TESA(nn.Module):
 
 class TCN(nn.Module):
     """Transformer CNN Block — Eq.3"""
-    def __init__(self, in_channels, num_heads=3,depth=1, window_size=24, mlp_ratio=2.0, resolution=48):
+    def __init__(self, in_channels, num_heads=8, window_size=16, num_blocks=4):
         super(TCN, self).__init__()
-        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
-        self.swinT = SwinT.SwinT(n_feats=in_channels, num_heads = num_heads, depth=depth, window_size=window_size, mlp_ratio= mlp_ratio, resolution=resolution)
+        #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
+        # استبدال SwinT بـ PSA
+        #heads = max(1, in_channels // 16)
 
-    def forward(self, x):
-        # HTCN = FSTL(FConv3(HTESA))
-        #return self.swinT(self.conv3(x))
-        return self.conv3(self.swinT(x))
+        #self.swint = SwinT(dim=in_channels,num_heads=heads,window_size=8,num_blocks=2)
+
+        self.swint = SwinT(dim=in_channels, num_heads=num_heads, window_size=window_size, num_blocks=num_blocks)  # نسخة خفيفة
+
+    def forward(self, x, H, W):
+        # x shape: (B, C, H, W)
+        x_out = self.swint(x, H, W)
+        return x_out
+        #return self.conv3(x_out)
 
 
 class P_HTCB(nn.Module):
@@ -265,15 +274,15 @@ class P_HTCB(nn.Module):
     Eq.5: HConv  = FConv1(HCat)            ← self.c: Conv1x1(nf*2→nf)
     Eq.6: HPHTCB = FTESA(HConv)            ← TESA أخيرة
     """
-    def __init__(self, in_channels, num_heads=3,depth=1, window_size=24, mlp_ratio=2.0, resolution=48):
+    def __init__(self, in_channels, num_heads=8, window_size=8, num_blocks=4):
         super(P_HTCB, self).__init__()
         
         # TESA — Eq.2
         self.tesa_in  = TESA(in_channels)
         
         # TCN1 و TCN2 — Eq.3 (parallel)
-        self.tcn1 = TCN(in_channels, num_heads = num_heads, depth=depth, window_size=window_size, mlp_ratio= mlp_ratio, resolution=resolution)
-        self.tcn2 = TCN(in_channels, num_heads = num_heads, depth=depth, window_size=window_size, mlp_ratio= mlp_ratio, resolution=resolution)
+        self.tcn1 = TCN(in_channels, num_heads=num_heads, window_size=window_size, num_blocks=num_blocks)
+        #self.tcn2 = TCN(in_channels)
 
         # Conv1x1 بعد Addition — Eq.4+5
         # [تصحيح #5+6]: الورقة Eq.4 تقول HTCN1 + HTCN2 (Addition وليس cat)
@@ -285,25 +294,19 @@ class P_HTCB(nn.Module):
         self.tesa_out = TESA(in_channels)
 
     def forward(self, x):
-        # Eq.2
-        h_tesa = self.tesa_in(x)
-
-        # Eq.3 — TCN1 و TCN2 بالتوازي على نفس الدخل
-        h_tcn1 = self.tcn1(h_tesa)
-        h_tcn2 = self.tcn2(h_tesa)
-
-        # Eq.4+5 — Addition ثم Conv1x1
-        # [تصحيح #5]: كان cat([h_tcn1, h_tcn2]) → تم تصحيحه إلى Addition
-        # الورقة Eq.4: HCon_i/p = HTCN1 + HTCN2
-        h_add  = h_tcn1 + h_tcn2                      # nf channels
-        h_conv = self.c(h_add)                         # nf → nf
-
-        # Eq.6 — TESA أخيرة
-        out = self.tesa_out(h_conv)
-
-        # [تصحيح #4]: إضافة Residual connection المفقودة
-        # الورقة Figure 3 تُظهر ⊕ بين خرج TESA الأخيرة والـ input
-        return out + x
+            B, C, H, W = x.shape
+            # Eq.2
+            h_tesa = self.tesa_in(x)
+            # Eq.3 — TCN1 و TCN2 بالتوازي على نفس الدخل
+            h_tcn1 = self.tcn1(h_tesa, H, W)   # ✅ تم تمرير H, W
+            #h_tcn2 = self.tcn2(h_tesa, H, W)   # ✅ تم تمرير H, W
+            # Eq.4+5 — Addition ثم Conv1x1
+            #h_add  = h_tcn1 + h_tcn2
+            h_add  = h_tcn1
+            h_conv = self.c(h_add)
+            # Eq.6 — TESA أخيرة
+            out = self.tesa_out(h_conv)
+            return out + x
 
 def pixelshuffle_block(in_channels, out_channels, upscale_factor=2, kernel_size=3, stride=1):
     conv = conv_layer(in_channels, out_channels * (upscale_factor ** 2), kernel_size, stride)
