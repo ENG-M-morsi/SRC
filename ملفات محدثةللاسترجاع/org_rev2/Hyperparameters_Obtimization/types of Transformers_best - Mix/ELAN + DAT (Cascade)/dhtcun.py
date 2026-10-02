@@ -8,11 +8,11 @@ def make_model(args, parent=False):
     return model
 
 class HUTCN(nn.Module):
-    def __init__(self, in_nc=3, nf=50, num_modules=4, out_nc=3, upscale=3,
+    def __init__(self, in_nc=3, nf=88, num_modules=4, out_nc=3, upscale=3,
                  # معاملات DAT
-                 num_heads_dat=2, ws_dat=12, num_blocks_dat=3,
+                 num_heads_dat=4, ws_dat=8, num_blocks_dat=2,
                  # معاملات ELAN
-                 num_heads_elan=2, ws_elan=12, num_blocks_elan=3):
+                 num_heads_elan=4, ws_elan=4, num_blocks_elan=2):
         super(HUTCN, self).__init__()
 
         self.fea_conv = B_DAT.conv_layer(in_nc, nf, kernel_size=1)
