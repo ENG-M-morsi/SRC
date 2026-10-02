@@ -1,3 +1,6 @@
+# ===================================================================
+# dhtcun.py
+# ===================================================================
 import torch
 import torch.nn as nn
 from . import dhtcu_block as B
@@ -7,8 +10,9 @@ def make_model(args, parent=False):
     return model
 
 class HUTCN(nn.Module):
-    def __init__(self, in_nc=3, nf=50, num_modules=1, out_nc=3, upscale=3,
-                 num_heads=2, window_size=12, num_blocks=3, ffn_ratio=1.0):
+    def __init__(self, in_nc=3, nf=88, num_modules=4, out_nc=3, upscale=3,
+                 num_heads_dat=8, ws_dat=8, num_blocks_dat=2,
+                 num_heads_elan=8, ws_elan=4, num_blocks_elan=3):
         super(HUTCN, self).__init__()
 
         self.fea_conv = B.conv_layer(in_nc, nf, kernel_size=1)
@@ -17,10 +21,12 @@ class HUTCN(nn.Module):
 
         self.B1 = B.P_HTCB(
             in_channels=nf,
-            num_heads=num_heads,
-            window_size=window_size,
-            num_blocks=num_blocks,
-            ffn_ratio=ffn_ratio
+            num_heads_dat=num_heads_dat,
+            ws_dat=ws_dat,
+            num_blocks_dat=num_blocks_dat,
+            num_heads_elan=num_heads_elan,
+            ws_elan=ws_elan,
+            num_blocks_elan=num_blocks_elan
         )
 
         self.LR_conv1 = B.conv_layer(nf, nf, kernel_size=1)
