@@ -93,7 +93,8 @@ class checkpoint():
             for arg in vars(args):
                 f.write('{}: {}\n'.format(arg, getattr(args, arg)))
             f.write('\n')
-        self.n_processes = 8
+        #self.n_processes = 8
+        self.n_processes = 1
 
         # ================================================================
         # ✅ تحميل PSNR log مع دعم --resume N
