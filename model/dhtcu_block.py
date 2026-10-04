@@ -1,31 +1,13 @@
-# ===================================================================
-# dhtcu_block.py — النسخة المصححة الكاملة (مع دوال conv_layer وغيرها)
-# تتضمن دعم المعاملات المنفصلة لـ DAT و ELAN
-# ===================================================================
-
-import torch
 import torch.nn as nn
+import torch
 import torch.nn.functional as F
 from collections import OrderedDict
-from .custom_attention_blocks import DAT
-from .custom_attention_blocks_ELAN import ELAN
+from .custom_attention_blocks import PSA
 
-# -------------------------------------------------------------------
-# دوال مساعدة أساسية (يجب أن تكون موجودة)
-# -------------------------------------------------------------------
+# ─── دوال مساعدة (نفس السابق) ──────────────────────────────
 def conv_layer(in_channels, out_channels, kernel_size, stride=1, dilation=1, groups=1):
     padding = int((kernel_size - 1) / 2) * dilation
-    return nn.Conv2d(in_channels, out_channels, kernel_size, stride,
-                     padding=padding, bias=True, dilation=dilation, groups=groups)
-
-def conv_layer2(in_channels, out_channels, kernel_size, stride=1, dilation=1, groups=1):
-    return nn.Sequential(
-        nn.Conv2d(in_channels, int(in_channels * 0.5), 1, stride, bias=True),
-        nn.Conv2d(int(in_channels * 0.5), int(in_channels * 0.5 * 0.5), 1, 1, bias=True),
-        nn.Conv2d(int(in_channels * 0.5 * 0.5), int(in_channels * 0.5), (1, 3), 1, (0, 1), bias=True),
-        nn.Conv2d(int(in_channels * 0.5), int(in_channels * 0.5), (3, 1), 1, (1, 0), bias=True),
-        nn.Conv2d(int(in_channels * 0.5), out_channels, 1, 1, bias=True)
-    )
+    return nn.Conv2d(in_channels, out_channels, kernel_size, stride, padding=padding, bias=True, dilation=dilation, groups=groups)
 
 def norm(norm_type, nc):
     norm_type = norm_type.lower()
@@ -75,13 +57,9 @@ def sequential(*args):
         if isinstance(args[0], OrderedDict):
             raise NotImplementedError('sequential does not support OrderedDict input.')
         return args[0]
-    modules = []
-    for arg in args:
-        if isinstance(arg, nn.Sequential):
-            for submodule in arg.children():
-                modules.append(submodule)
-        elif isinstance(arg, nn.Module):
-            modules.append(arg)
+    modules = [m for arg in args
+               for m in (arg.children() if isinstance(arg, nn.Sequential) else [arg])
+               if isinstance(m, nn.Module)]
     return nn.Sequential(*modules)
 
 def mean_channels(F):
@@ -98,9 +76,8 @@ def pixelshuffle_block(in_channels, out_channels, upscale_factor=2, kernel_size=
     conv = conv_layer(in_channels, out_channels * (upscale_factor ** 2), kernel_size, stride)
     return sequential(conv, nn.PixelShuffle(upscale_factor))
 
-# -------------------------------------------------------------------
-# ESA — Enhanced Spatial Attention
-# -------------------------------------------------------------------
+# ─── ESA ────────────────────────────────────────────────────
+
 class ESA(nn.Module):
     def __init__(self, n_feats, conv):
         super(ESA, self).__init__()
@@ -122,9 +99,8 @@ class ESA(nn.Module):
         m = self.sigmoid(c4)
         return x * m
 
-# -------------------------------------------------------------------
-# TESA — Triple ESA
-# -------------------------------------------------------------------
+# ─── TESA ────────────────────────────────────────────────────
+
 class TESA(nn.Module):
     def __init__(self, in_channels):
         super(TESA, self).__init__()
@@ -135,62 +111,40 @@ class TESA(nn.Module):
     def forward(self, x):
         return self.esa3(self.esa2(self.esa1(x)))
 
-# -------------------------------------------------------------------
-# TCN — Transformer CNN Block (يستخدم DAT)
-# -------------------------------------------------------------------
+# ─── TCN ────────────────────────────────────────────────────
+
 class TCN(nn.Module):
-    def __init__(self, in_channels, num_heads=3, ws=8, num_blocks=1):
+    def __init__(self, in_channels, num_heads=2, window_size=12, num_blocks=3, ffn_ratio=1.5):
         super(TCN, self).__init__()
-        assert in_channels % num_heads == 0, \
-            f"in_channels={in_channels} يجب أن يقبل القسمة على num_heads={num_heads}"
-        self.dat = DAT(dim=in_channels, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
-        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
-
-    def forward(self, x):
-        return self.conv3(self.dat(x))
-
-# -------------------------------------------------------------------
-# TECN — Transformer CNN Block (يستخدم ELAN)
-# -------------------------------------------------------------------
-class TECN(nn.Module):
-    def __init__(self, in_channels, num_heads=2, window_size=12, num_blocks=3):
-        super(TECN, self).__init__()
-        assert in_channels % num_heads == 0, \
-            f"in_channels={in_channels} يجب أن يقبل القسمة على num_heads={num_heads}"
-        self.elan = ELAN(dim=in_channels, num_heads=num_heads, window_size=window_size, num_blocks=num_blocks)
-        self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
+        self.attn = PSA(
+            dim=in_channels,
+            window_size=window_size,
+            num_heads=num_heads,
+            num_blocks=num_blocks,
+            ffn_ratio=ffn_ratio
+        )
 
     def forward(self, x, H, W):
-        return self.conv3(self.elan(x, H, W))
+        B, C, H, W = x.shape
+        x_flat = x.flatten(2).transpose(1, 2)
+        x_attn = self.attn(x_flat, H, W)
+        return x_attn.transpose(1, 2).view(B, C, H, W)
 
-# -------------------------------------------------------------------
-# P_HTCB — Parallel Hybrid Transformer CNN Block (مع معاملات منفصلة)
-# -------------------------------------------------------------------
+# ─── P_HTCB ─────────────────────────────────────────────────
+
 class P_HTCB(nn.Module):
-    def __init__(self, in_channels,
-                 num_heads_dat=3, ws_dat=8, num_blocks_dat=1,
-                 num_heads_elan=2, ws_elan=12, num_blocks_elan=3):
+    def __init__(self, in_channels, num_heads=2, window_size=12, num_blocks=3, ffn_ratio=1.5):
         super(P_HTCB, self).__init__()
-
         self.tesa_in = TESA(in_channels)
-
-        # TCN1 يستخدم DAT بمعاملاته الخاصة
-        self.tcn1 = TCN(in_channels, num_heads=num_heads_dat, ws=ws_dat, num_blocks=num_blocks_dat)
-
-        # TECN2 يستخدم ELAN بمعاملاته الخاصة
-        self.tecn2 = TECN(in_channels, num_heads=num_heads_elan, window_size=ws_elan, num_blocks=num_blocks_elan)
-
+        self.tcn1 = TCN(in_channels, num_heads, window_size, num_blocks, ffn_ratio)
         self.c = conv_block(in_channels, in_channels, kernel_size=1, act_type='lrelu')
         self.tesa_out = TESA(in_channels)
 
     def forward(self, x):
         B, C, H, W = x.shape
         h_tesa = self.tesa_in(x)
-
-        h_tcn1 = self.tcn1(h_tesa)                 # DAT لا يحتاج H,W
-        h_tecn2 = self.tecn2(h_tesa, H, W)         # ELAN يحتاج H,W
-
-        h_add = h_tcn1 + h_tecn2
+        h_tcn1 = self.tcn1(h_tesa, H, W)
+        h_add = h_tcn1
         h_conv = self.c(h_add)
         out = self.tesa_out(h_conv)
         return out + x
