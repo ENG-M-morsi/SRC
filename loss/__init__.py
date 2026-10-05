@@ -11,7 +11,7 @@ import pdb
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
+from .edge_loss import EdgeLoss
 
 # ======================================================
 # FFT Loss — يُعاقب على فقدان الترددات العالية
@@ -112,6 +112,10 @@ class Loss(nn.modules.loss._Loss):
             elif loss_type == 'Charbonnier':
                 # Charbonnier loss (نسخة سلسة من L1)
                 loss_function = CharbonnierLoss(eps=1e-3)
+            elif loss_type == 'EDGE':
+                # Edge-Aware Loss — يُعاقب على فقدان الحواف
+                # الاستخدام: --loss "1*L1+0.02*EDGE"
+                loss_function = EdgeLoss(rgb_range=args.rgb_range)
             elif loss_type.find('VGG') >= 0:
                 module = import_module('loss.vgg')
                 loss_function = getattr(module, 'VGG')(
