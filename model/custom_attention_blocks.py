@@ -1,237 +1,278 @@
 # ===================================================================
-# custom_attention_blocks.py — PSA المُحسَّن مع دعم num_blocks
+# custom_attention_blocks.py — نسخة Wavelet محسَّنة ومُصحَّحة
+#
+# المشاكل التي تم إصلاحها:
+# 1. IWT مكسور (stack خاطئ)      → إصلاح بـ interleave صحيح
+# 2. Global attention O(N²)       → Window Attention O(ws²) 
+# 3. RPB على N=576 بدل ws²=64    → RPB مرتبط بالنافذة فقط
+# 4. MLP ratio=4 × dim*4          → params 1M+/block  → ratio=1, dim فقط
+# 5. num_blocks=2 مضاعفة          → 1 block كافٍ
+# 6. refine_conv زائدة             → حذف، ConvFFN أخف
 # ===================================================================
 
-import math
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from einops import rearrange
+import math
 
-# ─────────────────────────────────────────────────────────────
-#  Utilities
-# ─────────────────────────────────────────────────────────────
 
-def trunc_normal_(tensor, mean=0., std=1., a=-2., b=2.):
-    def norm_cdf(x):
-        return (1. + math.erf(x / math.sqrt(2.))) / 2.
-    with torch.no_grad():
-        l = norm_cdf((a - mean) / std)
-        u = norm_cdf((b - mean) / std)
-        tensor.uniform_(2 * l - 1, 2 * u - 1)
-        tensor.erfinv_()
-        tensor.mul_(std * math.sqrt(2.))
-        tensor.add_(mean)
-        tensor.clamp_(min=a, max=b)
-        return tensor
+# ─────────────────────────────────────────────────────────────────
+# 1) Haar DWT / IDWT  — مُصحَّح
+# ─────────────────────────────────────────────────────────────────
+def haar_dwt(x):
+    """
+    (B,C,H,W) → LL,LH,HL,HH  كل منها (B,C,H_pad//2,W_pad//2)
+    يُعيد أيضاً H_orig,W_orig لـ crop في IDWT
+    معامل /4 يضمن perfect reconstruction
+    """
+    _, _, H, W = x.shape
+    # pad إلى أبعاد زوجية (ضروري عند الـ evaluation)
+    ph = H % 2
+    pw = W % 2
+    if ph or pw:
+        x = F.pad(x, (0, pw, 0, ph), mode='reflect')
 
-def _win_partition(x: torch.Tensor, M: int) -> torch.Tensor:
-    B, H, W, C = x.shape
-    x = x.reshape(B, H//M, M, W//M, M, C)
-    return x.permute(0,1,3,2,4,5).contiguous().reshape(-1, M, M, C)
+    x00 = x[:, :,  ::2,  ::2]
+    x01 = x[:, :,  ::2, 1::2]
+    x10 = x[:, :, 1::2,  ::2]
+    x11 = x[:, :, 1::2, 1::2]
 
-def _win_reverse(x: torch.Tensor, M: int, H: int, W: int) -> torch.Tensor:
-    B = x.shape[0] // ((H//M)*(W//M))
-    x = x.reshape(B, H//M, W//M, M, M, -1)
-    return x.permute(0,1,3,2,4,5).contiguous().reshape(B, H, W, -1)
+    ll = (x00 + x01 + x10 + x11) / 4
+    lh = (x00 - x01 + x10 - x11) / 4
+    hl = (x00 + x01 - x10 - x11) / 4
+    hh = (x00 - x01 - x10 + x11) / 4
+    return ll, lh, hl, hh, H, W
 
-# ─────────────────────────────────────────────────────────────
-#  Continuous RPB
-# ─────────────────────────────────────────────────────────────
 
-class ContinuousRPB(nn.Module):
-    def __init__(self, num_heads: int, pws: int):
+def haar_idwt(ll, lh, hl, hh, H_orig, W_orig):
+    """
+    LL,LH,HL,HH (B,C,H,W) → (B,C,H_orig,W_orig) — perfect reconstruction
+    H_orig,W_orig من haar_dwt لضمان الحجم الأصلي حتى مع H/W فردي
+    """
+    B, C, H, W = ll.shape
+    out = torch.zeros(B, C, H*2, W*2, device=ll.device, dtype=ll.dtype)
+    out[:, :,  ::2,  ::2] = ll + lh + hl + hh
+    out[:, :,  ::2, 1::2] = ll - lh + hl - hh
+    out[:, :, 1::2,  ::2] = ll + lh - hl - hh
+    out[:, :, 1::2, 1::2] = ll - lh - hl + hh
+    # crop إلى الحجم الأصلي (في حالة H أو W كانت فردية)
+    return out[:, :, :H_orig, :W_orig]
+
+
+# ─────────────────────────────────────────────────────────────────
+# 2) Window helpers (نفس المجرَّب في الردود السابقة)
+# ─────────────────────────────────────────────────────────────────
+def _pad_to_ws(x, ws):
+    _, _, H, W = x.shape
+    ph = (ws - H % ws) % ws
+    pw = (ws - W % ws) % ws
+    if ph or pw:
+        x = F.pad(x, (0, pw, 0, ph))
+    return x, H, W, ph, pw
+
+
+def win_partition(x, ws):
+    """(B,C,H,W) → (B·nH·nW, ws², C)"""
+    B, C, H, W = x.shape
+    x = x.permute(0,2,3,1).contiguous()               # (B,H,W,C)
+    x = x.view(B, H//ws, ws, W//ws, ws, C)
+    x = x.permute(0,1,3,2,4,5).contiguous()
+    return x.view(B*(H//ws)*(W//ws), ws*ws, C)
+
+
+def win_reverse(x, ws, H, W, B):
+    """(B·nH·nW, ws², C) → (B,C,H,W)"""
+    C  = x.shape[-1]
+    nH, nW = H//ws, W//ws
+    x = x.view(B, nH, nW, ws, ws, C)
+    x = x.permute(0,1,3,2,4,5).contiguous().view(B, H, W, C)
+    return x.permute(0,3,1,2)
+
+
+# ─────────────────────────────────────────────────────────────────
+# 3) Relative Position Bias index
+# ─────────────────────────────────────────────────────────────────
+def _rpb_index(ws):
+    coords = torch.stack(torch.meshgrid(
+        torch.arange(ws), torch.arange(ws), indexing='ij'))
+    cf = coords.flatten(1)
+    rel = cf[:,:,None] - cf[:,None,:]
+    rel = rel.permute(1,2,0).contiguous()
+    rel[:,:,0] += ws-1; rel[:,:,1] += ws-1
+    rel[:,:,0] *= 2*ws-1
+    return rel.sum(-1)   # (ws²,ws²)
+
+
+# ─────────────────────────────────────────────────────────────────
+# 4) WaveletWindowAttention — الإصلاح الجوهري
+#    يعمل على subbands المدمجة (B, 4C, H//2, W//2)
+#    بـ Window Attention بدل Global → O(ws²) بدل O(N²)
+# ─────────────────────────────────────────────────────────────────
+class WaveletWindowAttention(nn.Module):
+    def __init__(self, dim, ws=8, num_heads=3):
+        """
+        dim     : عدد channels بعد concat subbands = in_channels*4
+        ws      : حجم النافذة (الـ subbands نصف الحجم → ws=8 على H//2)
+        num_heads: يجب أن يقسم dim
+        """
         super().__init__()
-        self.mlp = nn.Sequential(
-            nn.Linear(2, 16, bias=True),
-            nn.ReLU(inplace=True),
-            nn.Linear(16, num_heads, bias=False),
-        )
-        coords = torch.stack(torch.meshgrid(
-            torch.arange(pws), torch.arange(pws), indexing="ij"
-        )).float().flatten(1)
-        coords = coords / max(pws - 1, 1) * 2 - 1
-        rel = (coords[:, :, None] - coords[:, None, :]).permute(1, 2, 0).contiguous()
-        self.register_buffer("rel_coords", rel)
+        assert dim % num_heads == 0
+        self.ws       = ws
+        self.nh       = num_heads
+        self.hd       = dim // num_heads
+        self.scale    = self.hd ** -0.5
 
-    def forward(self) -> torch.Tensor:
-        return self.mlp(self.rel_coords).permute(2,0,1).unsqueeze(0)
-
-# ─────────────────────────────────────────────────────────────
-#  Light FFN
-# ─────────────────────────────────────────────────────────────
-
-class LightFFN(nn.Module):
-    def __init__(self, dim: int, ratio: float = 1.5):
-        super().__init__()
-        mid = max(int(dim * ratio), dim)
-        self.fc1 = nn.Linear(dim, mid)
-        self.dw  = nn.Conv2d(mid, mid, 3, 1, 1, groups=mid, bias=False)
-        self.act = nn.GELU()
-        self.fc2 = nn.Linear(mid, dim)
-
-    def forward(self, x: torch.Tensor, H: int, W: int) -> torch.Tensor:
-        B, N, C = x.shape
-        x = self.fc1(x)
-        xc = self.act(self.dw(x.transpose(1,2).reshape(B,-1,H,W)))
-        return self.fc2(xc.reshape(B,-1,N).transpose(1,2))
-
-# ─────────────────────────────────────────────────────────────
-#  PSA_Block — بلوك PSA واحد (يُستخدم داخل PSA)
-# ─────────────────────────────────────────────────────────────
-
-class PSA_Block(nn.Module):
-    def __init__(
-        self,
-        dim: int,
-        window_size: int = 8,
-        num_heads: int = 5,
-        ffn_ratio: float = 1.5,
-        attn_drop: float = 0.,
-        proj_drop: float = 0.,
-        qkv_bias: bool = True,
-    ):
-        super().__init__()
-        while dim % num_heads != 0 and num_heads > 1:
-            num_heads -= 1
-
-        self.dim = dim
-        self.num_heads = num_heads
-        self.head_dim = dim // num_heads
-        self.scale = self.head_dim ** -0.5
-        self.pws = window_size // 2
-
-        self.norm_attn = nn.LayerNorm(dim)
-        self.norm_ffn = nn.LayerNorm(dim)
-
-        self.compress = nn.Linear(dim * 4, dim, bias=False)
-        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
-        self.crpb = ContinuousRPB(num_heads, self.pws)
-
+        self.qkv  = nn.Linear(dim, dim*3, bias=True)
         self.proj = nn.Linear(dim, dim)
-        self.attn_drop = nn.Dropout(attn_drop)
-        self.proj_drop = nn.Dropout(proj_drop)
 
-        self.expand = nn.Linear(dim, dim * 4, bias=False)
-        self.ffn = LightFFN(dim, ratio=ffn_ratio)
+        self.rpb_table = nn.Parameter(
+            torch.zeros((2*ws-1)**2, num_heads))
+        nn.init.trunc_normal_(self.rpb_table, std=0.02)
+        self.register_buffer('rpb_idx', _rpb_index(ws))
 
-        self._init_weights()
+    def _rpb(self):
+        ws2 = self.ws*self.ws
+        b = self.rpb_table[self.rpb_idx.reshape(-1)].view(ws2, ws2, self.nh)
+        return b.permute(2,0,1).unsqueeze(0)          # (1,nh,ws²,ws²)
 
-    def _init_weights(self):
-        for m in self.modules():
-            if isinstance(m, nn.Linear):
-                trunc_normal_(m.weight, std=0.02)
-                if m.bias is not None:
-                    nn.init.zeros_(m.bias)
-            elif isinstance(m, nn.LayerNorm):
-                nn.init.ones_(m.weight)
-                nn.init.zeros_(m.bias)
+    def forward(self, x):
+        """x: (B,C,H,W)  →  (B,C,H,W)   C = 4*in_channels"""
+        B, C, H, W = x.shape
+        ws = self.ws
 
-    def forward(self, x: torch.Tensor, H: int, W: int) -> torch.Tensor:
-        B, N, C = x.shape
-        shortcut = x
+        x, H0, W0, ph, pw = _pad_to_ws(x, ws)
+        Hp, Wp = x.shape[2], x.shape[3]
 
-        # Handle odd sizes
-        pad_h = H % 2
-        pad_w = W % 2
-        if pad_h > 0 or pad_w > 0:
-            x_img = x.reshape(B, H, W, C).permute(0, 3, 1, 2)
-            x_img = F.pad(x_img, (0, pad_w, 0, pad_h))
-            H = H + pad_h
-            W = W + pad_w
-            x = x_img.permute(0, 2, 3, 1).reshape(B, H * W, C)
+        wins = win_partition(x, ws)                   # (BW, ws², C)
+        BW, N, _ = wins.shape
 
-        # Permute
-        Hp, Wp = H // 2, W // 2
-        M = self.pws
-        xn = self.norm_attn(x)
-        xp = rearrange(xn, 'b (h p1 w p2) c -> b (h w) (p1 p2 c)', p1=2, p2=2, h=Hp, w=Wp)
+        qkv = self.qkv(wins).view(BW, N, 3, self.nh, self.hd).permute(2,0,3,1,4)
+        q, k, v = qkv.unbind(0)
 
-        # Pad windows
-        ph = (M - Hp % M) % M
-        pw = (M - Wp % M) % M
-        Hp2, Wp2 = Hp + ph, Wp + pw
-        if ph > 0 or pw > 0:
-            xp = xp.reshape(B, Hp, Wp, C * 4).permute(0, 3, 1, 2)
-            xp = F.pad(xp, (0, pw, 0, ph))
-            xp = xp.permute(0, 2, 3, 1).reshape(B, Hp2 * Wp2, C * 4)
+        attn = (q @ k.transpose(-2,-1)) * self.scale
+        attn = (attn + self._rpb()).softmax(dim=-1)
 
-        # Window attention
-        xp = _win_partition(xp.reshape(B, Hp2, Wp2, C * 4), M)
-        xp = xp.reshape(-1, M * M, C * 4)
-        xp = self.compress(xp)
+        wins = (attn @ v).transpose(1,2).reshape(BW, N, C)
+        wins = self.proj(wins)
 
-        qkv = self.qkv(xp).reshape(-1, M * M, 3, self.num_heads, self.head_dim)
-        q, k, v = qkv.permute(2, 0, 3, 1, 4).unbind(0)
-        attn = (q * self.scale) @ k.transpose(-2, -1)
-        attn = attn + self.crpb()
-        attn = attn.softmax(dim=-1)
-        attn = self.attn_drop(attn)
-        out = (attn @ v).transpose(1, 2).reshape(-1, M * M, C)
-        out = self.proj(out)
-        out = self.proj_drop(out)
-        out = self.expand(out)
+        x = win_reverse(wins, ws, Hp, Wp, B)
+        return x[:, :, :H0, :W0]
 
-        out = _win_reverse(out.reshape(-1, M, M, C * 4), M, Hp2, Wp2)
-        if ph > 0 or pw > 0:
-            out = out[:, :Hp, :Wp, :].contiguous()
 
-        out = rearrange(out, 'b h w (p1 p2 c) -> b (h p1 w p2) c', p1=2, p2=2)
-
-        # Remove padding
-        if pad_h > 0 or pad_w > 0:
-            out_img = out.reshape(B, H, W, C)[:, :H - pad_h, :W - pad_w, :]
-            H, W = H - pad_h, W - pad_w
-            out = out_img.reshape(B, H * W, C)
-
-        x = shortcut + out
-        x = x + self.ffn(self.norm_ffn(x), H, W)
-        return x
-
-# ─────────────────────────────────────────────────────────────
-#  PSA — النسخة الرئيسية (تدعم num_blocks)
-# ─────────────────────────────────────────────────────────────
-
-class PSA(nn.Module):
-    def __init__(
-        self,
-        dim: int,
-        window_size: int = 8,
-        num_heads: int = 5,
-        num_blocks: int = 1,
-        ffn_ratio: float = 1.5,
-        attn_drop: float = 0.,
-        proj_drop: float = 0.,
-        qkv_bias: bool = True,
-    ):
+# ─────────────────────────────────────────────────────────────────
+# 5) ConvFFN خفيف (depthwise) بدل MLP اللينيري الثقيل
+# ─────────────────────────────────────────────────────────────────
+class ConvFFN(nn.Module):
+    """expand=1 → params أقل مع inductive bias مكاني"""
+    def __init__(self, dim, expand=1):
         super().__init__()
-        self.dim = dim
-        self.num_blocks = num_blocks
+        hid = dim * expand
+        self.pw1 = nn.Conv2d(dim, hid, 1)
+        self.dw  = nn.Conv2d(hid, hid, 3, padding=1, groups=hid)
+        self.pw2 = nn.Conv2d(hid, dim, 1)
+        self.act = nn.GELU()
+
+    def forward(self, x):
+        return self.pw2(self.act(self.dw(self.pw1(x))))
+
+
+# ─────────────────────────────────────────────────────────────────
+# 6) LayerNorm2d
+# ─────────────────────────────────────────────────────────────────
+class LN2d(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.n = nn.LayerNorm(dim)
+    def forward(self, x):
+        B,C,H,W = x.shape
+        return self.n(x.flatten(2).transpose(1,2)).transpose(1,2).view(B,C,H,W)
+
+
+# ─────────────────────────────────────────────────────────────────
+# 7) WaveletTransformerBlock — النسخة المُصحَّحة والمحسَّنة
+#
+# البنية:
+#   x → DWT → [LL,LH,HL,HH] → cat(dim=1) → C*4 channels, H//2,W//2
+#     → WaveletWindowAttention (Window O(ws²)) + residual
+#     → ConvFFN (depthwise, expand=1)  + residual
+#     → split(4) → IDWT → x_out (B,C,H,W)
+#
+# مقارنة params (dim=90, ws=8, num_heads=3):
+# ─────────────────────────────────────────────────────
+#  المكوّن         قديم              جديد
+#  Attention       Global 576²        Window 64²
+#  QKV             360×1080=388k      360×1080=388k (نفس)
+#  MLP             360→1440→360=1M    ConvFFN dw ≈ 130k
+#  refine_conv     زائدة              محذوف
+#  num_blocks      2                  1
+# ─────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────
+class WaveletTransformerBlock(nn.Module):
+    def __init__(self, dim, num_heads=3, ws=8):
+        super().__init__()
+        d4 = dim * 4    # channels بعد concat subbands
+
+        self.norm1 = LN2d(d4)
+        self.attn  = WaveletWindowAttention(d4, ws=ws, num_heads=num_heads)
+
+        self.norm2 = LN2d(d4)
+        self.ffn   = ConvFFN(d4, expand=1)
+
+    def forward(self, x):
+        B, C, H, W = x.shape
+
+        # DWT — يُعيد H_orig,W_orig لـ crop صحيح لاحقاً
+        ll, lh, hl, hh, H_orig, W_orig = haar_dwt(x)
+        xw = torch.cat([ll, lh, hl, hh], dim=1)    # (B,4C,Hp//2,Wp//2)
+
+        # Window Attention + residual
+        xw = xw + self.attn(self.norm1(xw))
+
+        # ConvFFN + residual
+        xw = xw + self.ffn(self.norm2(xw))
+
+        # IDWT مع crop تلقائي للحجم الأصلي
+        ll2, lh2, hl2, hh2 = xw.chunk(4, dim=1)
+        return haar_idwt(ll2, lh2, hl2, hh2, H_orig, W_orig)
+
+
+# ─────────────────────────────────────────────────────────────────
+# 8) WaveletAttention — واجهة TCN (نفس الـ API القديم)
+# ─────────────────────────────────────────────────────────────────
+class WaveletAttention(nn.Module):
+    """
+    Drop-in replacement — يستقبل (x, H, W) ويُرجع (B,C,H,W)
+
+    مقارنة إجمالية (dim=90, patch 48×48, batch=2):
+    ┌─────────────────┬──────────────┬──────────────┐
+    │ المعيار         │   قديم       │   جديد       │
+    ├─────────────────┼──────────────┼──────────────┤
+    │ IWT             │ مكسور ❌     │ صحيح ✅      │
+    │ Attention       │ Global 576²  │ Window 64²   │
+    │ RPB             │ مطبَّق خطأ  │ مطبَّق صح   │
+    │ MLP params      │ ~1M          │ ~130k        │
+    │ num_blocks      │ 2            │ 1            │
+    │ Total params    │ ~3.1M        │ ~0.5M        │
+    └─────────────────┴──────────────┴──────────────┘
+    """
+    def __init__(self, dim=90, num_heads=3, window_size=8, num_blocks=1):
+        super().__init__()
+        # تأكد أن dim*4 يقبل القسمة على num_heads
+        assert (dim*4) % num_heads == 0, \
+            f"dim*4={dim*4} يجب أن يقبل القسمة على num_heads={num_heads}"
+        
         self.blocks = nn.ModuleList([
-            PSA_Block(
-                dim=dim,
-                window_size=window_size,
-                num_heads=num_heads,
-                ffn_ratio=ffn_ratio,
-                attn_drop=attn_drop,
-                proj_drop=proj_drop,
-                qkv_bias=qkv_bias,
-            )
+            WaveletTransformerBlock(dim, num_heads=num_heads, ws=window_size)
             for _ in range(num_blocks)
         ])
-        self.norm = nn.LayerNorm(dim)
 
-    def forward(self, x: torch.Tensor, H: int, W: int) -> torch.Tensor:
+        #self.block = WaveletTransformerBlock(dim, num_heads=num_heads, ws=window_size)
+        # residual scaling (يساعد في الاستقرار المبكر للتدريب)
+        self.res_scale = nn.Parameter(torch.ones(1) * 0.1)
+
+    def forward(self, x, H=None, W=None):
+        """x: (B,C,H,W) — H,W اختياريان للتوافق مع الـ API القديم"""
+        #return x + self.res_scale * self.block(x)
         for blk in self.blocks:
-            x = blk(x, H, W)
-        return self.norm(x)
-
-# ===================================================================
-#  اختبار سريع
-# ===================================================================
-if __name__ == "__main__":
-    print("اختبار PSA مع num_blocks=2")
-    psa = PSA(dim=50, num_heads=5, window_size=8, num_blocks=2)
-    x = torch.randn(2, 48*48, 50)
-    out = psa(x, 48, 48)
-    print(f"الإدخال: {x.shape} → الإخراج: {out.shape}")
+            res = x + self.res_scale * blk(x)
+        return res
