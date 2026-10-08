@@ -29,7 +29,7 @@ from model.dhtcun import HUTCN
 # ═════════════════════════════════════════════════════════════════
 def make_data_args(data_dir, batch_size, scale=4, patch_size=96,
                    data_train=('DIV2K',), data_test=('DIV2K',),
-                   data_range='1-800/896-900'):
+                   data_range='1-200/896-900'):
     return SimpleNamespace(
         dir_data=data_dir,
         data_train=list(data_train),
