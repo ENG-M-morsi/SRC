@@ -147,21 +147,27 @@ class Loss(nn.modules.loss._Loss):
         if args.load != '': self.load(ckp.dir, cpu=args.cpu)
 
     def forward(self, sr, hr):
-        losses = []
-        for i, l in enumerate(self.loss):
-            if l['function'] is not None:
-                loss = l['function'](sr, hr)
-                effective_loss = l['weight'] * loss
-                losses.append(effective_loss)
-                self.log[-1, i] += effective_loss.item()
-            elif l['type'] == 'DIS':
-                self.log[-1, i] += self.loss[i - 1]['function'].loss
+        # ✅ تعطيل AMP داخل Loss — VGG19 له أوزان float32 مجمّدة
+        # أي إدخال half سيسبب: "Input type (Half) and bias type (float)"
+        with torch.cuda.amp.autocast(enabled=False):
+            sr = sr.float()
+            hr = hr.float()
 
-        loss_sum = sum(losses)
-        if len(self.loss) > 1:
-            self.log[-1, -1] += loss_sum.item()
+            losses = []
+            for i, l in enumerate(self.loss):
+                if l['function'] is not None:
+                    loss = l['function'](sr, hr)
+                    effective_loss = l['weight'] * loss
+                    losses.append(effective_loss)
+                    self.log[-1, i] += effective_loss.item()
+                elif l['type'] == 'DIS':
+                    self.log[-1, i] += self.loss[i - 1]['function'].loss
 
-        return loss_sum
+            loss_sum = sum(losses)
+            if len(self.loss) > 1:
+                self.log[-1, -1] += loss_sum.item()
+
+            return loss_sum
 
     def step(self):
         for l in self.get_loss_module():

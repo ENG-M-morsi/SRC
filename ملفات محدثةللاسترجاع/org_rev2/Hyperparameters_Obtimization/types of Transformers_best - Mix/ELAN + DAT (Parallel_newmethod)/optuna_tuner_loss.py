@@ -37,7 +37,7 @@ from loss import Loss
 # إعداد args لـ data.Data
 # ═════════════════════════════════════════════════════════════════
 def make_data_args(data_dir, batch_size, scale=4, patch_size=96,
-                   data_range='1-800/896-900'):
+                   data_range='1-200/896-900'):
     return SimpleNamespace(
         dir_data=data_dir,
         data_train=['DIV2K'],
@@ -49,9 +49,9 @@ def make_data_args(data_dir, batch_size, scale=4, patch_size=96,
         rgb_range=1.0,
         ext='img',
         no_augment=False,
-        test_every=1000,
+        test_every=200,
         batch_size=batch_size,
-        n_threads=4,
+        n_threads=0,
         cpu=False,
         test_only=False,
         model='dhtcun',
@@ -158,9 +158,14 @@ def objective(trial):
                 lr_img = batch[0].to(device)
                 hr_img = batch[1].to(device)
                 optimizer.zero_grad()
+                
+                # model forward تحت AMP (سريع)
                 with autocast():
                     sr = model(lr_img)
-                    loss = cur_crit(sr, hr_img)
+                
+                # loss خارج AMP (يتجنب مشاكل half مع VGG/FFT)
+                loss = cur_crit(sr, hr_img)
+                
                 scaler.scale(loss).backward()
                 scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
