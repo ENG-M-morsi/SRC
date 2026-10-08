@@ -1,0 +1,15 @@
+{
+  "nf": 88,
+  "num_heads_dat": 2,
+  "ws_dat": 4,
+  "num_blocks_dat": 3,
+  "num_heads_elan": 2,
+  "ws_elan": 8,
+  "num_blocks_elan": 1,
+  "fusion_heads": 8,
+  "fusion_dropout": 0.1,
+  "hfe_reduction": 2,
+  "lr": 0.000498854102779205,
+  "batch_size": 8,
+  "weight_decay": 6.993711544790622e-06
+}
