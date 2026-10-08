@@ -37,7 +37,7 @@ from loss import Loss
 # إعداد args لـ data.Data
 # ═════════════════════════════════════════════════════════════════
 def make_data_args(data_dir, batch_size, scale=4, patch_size=96,
-                   data_range='1-200/896-900'):
+                   data_range='1-800/896-900'):
     return SimpleNamespace(
         dir_data=data_dir,
         data_train=['DIV2K'],
@@ -150,7 +150,7 @@ def objective(trial):
             model.train()
             cur_crit = warmup_criterion if epoch < WARMUP_EPOCHS else criterion
 
-            cur_crit.start_log()   # ← ⭐ أضف هذا السطر (ضروري!)
+            cur_crit.start_log()      # ← 12 مسافة (داخل for)
 
             for batch in tqdm(train_loader,
                               desc=f'Trial {trial.number} Ep {epoch}',
@@ -167,9 +167,8 @@ def objective(trial):
                 scaler.step(optimizer)
                 scaler.update()
 
-            cur_crit.end_log(len(train_loader))   # ← ⭐ اختياري (يُغلق السجل)
+            cur_crit.end_log(len(train_loader))
             scheduler.step()
-
             # تقييم (بدون loss، فقط PSNR)
             model.eval()
             psnr_sum = 0.0

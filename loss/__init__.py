@@ -17,30 +17,19 @@ from .edge_loss import EdgeLoss
 # FFT Loss — يُعاقب على فقدان الترددات العالية
 # ======================================================
 class FFTLoss(nn.Module):
-    """
-    Frequency-domain L1 loss على الـ magnitude spectrum.
-
-    لماذا magnitude فقط؟
-    - magnitude = قوة كل تردد (الحواف، الـ texture، التفاصيل الدقيقة)
-    - phase = موضع هذه الترددات، حساس جداً ويُصعّب التدريب
-
-    لماذا rfft2 وليس fft2؟
-    - rfft2 يستغل تماثل الصور الحقيقية → أسرع بمرتين + ذاكرة أقل
-    - النتيجة مطابقة لـ fft2[:, :, :W//2+1]
-    """
     def __init__(self):
         super(FFTLoss, self).__init__()
 
     def forward(self, sr, hr):
-        # تحويل فورييه للصورتين
-        sr_fft = torch.fft.rfft2(sr,  norm='ortho')
-        hr_fft = torch.fft.rfft2(hr,  norm='ortho')
-
-        # الفرق في الـ magnitude (قوة الترددات) فقط
-        sr_mag = torch.abs(sr_fft)
-        hr_mag = torch.abs(hr_fft)
-
-        return F.l1_loss(sr_mag, hr_mag)
+        # ✅ تعطيل autocast داخلياً لأن cuFFT لا يدعم half مع أحجام غير قوى 2
+        with torch.cuda.amp.autocast(enabled=False):
+            sr_32 = sr.float()
+            hr_32 = hr.float()
+            sr_fft = torch.fft.rfft2(sr_32, norm='ortho')
+            hr_fft = torch.fft.rfft2(hr_32, norm='ortho')
+            sr_mag = torch.abs(sr_fft)
+            hr_mag = torch.abs(hr_fft)
+            return F.l1_loss(sr_mag, hr_mag)
 
 
 # ======================================================

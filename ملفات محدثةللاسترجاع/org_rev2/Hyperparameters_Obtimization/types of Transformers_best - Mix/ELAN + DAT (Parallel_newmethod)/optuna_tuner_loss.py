@@ -150,6 +150,8 @@ def objective(trial):
             model.train()
             cur_crit = warmup_criterion if epoch < WARMUP_EPOCHS else criterion
 
+            cur_crit.start_log()      # ← 12 مسافة (داخل for)
+
             for batch in tqdm(train_loader,
                               desc=f'Trial {trial.number} Ep {epoch}',
                               leave=False):
@@ -165,8 +167,8 @@ def objective(trial):
                 scaler.step(optimizer)
                 scaler.update()
 
+            cur_crit.end_log(len(train_loader))
             scheduler.step()
-
             # تقييم (بدون loss، فقط PSNR)
             model.eval()
             psnr_sum = 0.0
