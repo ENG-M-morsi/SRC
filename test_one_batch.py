@@ -1,57 +1,56 @@
-import sys, time
+# test_fft_loss.py
+import sys
 sys.path.append('.')
 import torch
-from types import SimpleNamespace
-from torch.cuda.amp import autocast, GradScaler
-from model.dhtcun import HUTCN
-from loss import Loss
-from optuna_tuner_loss import build_loaders, make_loss_args
+from loss import FFTLoss
 
 device = 'cuda'
 
-# 1. DataLoader
-t0 = time.time()
-tr, _ = build_loaders('D:/Mohamed Morsi/DATA', batch_size=8)
-print(f'DataLoader built: {time.time()-t0:.1f}s, batches: {len(tr)}')
+# إنشاء FFTLoss
+l = FFTLoss().to(device)
+print('FFTLoss built ✅')
 
-# 2. النموذج
-model = HUTCN(in_nc=3, nf=88, out_nc=3, upscale=4,
-              num_heads_dat=2, ws_dat=4, num_blocks_dat=3,
-              num_heads_elan=2, ws_elan=8, num_blocks_elan=1,
-              fusion_heads=8, fusion_dropout=0.1, hfe_reduction=2).to(device)
-print(f'Model built: {time.time()-t0:.1f}s')
+# 1) صورة HR اصطناعية
+hr = torch.randn(2, 3, 96, 96).cuda() * 0.1 + 0.5
 
-# 3. Loss
-crit = Loss(make_loss_args("1*L1+0.005*VGG22+0.005*FFT+0.02*EDGE"), None).to(device)
-crit.train()
-print(f'Loss built: {time.time()-t0:.1f}s')
+# 2) SR مطابق تماماً (متوقع: FFT = 0)
+v_identical = l(hr, hr)
+print(f'FFT loss (identical): {v_identical.item():.8f}')
 
-# 4. first batch forward
-it = iter(tr)
-batch = next(it)
-lr_img, hr_img = batch[0].to(device), batch[1].to(device)
-print(f'Batch loaded: LR={tuple(lr_img.shape)} HR={tuple(hr_img.shape)}')
-print(f'Time so far: {time.time()-t0:.1f}s')
+# 3) SR قريب (متوقع: FFT > 0 صغير)
+sr_close = hr + 0.01 * torch.randn_like(hr)
+v_close = l(sr_close, hr)
+print(f'FFT loss (close):     {v_close.item():.8f}')
 
-crit.start_log()
-t1 = time.time()
-with autocast():
-    sr = model(lr_img)
-print(f'Model forward: {time.time()-t1:.1f}s')
+# 4) SR بعيد (متوقع: FFT أكبر)
+sr_far = hr + 0.1 * torch.randn_like(hr)
+v_far = l(sr_far, hr)
+print(f'FFT loss (far):       {v_far.item():.8f}')
 
-t1 = time.time()
-loss = crit(sr, hr_img)      # ← خارج autocast (هو موجود بالفعل خارج)
-print(f'Loss forward: {time.time()-t1:.1f}s, value={loss.item():.4f}')
+# 5) صورة عشوائية تماماً (متوقع: FFT كبير)
+sr_random = torch.randn_like(hr)
+v_random = l(sr_random, hr)
+print(f'FFT loss (random):    {v_random.item():.8f}')
 
-# 5. backward
-optimizer = torch.optim.AdamW(model.parameters(), lr=5e-4)
-scaler = GradScaler()
-t1 = time.time()
-optimizer.zero_grad()
-scaler.scale(loss).backward()
-scaler.unscale_(optimizer)
-torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
-scaler.step(optimizer)
-scaler.update()
-print(f'Backward + step: {time.time()-t1:.1f}s')
-print(f'TOTAL: {time.time()-t0:.1f}s')
+# التحليل
+print()
+print('=' * 50)
+print('Analysis:')
+print(f'  identical: {v_identical.item():.2e}  (يجب ≈ 0)')
+print(f'  close:     {v_close.item():.2e}  (يجب صغير)')
+print(f'  far:       {v_far.item():.2e}  (يجب أكبر من close)')
+print(f'  random:    {v_random.item():.2e}  (يجب الأكبر)')
+print('=' * 50)
+
+# القرار
+if v_close.item() < 1e-6:
+    print('⚠️  FFT loss صغير جداً — قد يحتاج وزن أكبر')
+    print(f'   القيمة الحالية × weight={0.0019062374828215077}')
+    print(f'   = {v_close.item() * 0.0019062374828215077:.2e}')
+    print(f'   → يظهر كـ 0.0000 في السجل')
+    print()
+    print('   💡 الحل: زيادة weight إلى 0.02')
+elif v_close.item() > 1e-3:
+    print('✅ FFT loss يعمل بشكل جيد')
+else:
+    print('✅ FFT loss يعمل (قيم صغيرة طبيعية)')
