@@ -1,0 +1,37 @@
+===========================================================================
+Optuna Study Analysis Report (generic)
+===========================================================================
+
+Study name: hutcn_hyperopt_study
+Storage path: D:\Mohamed Morsi\src\ملفات محدثةللاسترجاع\org_rev2\Hyperparameters_Obtimization\types of Transformers_best\Omni-SR\OmniSR+50T+50EP+optim_purn\optuna_study.db
+Total trials: 50
+Completed: 26
+Pruned: 24 (48.0%)
+Failed: 0
+Best PSNR: 30.7786 dB
+Best trial: #47
+
+===========================================================================
+Best parameters:
+===========================================================================
+                    n_feats : 128
+                  num_heads : 4
+                 num_blocks : 3
+                window_size : 16
+                 patch_size : 256
+                  optimizer : AdamW
+                  scheduler : cosine
+                       loss : L1
+                         lr : 4.140827e-04
+               weight_decay : 9.433623e-06
+
+===========================================================================
+Correlation of each parameter with PSNR (sorted):
+===========================================================================
+  [STRONG+]                        lr : +0.5433
+  [WEAK]              weight decay : +0.1515
+
+===========================================================================
+Recommendations for choosing the best parameters:
+===========================================================================
+  ✅ Increasing lr improves PSNR (r = +0.543)

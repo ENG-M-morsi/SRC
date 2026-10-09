@@ -1,0 +1,39 @@
+===========================================================================
+Optuna Study Analysis Report (generic)
+===========================================================================
+
+Study name: hutcn_hyperopt_study
+Storage path: D:\Mohamed Morsi\src\ملفات محدثةللاسترجاع\org_rev2\Hyperparameters_Obtimization\types of Transformers_best\SRFormer2\SRFormer2+50T+50EP+optim_purn\optuna_study.db
+Total trials: 50
+Completed: 32
+Pruned: 18 (36.0%)
+Failed: 0
+Best PSNR: 30.4535 dB
+Best trial: #31
+
+===========================================================================
+Best parameters:
+===========================================================================
+                         nf : 120
+                  num_heads : 2
+                window_size : 6
+                 num_blocks : 3
+                  ffn_ratio : 2.000000e+00
+                 patch_size : 160
+                  optimizer : AdamW
+                  scheduler : fixed
+                       loss : Huber
+                         lr : 4.806224e-04
+               weight_decay : 6.415363e-05
+
+===========================================================================
+Correlation of each parameter with PSNR (sorted):
+===========================================================================
+  [STRONG+]                        nf : +0.5624
+  [WEAK]                        lr : +0.2104
+  [WEAK]              weight decay : -0.2833
+
+===========================================================================
+Recommendations for choosing the best parameters:
+===========================================================================
+  ✅ Increasing nf improves PSNR (r = +0.562)

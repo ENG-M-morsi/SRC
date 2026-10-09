@@ -1,0 +1,38 @@
+===========================================================================
+Optuna Study Analysis Report (generic)
+===========================================================================
+
+Study name: hutcn_hyperopt_study
+Storage path: D:\Mohamed Morsi\src\ملفات محدثةللاسترجاع\org_rev2\Hyperparameters_Obtimization\types of Transformers_best\Wavelet Trans\Wavelet+50T+50EP+optim_purn\optuna_study.db
+Total trials: 50
+Completed: 28
+Pruned: 22 (44.0%)
+Failed: 0
+Best PSNR: 30.3676 dB
+Best trial: #26
+
+===========================================================================
+Best parameters:
+===========================================================================
+                    n_feats : 112
+                  num_heads : 2
+                window_size : 16
+                 num_blocks : 4
+                 patch_size : 192
+                  optimizer : AdamW
+                  scheduler : cosine
+                       loss : L2
+                         lr : 4.657004e-04
+               weight_decay : 9.217288e-04
+
+===========================================================================
+Correlation of each parameter with PSNR (sorted):
+===========================================================================
+  [STRONG+]                        lr : +0.7637
+  [MOD+]              weight decay : +0.3736
+
+===========================================================================
+Recommendations for choosing the best parameters:
+===========================================================================
+  ✅ Increasing lr improves PSNR (r = +0.764)
+  ✅ Increasing weight decay improves PSNR (r = +0.374)
