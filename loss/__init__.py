@@ -236,16 +236,28 @@ class Loss(nn.modules.loss._Loss):
         torch.save(self.log, os.path.join(apath, 'loss_log.pt'))
 
     def load(self, apath, cpu=False):
+        loss_path = os.path.join(apath, 'loss.pt')
+        log_path = os.path.join(apath, 'loss_log.pt')
+
+        # ✅ إذا كان الملف غير موجود، تجاهل التحميل بهدوء
+        if not os.path.exists(loss_path):
+            print(f'⚠️  Loss state file not found: {loss_path}')
+            print(f'    → Skipping loss state load (starting fresh)')
+            return
+
         if cpu:
             kwargs = {'map_location': lambda storage, loc: storage}
         else:
             kwargs = {}
 
-        self.load_state_dict(torch.load(
-            os.path.join(apath, 'loss.pt'),
-            **kwargs
-        ))
-        self.log = torch.load(os.path.join(apath, 'loss_log.pt'))
-        for l in self.get_loss_module():
-            if hasattr(l, 'scheduler'):
-                for _ in range(len(self.log)): l.scheduler.step()
+        try:
+            self.load_state_dict(torch.load(loss_path, **kwargs))
+            self.log = torch.load(log_path)
+            for l in self.get_loss_module():
+                if hasattr(l, 'scheduler'):
+                    for _ in range(len(self.log)): l.scheduler.step()
+            print(f'✅ Loss state loaded from {loss_path}')
+        except (RuntimeError, FileNotFoundError) as e:
+            print(f'⚠️  Could not load loss state: {e}')
+            print(f'    → Starting with fresh loss state')
+            self.log = torch.Tensor()
