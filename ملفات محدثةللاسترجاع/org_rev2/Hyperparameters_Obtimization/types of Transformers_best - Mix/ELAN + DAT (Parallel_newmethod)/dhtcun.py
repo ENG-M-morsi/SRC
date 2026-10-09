@@ -25,10 +25,10 @@ def make_model(args, parent=False):
 
 class HUTCN(nn.Module):
     def __init__(self, in_nc=3, nf=88, out_nc=3, upscale=4,
-                 num_heads_dat=4, ws_dat=8, num_blocks_dat=2,
-                 num_heads_elan=2, ws_elan=12, num_blocks_elan=3,
-                 fusion_heads=4, fusion_dropout=0.1,
-                 hfe_reduction=4):
+                 num_heads_dat=2, ws_dat=4, num_blocks_dat=3,
+                 num_heads_elan=2, ws_elan=8, num_blocks_elan=1,
+                 fusion_heads=8, fusion_dropout=0.1,
+                 hfe_reduction=2):
         super(HUTCN, self).__init__()
 
         self.fea_conv = B.conv_layer(in_nc, nf, kernel_size=3)

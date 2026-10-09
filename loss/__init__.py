@@ -22,7 +22,7 @@ class FFTLoss(nn.Module):
 
     def forward(self, sr, hr):
         # ✅ تعطيل autocast داخلياً لأن cuFFT لا يدعم half مع أحجام غير قوى 2
-        with torch.cuda.amp.autocast(enabled=False):
+        with torch.amp.autocast('cuda', enabled=False):
             sr_32 = sr.float()
             hr_32 = hr.float()
             sr_fft = torch.fft.rfft2(sr_32, norm='ortho')
@@ -149,7 +149,7 @@ class Loss(nn.modules.loss._Loss):
     def forward(self, sr, hr):
         # ✅ تعطيل AMP داخل Loss — VGG19 له أوزان float32 مجمّدة
         # أي إدخال half سيسبب: "Input type (Half) and bias type (float)"
-        with torch.cuda.amp.autocast(enabled=False):
+         with torch.amp.autocast('cuda', enabled=False):
             sr = sr.float()
             hr = hr.float()
 
