@@ -33,6 +33,17 @@ STUDY_NAME         = "hutcn_hyperopt_study"
 AUTO_SCAN_SIBLINGS = False
 
 # ═════════════════════════════════════════════════════════════════════
+# SECTION 1.b — FLOPs (fvcore) — اختياري
+# ═════════════════════════════════════════════════════════════════════
+COMPUTE_FLOPS = True            # ← اجعلها False لتعطيل FLOPs
+FLOPS_IMG_H   = 48              # ← 🟠  ارتفاع صورة الإدخال (LR) — عدّل هنا
+FLOPS_IMG_W   = 48              # ← 🟠  عرض  صورة الإدخال (LR) — عدّل هنا
+FLOPS_IN_CH   = 3               # عدد قنوات الإدخال (RGB=3)
+FLOPS_UPSCALE = 4               # scale factor (لا يُستخدم إلا لأبعاد HR)
+
+FLOPS_CACHE_FILE = OUTPUT_DIR / "flops_cache.json"
+
+# ═════════════════════════════════════════════════════════════════════
 # SECTION 2 — Plot style
 # ═════════════════════════════════════════════════════════════════════
 plt.rcParams.update({
@@ -132,7 +143,82 @@ def wavelet_hutcn_nparams(nf, num_heads, ws, num_blocks,
 
     return int(total)
 
+# ═════════════════════════════════════════════════════════════════════
+# SECTION 3.5 — FLOPs helpers (fvcore)
+# ═════════════════════════════════════════════════════════════════════
+def build_model_for_flops(params):
+    from model.dhtcun import HUTCN
+    p = dict(params)
+    nf        = p.get('n_feats', p.get('nf', 64))
+    num_heads = p.get('num_heads', 2)
+    ws        = p.get('window_size', 16)
+    nb        = p.get('num_blocks', 1)
+    return HUTCN(in_nc=3, nf=nf, num_modules=1, out_nc=3, upscale=4,
+                 num_heads=num_heads, window_size=ws, num_blocks=nb)
 
+def load_flops_cache():
+    if FLOPS_CACHE_FILE.exists():
+        try:
+            return json.loads(FLOPS_CACHE_FILE.read_text())
+        except Exception:
+            return {}
+    return {}
+
+
+def save_flops_cache(cache):
+    FLOPS_CACHE_FILE.write_text(json.dumps(cache, indent=2))
+
+
+def _flops_key(params):
+    data = dict(params)
+    data['_H'] = FLOPS_IMG_H
+    data['_W'] = FLOPS_IMG_W
+    data['_C'] = FLOPS_IN_CH
+    prefix = MODEL_DISPLAY_NAME + "|flops|"
+    return hashlib.md5(
+        (prefix + json.dumps(data, sort_keys=True, default=str)).encode()
+    ).hexdigest()
+
+
+def _ensure_model_on_path():
+    """يضيف جذر المشروع (الذي يحتوي مجلد model/) إلى sys.path."""
+    cur = HERE
+    for _ in range(6):
+        if (cur / "model").is_dir():
+            if str(cur) not in sys.path:
+                sys.path.insert(0, str(cur))
+            return
+        if cur.parent == cur:
+            break
+        cur = cur.parent
+
+
+def compute_flops(params, cache):
+    """يرجع GFLOPs (مليار عملية ضرب+جمع) أو None."""
+    if not COMPUTE_FLOPS:
+        return None
+    key = _flops_key(params)
+    if key in cache:
+        return cache[key]
+    try:
+        import torch
+        from fvcore.nn import FlopCountAnalysis
+        _ensure_model_on_path()
+        model = build_model_for_flops(params)
+        model.eval()
+        x = torch.randn(1, FLOPS_IN_CH, FLOPS_IMG_H, FLOPS_IMG_W)
+        with torch.no_grad():
+            fca = FlopCountAnalysis(model, x)
+            fca.unsupported_ops_warnings(False)
+            fca.uncalled_modules_warnings(False)
+            total = fca.total()
+        del model, x
+        gflops = total / 1e9
+        cache[key] = float(gflops)
+        return float(gflops)
+    except Exception as e:
+        print(f"      ⚠️  FLOPs failed: {e}")
+        return None
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 4 — n_params (formula + cache)
 # ═════════════════════════════════════════════════════════════════════
@@ -207,7 +293,12 @@ def load_first_study(db_path):
 
 
 def build_table(study, cache):
+    flops_cache = load_flops_cache() if COMPUTE_FLOPS else {}
     rows = []
+    n_total = sum(1 for t in study.trials
+                  if t.state == optuna.trial.TrialState.COMPLETE
+                  and t.value is not None)
+    done = 0
     for t in study.trials:
         if t.state != optuna.trial.TrialState.COMPLETE or t.value is None:
             continue
@@ -216,9 +307,16 @@ def build_table(study, cache):
         if n is None:
             continue
         row = {'trial': t.number, 'n_params': int(n), 'psnr': float(t.value)}
+        if COMPUTE_FLOPS:
+            row['flops_G'] = compute_flops(t.params, flops_cache)
         for k, v in t.params.items():
             row[f"hp_{k}"] = v
         rows.append(row)
+        done += 1
+        if COMPUTE_FLOPS and (done % 5 == 0 or done == n_total):
+            print(f"      ... FLOPs {done}/{n_total}")
+    if COMPUTE_FLOPS:
+        save_flops_cache(flops_cache)
     return pd.DataFrame(rows)
 
 
@@ -323,6 +421,31 @@ def plot_single_study(df, study_name):
         fig.tight_layout()
         save_figure(fig, f"22_{label}_mean_psnr_by_{clean}")
 
+    # ── 23 — FLOPs vs PSNR ──────────────────────────────────────
+    if 'flops_G' in df.columns and df['flops_G'].notna().any():
+        valid = df.dropna(subset=['flops_G'])
+        f  = valid['flops_G'].values.astype(float)
+        vf = valid['psnr'].values.astype(float)
+        pf_f = pareto_front(f, vf)
+
+        fig, ax = plt.subplots(figsize=(11, 7))
+        sc = ax.scatter(f, vf, c=vf, cmap='viridis', s=90, alpha=0.85,
+                        edgecolors='black', linewidths=0.6)
+        ax.plot(f[pf_f], vf[pf_f], 'r--o', lw=2, ms=8,
+                label='Pareto front', zorder=5)
+        ib = int(np.argmax(vf))
+        ax.scatter(f[ib], vf[ib], marker='*', s=380, color='gold',
+                   edgecolors='black', zorder=6,
+                   label=f'Best PSNR = {vf[ib]:.3f} dB '
+                         f'({f[ib]:.2f} GFLOPs)')
+        ax.set_xlabel(f'FLOPs (G) — input {FLOPS_IMG_H}×{FLOPS_IMG_W}')
+        ax.set_ylabel('PSNR (dB)')
+        ax.set_title(f'PSNR vs FLOPs — {label}')
+        ax.grid(True, alpha=0.3)
+        ax.legend(loc='lower right')
+        plt.colorbar(sc, ax=ax, label='PSNR (dB)')
+        fig.tight_layout()
+        save_figure(fig, f"23_{label}_psnr_vs_flops")
 
 # ═════════════════════════════════════════════════════════════════════
 # MAIN
@@ -365,8 +488,18 @@ def main():
           f"#Params = {df.loc[i_best,'n_params']:,}")
 
     safe = re.sub(r'[^\w\-]+', '_', f"{MODEL_DISPLAY_NAME}_{study_name}")
-    three = df[['trial', 'n_params', 'psnr']].copy()
-    three.columns = ['Trial Number', 'Number of Parameters', 'PSNR (dB)']
+    cols = ['trial', 'n_params']
+    if 'flops_G' in df.columns:
+        cols.append('flops_G')
+    cols.append('psnr')
+    three = df[cols].copy()
+    header = {
+        'trial':    'Trial Number',
+        'n_params': 'Number of Parameters',
+        'flops_G':  f'FLOPs (G) @ {FLOPS_IMG_H}x{FLOPS_IMG_W}',
+        'psnr':     'PSNR (dB)',
+    }
+    three = three.rename(columns=header)
     three.to_excel(OUTPUT_DIR / f"{safe}_3cols.xlsx", index=False)
     three.to_csv(OUTPUT_DIR / f"{safe}_3cols.csv",
                  index=False, encoding='utf-8-sig')
