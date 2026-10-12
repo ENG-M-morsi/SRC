@@ -45,38 +45,42 @@ import optuna
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 1 — CONFIG
 # ═════════════════════════════════════════════════════════════════════
-# ═════════════════════════════════════════════════════════════════════
-# SECTION 1 — CONFIG
-# ═════════════════════════════════════════════════════════════════════
 HERE       = Path(__file__).resolve().parent
 OUTPUT_DIR = HERE / "comparison_output"
 OUTPUT_DIR.mkdir(exist_ok=True)
 
-# 🔴 مفتاح baseline = **اسم المجلد** الذي يحتوي params_vs_psnr_analysis/
-BASELINE_KEY = "DHTCUN+50T+50EP+optim_purn"
+# 🔴 مفتاح baseline = **اسم المجلد الرئيسي** (الابن المباشر لـ HERE)
+#    مثال: لو الـ baseline داخل:
+#      Org_rev2_best/DHTCUN+50T+50EP+optim_purn/params_vs_psnr_analysis/
+#    فالمفتاح = "Org_rev2_best"  (وليس "DHTCUN+50T+50EP+optim_purn")
+BASELINE_KEY = "Org_rev2_best"           # ← غيّره لو اختلف الاسم
 
-# 🟠 أسماء عرض جمالية (المفاتيح = أسماء المجلدات كما هي على القرص)
+# 🟠 أسماء العرض — المفاتيح هي **أسماء المجلدات الرئيسية**
 MODEL_LABELS = {
-    "DHTCUN+50T+50EP+optim_purn": "DHTCUN (baseline)",
-    "ELAN":                       "DHTCUN-ELAN",
-    "HAT":                        "DHTCUN-HAT",
-    "Omni-SR":                    "DHTCUN-OmniSR",
-    "SRFormer2":                  "DHTCUN-SRFormer",
-    "Swint_2":                    "DHTCUN-SwinT",
-    "Wavelet Trans":              "DHTCUN-Wavelet",
-    "DAT":                        "DHTCUN-DAT (extra)",
+    "Org_rev2_best": "DHTCUN",
+    "DAT":           "DAT",
+    "ELAN":          "ELAN",
+    "HAT":           "HAT",
+    "Omni-SR":       "OmniSR",
+    "SRFormer2":     "SRFormer",
+    "Swint_2":       "SwinT",
+    "Wavelet Trans": "Wavelet",
 }
 
-# 🟠 مجلدات يجب تجاهلها تماماً
-EXCLUDE_FOLDERS = {"Rejected models", "__pycache__", ".git", ".idea",
-                   "comparison_output", "params_vs_psnr_analysis"}
+# 🟠 مجلدات تُتجاهَل تماماً
+EXCLUDE_FOLDERS = {
+    "Rejected models", "__pycache__", ".git", ".idea",
+    "comparison_output", "params_vs_psnr_analysis",
+    "_snapshot_model",
+}
 
-# 🟢 عمق البحث الأقصى (بالمستويات، بدءاً من HERE)
-MAX_DISCOVERY_DEPTH = 3
+# 🟢 عمق البحث الأقصى — 4 يغطّي حالة: root/AAA/BBB/params_vs_psnr_analysis/
+MAX_DISCOVERY_DEPTH = 4
 
-# 🟢 FLOPs (اختياري)
+# 🟢 FLOPs (اختياري — من ملفات الإكسل، بدون إعادة بناء)
 FLOPs_ENABLED = False
 INPUT_SIZE_FOR_FLOPs = (1, 3, 48, 48)
+
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 2 — Plot style + save_figure
 # ═════════════════════════════════════════════════════════════════════
@@ -105,11 +109,21 @@ def _label(key):
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 3 — Discovery: find all model folders with their Excel files
 # ═════════════════════════════════════════════════════════════════════
+# ═════════════════════════════════════════════════════════════════════
+# SECTION 3 — Discovery (recursive, uses TOP-LEVEL folder name)
+# ═════════════════════════════════════════════════════════════════════
 def discover_models():
     """
-    يبحث recursively حتى MAX_DISCOVERY_DEPTH عن أي مجلد يحوي
-    params_vs_psnr_analysis/ مع ملفات إكسل.
-    المفتاح = **اسم المجلد الموديل**.
+    يبحث recursively عن أي مجلد يحوي params_vs_psnr_analysis/ مع ملفات إكسل.
+
+    ✅ المفتاح = اسم **المجلد الرئيسي** (الابن المباشر لـ HERE)
+    ✅ مجلد الموديل الفعلي (الأعمق) يُخزَّن في model_dir
+
+    مثال:
+        HERE = types of Transformers_best/
+        اكتُشف: Org_rev2_best/DHTCUN+50T+50EP+optim_purn/params_vs_psnr_analysis/
+        المفتاح = "Org_rev2_best"
+        model_dir = Org_rev2_best/DHTCUN+50T+50EP+optim_purn
     """
     found = {}
     base_depth = len(HERE.parts)
@@ -136,15 +150,27 @@ def discover_models():
         if not xlsx_3cols and not xlsx_full:
             continue
 
-        # المفتاح = اسم مجلد الموديل
-        key = root_path.name
+        # ═══ المفتاح = اسم المجلد الرئيسي (المستوى الأول) ═══
+        rel = root_path.relative_to(HERE)
+        if len(rel.parts) >= 1:
+            top_name = rel.parts[0]           # الابن المباشر لـ HERE
+        else:
+            top_name = root_path.name
+
+        key = top_name
+
+        # معالجة التكرار: لو أكثر من params_vs_psnr_analysis تحت نفس الرئيسي
         if key in found:
-            key = f"{root_path.parent.name}__{key}"
+            # أضف اسم الأب المباشر لتمييزه
+            key = f"{top_name}__{root_path.name}"
+            print(f"   ℹ️  Duplicate top-level folder '{top_name}' — "
+                  f"using key '{key}'")
 
         src = xlsx_full[0] if xlsx_full else xlsx_3cols[0]
 
         found[key] = {
-            'model_dir':  root_path,
+            'model_dir':  root_path,               # المسار الأعمق
+            'top_dir':    HERE / top_name,         # المسار الرئيسي
             '3cols_xlsx': xlsx_3cols[0] if xlsx_3cols else None,
             'full_xlsx':  xlsx_full[0]  if xlsx_full  else None,
             'db_path':    db if db.exists() else None,
@@ -1031,24 +1057,27 @@ def main():
     print("=" * 78)
 
     # ─── 1) اكتشاف الموديلات ───
-    print("\n🔎 Discovering models (recursive)...")
+    print("\n🔎 Discovering models (recursive, key = top-level folder)...")
     models = discover_models()
     if not models:
         print("❌ لم يُعثر على أي مجلد params_vs_psnr_analysis")
         sys.exit(1)
-    print(f"   Found {len(models)} model folder(s):\n")
+
+    print(f"   Found {len(models)} model(s):\n")
     for k, info in models.items():
-        rel = info['model_dir'].relative_to(HERE)
-        print(f"     • key = {k!r}")
-        print(f"       dir = {rel}")
-        print(f"       src = {info['src_file'].name}")
+        rel_top = info['top_dir'].relative_to(HERE)
+        rel_deep = info['model_dir'].relative_to(HERE)
+        print(f"     • key  = {k!r}")
+        print(f"       top  = {rel_top}")
+        if rel_top != rel_deep:
+            print(f"       deep = {rel_deep}   (where DB lives)")
+        print(f"       src  = {info['src_file'].name}")
     print()
 
     if BASELINE_KEY not in models:
-        print(f"⚠️  Baseline folder {BASELINE_KEY!r} not found.")
+        print(f"⚠️  Baseline key {BASELINE_KEY!r} not found.")
         print(f"   Available keys: {list(models.keys())}")
         print(f"   Update BASELINE_KEY in SECTION 1 to one of the above.")
-        # لا نتوقف — نستخدم أول واحد مع تنبيه
         BASELINE_KEY = list(models.keys())[0]
         print(f"   → Using {BASELINE_KEY!r} as fallback baseline.\n")
 
