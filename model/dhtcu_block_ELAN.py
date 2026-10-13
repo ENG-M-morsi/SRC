@@ -252,10 +252,17 @@ class TCN(nn.Module):
             window_size=window_size,
             num_blocks=num_blocks
         )
+        layers = []
+        for _ in range(4):
+            layers += [nn.Conv2d(in_channels, in_channels, 3, padding=1),
+                        nn.ReLU(inplace=True)]
+        self.cnn = nn.Sequential(*layers[:-1])   # بدون ReLU أخيرة
 
     def forward(self, x, H, W):
-        x_out = self.elan(x, H, W)
-        return x_out
+        #x_out = self.elan(x, H, W)
+        #return x_out
+        return x + self.cnn(self.elan(x, H, W))
+
 
 class P_HTCB(nn.Module):
     def __init__(self, in_channels, num_heads=2, window_size=12, num_blocks=3):

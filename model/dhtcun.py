@@ -47,8 +47,8 @@ class HUTCN(nn.Module):
             hfe_reduction=hfe_reduction,
         )
 
-        self.LR_conv1 = B.conv_layer(nf, nf, kernel_size=1)
-        self.LR_conv2 = B.conv_layer(nf, nf, kernel_size=1)
+        #self.LR_conv1 = B.conv_layer(nf, nf, kernel_size=1)
+        #self.LR_conv2 = B.conv_layer(nf, nf, kernel_size=1)
         self.pixel_shuffle = nn.PixelShuffle(upscale)
         self.recon_conv1 = B.conv_layer(nf, nf, kernel_size=3)
         self.recon_conv2 = B.conv_layer(nf, out_nc * (upscale ** 2), kernel_size=3)

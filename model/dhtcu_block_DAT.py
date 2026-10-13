@@ -153,11 +153,16 @@ class TCN(nn.Module):
         self.dat = DAT(dim=in_channels, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
         # Conv3×3 بعد DAT (كما في الورقة: FConv3 ∘ FSTL)
         #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
+        layers = []
+        for _ in range(4):
+            layers += [nn.Conv2d(in_channels, in_channels, 3, padding=1),
+                        nn.ReLU(inplace=True)]
+        self.cnn = nn.Sequential(*layers[:-1])   # بدون ReLU أخيرة
 
     def forward(self, x):
         # x: (B, C, H, W)  — DAT يستقبل ويُرجع نفس الشكل
-        return self.dat(x)
-        #return self.conv3(self.dat(x))
+        #return self.dat(x)
+        return x + self.cnn(self.dat(x))
 
 
 # -------------------------------------------------------------------
