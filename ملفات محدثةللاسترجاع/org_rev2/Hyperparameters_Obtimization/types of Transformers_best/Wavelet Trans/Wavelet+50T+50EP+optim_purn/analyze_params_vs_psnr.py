@@ -2,11 +2,15 @@
 # analyze_params_vs_psnr.py  —  WaveletAttention
 # =====================================================================
 # نموذج: HUTCN + WaveletAttention (DWT/IDWT + Window Attention + ConvFFN)
-# يحسب #Params لكل trial بصيغة تحليلية دقيقة — بدون بناء النموذج.
-# يُخرج: Excel (3 أعمدة + كامل) + رسومات 20/21/22 بثلاث امتدادات.
+#
+# ✅ يستورد النموذج من ./_snapshot_model/ (الأفضل والأنظف)
+# ✅ fallback: يبحث صعوداً عن model/ إذا لم يوجد snapshot
+# ✅ يحسب n_params بصيغة تحليلية دقيقة
+# ✅ يحسب FLOPs عبر fvcore من نفس بنية الموديل
+# ✅ يُنتج: Excel (3cols + full) + رسومات 20/21/22/23 × 3 امتدادات
 # =====================================================================
 
-import os, sys, re, json, hashlib, time, warnings
+import os, sys, re, json, hashlib, time, warnings, importlib, inspect
 from pathlib import Path
 warnings.filterwarnings('ignore')
 
@@ -32,15 +36,15 @@ CACHE_FILE   = OUTPUT_DIR / "n_params_cache.json"
 STUDY_NAME         = "hutcn_hyperopt_study"
 AUTO_SCAN_SIBLINGS = False
 
-# ═════════════════════════════════════════════════════════════════════
-# SECTION 1.b — FLOPs (fvcore) — اختياري
-# ═════════════════════════════════════════════════════════════════════
-COMPUTE_FLOPS = True            # ← اجعلها False لتعطيل FLOPs
-FLOPS_IMG_H   = 48              # ← 🟠  ارتفاع صورة الإدخال (LR) — عدّل هنا
-FLOPS_IMG_W   = 48              # ← 🟠  عرض  صورة الإدخال (LR) — عدّل هنا
-FLOPS_IN_CH   = 3               # عدد قنوات الإدخال (RGB=3)
-FLOPS_UPSCALE = 4               # scale factor (لا يُستخدم إلا لأبعاد HR)
+# ═══ Model source ═══
+SNAPSHOT_DIR      = HERE / "_snapshot_model"
+SHARED_MAX_LEVELS = 12
 
+# ═══ FLOPs ═══
+COMPUTE_FLOPS    = True
+FLOPS_IMG_H      = 48           # ← 🟠 ارتفاع صورة الإدخال (LR)
+FLOPS_IMG_W      = 48           # ← 🟠 عرض  صورة الإدخال (LR)
+FLOPS_IN_CH      = 3
 FLOPS_CACHE_FILE = OUTPUT_DIR / "flops_cache.json"
 
 # ═════════════════════════════════════════════════════════════════════
@@ -69,92 +73,126 @@ def save_figure(fig, name):
 # ═════════════════════════════════════════════════════════════════════
 def wavelet_hutcn_nparams(nf, num_heads, ws, num_blocks,
                           out_nc=3, upscale=4):
-    """
-    صيغة تحليلية دقيقة لـ HUTCN + WaveletAttention.
-
-    المشتقة من:
-      dhtcun.py               → HUTCN
-      dhtcu_block.py          → ESA, TESA, TCN, P_HTCB
-      custom_attention_blocks → haar_dwt/idwt, WaveletWindowAttention,
-                                ConvFFN, LN2d, WaveletTransformerBlock,
-                                WaveletAttention
-    """
     f   = nf // 4
     up2 = upscale * upscale
-    d4  = 4 * nf                    # channels بعد concat subbands
+    d4  = 4 * nf
 
-    # ─── ESA (dhtcu_block.py — مع conv_f معرّف) ─────────────────
-    # conv1:  nf→f  k=1  → nf·f + f
-    # conv2:  f→f   k=3  → 9·f² + f
-    # conv3:  f→f   k=3  → 9·f² + f
-    # conv_f: f→f   k=1  → f² + f    (معرّف — غير مستخدم في forward)
-    # conv4:  f→nf  k=3  → 9·f·nf + nf
+    # ESA: conv1(nf→f,1) + conv2(f→f,3) + conv3(f→f,3) + conv_f(f→f,1) + conv4(f→nf,3)
     esa = 10 * f * nf + 19 * f * f + 4 * f + nf
 
-    # ─── WaveletWindowAttention ─────────────────────────────────
-    # qkv       : Linear(d4, 3·d4, bias=True) → 3·d4² + 3·d4
-    # proj      : Linear(d4, d4, bias=True)   → d4² + d4
-    # rpb_table : (2ws−1)² · nh
-    # ↳ = 4·d4² + 4·d4 + (2ws−1)²·nh
-    # with d4 = 4·nf:  64·nf² + 16·nf + (2ws−1)²·nh
+    # WaveletWindowAttention
     wwa = 64 * nf * nf + 16 * nf + (2 * ws - 1) ** 2 * num_heads
 
-    # ─── ConvFFN (expand=1, so hid = d4) ────────────────────────
-    # pw1 : Conv2d(d4, d4, 1)  → d4² + d4
-    # dw  : Conv2d(d4, d4, 3, groups=d4) → 9·d4 + d4 = 10·d4
-    # pw2 : Conv2d(d4, d4, 1)  → d4² + d4
-    # ↳ = 2·d4² + 12·d4
-    # with d4 = 4·nf:  32·nf² + 48·nf
+    # ConvFFN (expand=1)
     convffn = 32 * nf * nf + 48 * nf
 
-    # ─── LN2d ────────────────────────────────────────────────────
-    # LayerNorm(d4) → 2·d4 = 8·nf
+    # LN2d = LayerNorm(d4) → 2·d4 = 8·nf
     ln2d = 2 * d4
 
-    # ─── WaveletTransformerBlock ────────────────────────────────
-    # LN2d + WWA + LN2d + ConvFFN = 16·nf + WWA + ConvFFN
+    # WTB = 2×LN2d + WWA + ConvFFN
     wtb = 2 * ln2d + wwa + convffn
 
-    # ─── WaveletAttention ───────────────────────────────────────
-    # num_blocks × WTB + res_scale (1)
+    # WaveletAttention = num_blocks × WTB + res_scale
     wattn = num_blocks * wtb + 1
 
-    # ─── TCN = WaveletAttention ─────────────────────────────────
-    tcn = wattn
-
-    # ─── P_HTCB ─────────────────────────────────────────────────
-    # tesa_in (TESA=3·ESA) + tcn1 + c (nf²+nf) + tesa_out (TESA=3·ESA)
-    ptcb = 6 * esa + tcn + (nf * nf + nf)
-
-    # ─── HUTCN ──────────────────────────────────────────────────
-    # fea_conv (3→nf, k=1)          → 3·nf + nf = 4·nf
-    # post_unet_esa                 → ESA
-    # post_unet_conv (nf→nf, k=1)   → nf² + nf
-    # B1                            → P_HTCB
-    # LR_conv1 (nf→nf, k=1)         → nf² + nf   (معرّف — غير مستخدم)
-    # LR_conv2 (nf→nf, k=1)         → nf² + nf   (معرّف — غير مستخدم)
-    # recon_conv1 (nf→nf, k=3)      → 9·nf² + nf
-    # recon_conv2 (nf→3·up², k=3)   → 9·nf·3·up² + 3·up²
-    total  = 7 * esa                    # 1 (post) + 6 (P_HTCB)
+    total  = 7 * esa          # post_unet_esa(1) + tesa_in(3) + tesa_out(3)
     total += wattn
-    total += 13 * nf * nf               # post_conv + c + LR1 + LR2 + recon1(9×)
-    total += 441 * nf                   # fea(4) + post(1) + c(1) + LR1(1) + LR2(1) + recon1(1) + recon2(432)
-    total += 48                         # recon2 bias = 3·up² = 48
+    total += 13 * nf * nf     # post_conv + c + LR1 + LR2 + recon1
+    total += 441 * nf         # bias terms
+    total += 48               # recon2 bias
 
     return int(total)
 
+
 # ═════════════════════════════════════════════════════════════════════
-# SECTION 3.5 — FLOPs helpers (fvcore)
+# SECTION 3.5 — Model loading (snapshot-first) + FLOPs
 # ═════════════════════════════════════════════════════════════════════
+_MODEL_PATH_RESOLVED = None
+_HUTCN_CLASS = None
+
+
+def _resolve_model_path():
+    """يرجع المسار الكامل للوحدة التي تحتوي HUTCN."""
+    global _MODEL_PATH_RESOLVED
+    if _MODEL_PATH_RESOLVED is not None:
+        return _MODEL_PATH_RESOLVED
+
+    # ── 1) snapshot محلي ──
+    if SNAPSHOT_DIR.is_dir() and (SNAPSHOT_DIR / "dhtcun.py").exists():
+        init = SNAPSHOT_DIR / "__init__.py"
+        if not init.exists():
+            init.write_text("# auto-generated by analyze_params_vs_psnr.py\n")
+        if str(HERE) not in sys.path:
+            sys.path.insert(0, str(HERE))
+        _MODEL_PATH_RESOLVED = "_snapshot_model.dhtcun"
+        print(f"   ℹ️  using SNAPSHOT: {SNAPSHOT_DIR.name}/")
+        return _MODEL_PATH_RESOLVED
+
+    # ── 2) مجلد model/ صعوداً ──
+    cur = HERE
+    for _ in range(SHARED_MAX_LEVELS):
+        if (cur / "model").is_dir():
+            if str(cur) not in sys.path:
+                sys.path.insert(0, str(cur))
+            _MODEL_PATH_RESOLVED = "model.dhtcun"
+            print(f"   ℹ️  using SHARED model/ at: {cur}")
+            return _MODEL_PATH_RESOLVED
+        if cur.parent == cur:
+            break
+        cur = cur.parent
+
+    raise RuntimeError(
+        f"لا يوجد model/ في _snapshot_model/ ولا في أي مجلد أب."
+    )
+
+
+def _get_HUTCN():
+    global _HUTCN_CLASS
+    if _HUTCN_CLASS is not None:
+        return _HUTCN_CLASS
+    mod_name = _resolve_model_path()
+    mod = importlib.import_module(mod_name)
+    _HUTCN_CLASS = mod.HUTCN
+    # اطبع التوقيع مرة واحدة للتشخيص
+    try:
+        sig = inspect.signature(_HUTCN_CLASS.__init__)
+        names = sorted(k for k in sig.parameters if k != 'self')
+        print(f"   ℹ️  HUTCN signature: {names}")
+    except Exception:
+        pass
+    return _HUTCN_CLASS
+
+
 def build_model_for_flops(params):
-    from model.dhtcun import HUTCN
+    HUTCN = _get_HUTCN()
     p = dict(params)
     nf        = p.get('n_feats', p.get('nf', 64))
     num_heads = p.get('num_heads', 2)
     ws        = p.get('window_size', 16)
     nb        = p.get('num_blocks', 1)
-    return HUTCN(in_nc=3, nf=nf, num_modules=1, out_nc=3, upscale=4,
-                 num_heads=num_heads, window_size=ws, num_blocks=nb)
+
+    kwargs = dict(in_nc=3, nf=nf, num_modules=1, out_nc=3, upscale=4,
+                  num_heads=num_heads, window_size=ws, num_blocks=nb)
+
+    # فحص التوقيع — نرفض بدل تجاهل بصمت
+    try:
+        sig = inspect.signature(HUTCN.__init__)
+        valid = {k for k in sig.parameters if k != 'self'}
+        missing = set(kwargs) - valid
+        if missing:
+            raise TypeError(
+                f"HUTCN لا يقبل المفاتيح: {missing}. "
+                f"التوقيع الحالي: {sorted(valid)}. "
+                f"تأكد أن _snapshot_model/ يحتوي نسخة Wavelet الصحيحة."
+            )
+    except (ValueError, TypeError) as e:
+        if isinstance(e, TypeError):
+            raise
+        # inspect فشل — نتجاهل
+        pass
+
+    return HUTCN(**kwargs)
+
 
 def load_flops_cache():
     if FLOPS_CACHE_FILE.exists():
@@ -174,27 +212,17 @@ def _flops_key(params):
     data['_H'] = FLOPS_IMG_H
     data['_W'] = FLOPS_IMG_W
     data['_C'] = FLOPS_IN_CH
-    prefix = MODEL_DISPLAY_NAME + "|flops|"
     return hashlib.md5(
-        (prefix + json.dumps(data, sort_keys=True, default=str)).encode()
+        (MODEL_DISPLAY_NAME + "|flops|"
+         + json.dumps(data, sort_keys=True, default=str)).encode()
     ).hexdigest()
 
 
-def _ensure_model_on_path():
-    """يضيف جذر المشروع (الذي يحتوي مجلد model/) إلى sys.path."""
-    cur = HERE
-    for _ in range(6):
-        if (cur / "model").is_dir():
-            if str(cur) not in sys.path:
-                sys.path.insert(0, str(cur))
-            return
-        if cur.parent == cur:
-            break
-        cur = cur.parent
+_FLOP_ERROR_SHOWN = False
 
 
 def compute_flops(params, cache):
-    """يرجع GFLOPs (مليار عملية ضرب+جمع) أو None."""
+    global _FLOP_ERROR_SHOWN
     if not COMPUTE_FLOPS:
         return None
     key = _flops_key(params)
@@ -203,7 +231,6 @@ def compute_flops(params, cache):
     try:
         import torch
         from fvcore.nn import FlopCountAnalysis
-        _ensure_model_on_path()
         model = build_model_for_flops(params)
         model.eval()
         x = torch.randn(1, FLOPS_IN_CH, FLOPS_IMG_H, FLOPS_IMG_W)
@@ -217,8 +244,18 @@ def compute_flops(params, cache):
         cache[key] = float(gflops)
         return float(gflops)
     except Exception as e:
-        print(f"      ⚠️  FLOPs failed: {e}")
+        if not _FLOP_ERROR_SHOWN:
+            import traceback
+            print("\n" + "=" * 78)
+            print("   ❌ FLOPs ERROR (أول فشل — التفصيل الكامل)")
+            print("=" * 78)
+            traceback.print_exc()
+            print(f"   Params at failure: {dict(params)}")
+            print("=" * 78 + "\n")
+            _FLOP_ERROR_SHOWN = True
         return None
+
+
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 4 — n_params (formula + cache)
 # ═════════════════════════════════════════════════════════════════════
@@ -236,26 +273,23 @@ def save_cache(cache):
 
 
 def _cache_key(params):
-    prefix = MODEL_DISPLAY_NAME + "|"
     return hashlib.md5(
-        (prefix + json.dumps(params, sort_keys=True, default=str)).encode()
+        (MODEL_DISPLAY_NAME + "|"
+         + json.dumps(params, sort_keys=True, default=str)).encode()
     ).hexdigest()
 
 
 def compute_nparams(params, cache, user_attr=None):
     if user_attr is not None:
         return int(user_attr)
-
     key = _cache_key(params)
     if key in cache:
         return cache[key]
-
     p = dict(params)
     nf        = p.get('n_feats', p.get('nf', 64))
     num_heads = p.get('num_heads', 2)
     ws        = p.get('window_size', 16)
     nb        = p.get('num_blocks', 1)
-
     try:
         n = wavelet_hutcn_nparams(nf, num_heads, ws, nb)
         cache[key] = int(n)
@@ -338,7 +372,7 @@ def plot_single_study(df, study_name):
     v = df['psnr'].values.astype(float)
     pf = pareto_front(p, v)
 
-    # ── 20 — PSNR vs #Params ─────────────────────────────────────
+    # ── 20 ──
     fig, ax = plt.subplots(figsize=(11, 7))
     sc = ax.scatter(p, v, c=v, cmap='viridis', s=90, alpha=0.85,
                     edgecolors='black', linewidths=0.6)
@@ -357,7 +391,7 @@ def plot_single_study(df, study_name):
     fig.tight_layout()
     save_figure(fig, f"20_{label}_psnr_vs_params")
 
-    # ── 21 — ملوّن بكل HP ────────────────────────────────────────
+    # ── 21 ──
     for hp in [c for c in df.columns if c.startswith('hp_')]:
         clean = hp.replace('hp_', '')
         s = df[hp]
@@ -385,7 +419,7 @@ def plot_single_study(df, study_name):
         fig.tight_layout()
         save_figure(fig, f"21_{label}_by_{clean}")
 
-    # ── 22 — Mean PSNR bar per HP value ──────────────────────────
+    # ── 22 ──
     for hp in [c for c in df.columns if c.startswith('hp_')]:
         clean = hp.replace('hp_', '')
         s = df[hp]
@@ -421,7 +455,7 @@ def plot_single_study(df, study_name):
         fig.tight_layout()
         save_figure(fig, f"22_{label}_mean_psnr_by_{clean}")
 
-    # ── 23 — FLOPs vs PSNR ──────────────────────────────────────
+    # ── 23 — FLOPs vs PSNR ──
     if 'flops_G' in df.columns and df['flops_G'].notna().any():
         valid = df.dropna(subset=['flops_G'])
         f  = valid['flops_G'].values.astype(float)
@@ -446,6 +480,9 @@ def plot_single_study(df, study_name):
         plt.colorbar(sc, ax=ax, label='PSNR (dB)')
         fig.tight_layout()
         save_figure(fig, f"23_{label}_psnr_vs_flops")
+    else:
+        print("   ℹ️  لا FLOPs — تخطي شكل 23.")
+
 
 # ═════════════════════════════════════════════════════════════════════
 # MAIN
@@ -469,9 +506,23 @@ def main():
         sys.exit(1)
     print(f"\n✅ Study: '{study_name}' — {len(study.trials)} trials")
 
+    # تحقق مسبق من القدرة على بناء النموذج (fails fast إن كانت المشكلة)
+    if COMPUTE_FLOPS:
+        print("🔎 Pre-checking model build...")
+        try:
+            sample = dict(study.trials[0].params) if study.trials else {}
+            _ = build_model_for_flops(sample)
+            print("   ✅ Model builds OK — FLOPs ستعمل")
+        except Exception as e:
+            print(f"   ❌ فشل بناء النموذج: {e}")
+            print("   → راجع _snapshot_model/ أو model/ قبل المتابعة")
+            if SNAPSHOT_DIR.is_dir():
+                print(f"   → snapshot موجود: {SNAPSHOT_DIR}")
+            sys.exit(1)
+
     cache = load_cache()
-    print(f"🗄️  Cache: {len(cache)} entries")
-    print("⏳ Computing n_params (analytic formula — instant)...")
+    print(f"\n🗄️  Cache: {len(cache)} entries")
+    print("⏳ Computing n_params + FLOPs...")
     t0 = time.time()
     df = build_table(study, cache)
     save_cache(cache)
@@ -479,6 +530,11 @@ def main():
     if df.empty:
         print("❌ لا بيانات صالحة.")
         sys.exit(1)
+
+    # تحقق: هل عمود FLOPs ممتلئ؟
+    if COMPUTE_FLOPS and 'flops_G' in df.columns:
+        n_valid = df['flops_G'].notna().sum()
+        print(f"📊 FLOPs: {n_valid}/{len(df)} صف ممتلئ")
 
     print(f"\n📊 Unique n_params: {df['n_params'].nunique()}")
     print(f"   range: [{df['n_params'].min():,}, {df['n_params'].max():,}]")

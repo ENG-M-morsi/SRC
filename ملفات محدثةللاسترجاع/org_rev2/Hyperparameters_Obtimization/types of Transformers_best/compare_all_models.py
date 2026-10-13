@@ -321,12 +321,13 @@ def pareto_front(p, v):
 
 
 # ═════════════════════════════════════════════════════════════════════
-# C1 — رسم مستقل لكل موديل: PSNR vs #Params مع Pareto للاثنين
+# C1 — رسم مستقل لكل موديل: PSNR vs #Params
+#      مع علامتين: ⭐ Best PSNR  و  💎 Fewest params
 # ═════════════════════════════════════════════════════════════════════
 def plot_C1(per_model):
     """
     يُنتج:
-      C1_all_models.*                      ← نظرة شاملة (كل الموديلات)
+      C1_all_models.*                      ← نظرة شاملة
       C1_<model>_vs_baseline.*             ← شكل مستقل لكل موديل
     """
     if BASELINE_KEY not in per_model:
@@ -337,7 +338,7 @@ def plot_C1(per_model):
     base_v  = base_df['psnr'].values
     base_pf = pareto_front(base_p, base_v)
 
-    # ─── (أ) نظرة شاملة ──────────────────────────────────────────
+    # ─── (أ) نظرة شاملة ─────────────────────────────────────────
     fig, ax = plt.subplots(figsize=(13, 8))
     cmap = plt.get_cmap('tab10')
     markers = ['o', 's', '^', 'D', 'v', 'P', 'X', '*']
@@ -369,7 +370,7 @@ def plot_C1(per_model):
     fig.tight_layout()
     save_figure(fig, "C1_all_models")
 
-    # ─── (ب) رسم مستقل لكل موديل ─────────────────────────────────
+    # ─── (ب) رسم مستقل لكل موديل ─────────────────────────────
     for key, df in per_model.items():
         if key == BASELINE_KEY:
             continue
@@ -380,14 +381,14 @@ def plot_C1(per_model):
 
         fig, ax = plt.subplots(figsize=(11, 7))
 
-        # baseline بالنقاط السوداء + Pareto متصل سميك
+        # baseline
         ax.scatter(base_p, base_v, s=110, marker='s', color='black',
                    alpha=0.85, edgecolors='black', linewidths=0.7,
                    label=f'{_label(BASELINE_KEY)} (baseline)', zorder=5)
         ax.plot(base_p[base_pf], base_v[base_pf], '-', color='black',
                 lw=2.2, alpha=0.85, zorder=4, label='Baseline Pareto front')
 
-        # الموديل الحالي بالأزرق + Pareto منقّط
+        # الموديل الحالي
         ax.scatter(p, v, s=90, marker='o', color='steelblue',
                    alpha=0.85, edgecolors='black', linewidths=0.6,
                    label=_label(key), zorder=4)
@@ -395,11 +396,28 @@ def plot_C1(per_model):
                 lw=1.8, alpha=0.9, zorder=3,
                 label=f'{_label(key)} Pareto front')
 
-        # نجمة أفضل نقطة في الموديل
+        # ⭐ Best PSNR
         ib = int(np.argmax(v))
-        ax.scatter(p[ib], v[ib], marker='*', s=380, color='gold',
-                   edgecolors='black', zorder=6,
-                   label=f'Best {_label(key)} = {v[ib]:.3f} dB ({p[ib]:.2f}M)')
+        ax.scatter(p[ib], v[ib], marker='*', s=420, color='gold',
+                   edgecolors='black', linewidths=1.2, zorder=7,
+                   label=f'⭐ Best {_label(key)} = '
+                         f'{v[ib]:.3f} dB ({p[ib]:.2f}M)')
+
+        # 💎 Fewest parameters  (جديد)
+        il = int(np.argmin(p))
+        if il != ib:
+            ax.scatter(p[il], v[il], marker='D', s=190, color='cyan',
+                       edgecolors='black', linewidths=1.3, zorder=7,
+                       label=f'💎 Fewest {_label(key)} = '
+                             f'{p[il]:.2f}M ({v[il]:.3f} dB)')
+
+        # ⬛ Best baseline (مرجعي)
+        ib_b = int(np.argmax(base_v))
+        ax.scatter(base_p[ib_b], base_v[ib_b], marker='s', s=260,
+                   facecolors='none', edgecolors='gold', linewidths=2.4,
+                   zorder=6,
+                   label=f'⭐ Best baseline = '
+                         f'{base_v[ib_b]:.3f} dB ({base_p[ib_b]:.2f}M)')
 
         ax.set_xlabel('Number of parameters (M)')
         ax.set_ylabel('PSNR (dB)')
@@ -411,6 +429,262 @@ def plot_C1(per_model):
         safe = re.sub(r'[^\w\-]+', '_', key)
         save_figure(fig, f"C1_{safe}_vs_baseline")
 
+# ═════════════════════════════════════════════════════════════════════
+# C1_FLOPs — نفس C1 لكن المحور X = FLOPs بدل #Params
+# ═════════════════════════════════════════════════════════════════════
+def plot_C1_flops(per_model):
+    """
+    يحتاج عمود 'flops_G' في ملفات الإكسل.
+    يُنتج:
+      C1_FLOPs_all_models.*
+      C1_FLOPs_<model>_vs_baseline.*
+    """
+    if BASELINE_KEY not in per_model:
+        return
+    base_df = per_model[BASELINE_KEY]
+    if ('flops_G' not in base_df.columns
+            or base_df['flops_G'].isna().all()):
+        print("   ℹ️  flops_G missing in baseline — skip C1_FLOPs.")
+        return
+
+    # احذف الصفوف التي بلا flops
+    def _clean(df):
+        return df.dropna(subset=['flops_G']).copy()
+
+    base = _clean(base_df)
+    base_f = base['flops_G'].values
+    base_v = base['psnr'].values
+    base_pf = pareto_front(base_f, base_v)
+
+    # ─── (أ) نظرة شاملة ─────────────────────────────────────────
+    fig, ax = plt.subplots(figsize=(13, 8))
+    cmap = plt.get_cmap('tab10')
+    markers = ['o', 's', '^', 'D', 'v', 'P', 'X', '*']
+
+    ax.scatter(base_f, base_v, s=120, marker='s', color='black',
+               alpha=0.9, edgecolors='black', linewidths=0.8,
+               label=_label(BASELINE_KEY) + " (baseline)", zorder=5)
+    ax.plot(base_f[base_pf], base_v[base_pf], '-', color='black',
+            lw=2.2, alpha=0.85, zorder=4)
+
+    for i, (key, df) in enumerate(per_model.items()):
+        if key == BASELINE_KEY:
+            continue
+        d = _clean(df)
+        if d.empty:
+            continue
+        f = d['flops_G'].values
+        v = d['psnr'].values
+        color = cmap(i)
+        ax.scatter(f, v, s=70, marker=markers[i % len(markers)],
+                   color=color, alpha=0.75,
+                   edgecolors='black', linewidths=0.6,
+                   label=_label(key), zorder=3)
+        pf = pareto_front(f, v)
+        ax.plot(f[pf], v[pf], '--', color=color, lw=1.2,
+                alpha=0.75, zorder=2)
+
+    ax.set_xlabel(f'FLOPs (G) @ {INPUT_SIZE_FOR_FLOPs[2]}×'
+                  f'{INPUT_SIZE_FOR_FLOPs[3]} LR input')
+    ax.set_ylabel('PSNR (dB)')
+    ax.set_title('C1 — FLOPs vs PSNR — all models')
+    ax.grid(True, alpha=0.3)
+    ax.legend(loc='lower right', fontsize=9, ncol=2)
+    fig.tight_layout()
+    save_figure(fig, "C1_FLOPs_all_models")
+
+    # ─── (ب) رسم مستقل لكل موديل ─────────────────────────────
+    for key, df in per_model.items():
+        if key == BASELINE_KEY:
+            continue
+        d = _clean(df)
+        if d.empty:
+            continue
+
+        f = d['flops_G'].values
+        v = d['psnr'].values
+        pf = pareto_front(f, v)
+
+        fig, ax = plt.subplots(figsize=(11, 7))
+
+        ax.scatter(base_f, base_v, s=110, marker='s', color='black',
+                   alpha=0.85, edgecolors='black', linewidths=0.7,
+                   label=f'{_label(BASELINE_KEY)} (baseline)', zorder=5)
+        ax.plot(base_f[base_pf], base_v[base_pf], '-', color='black',
+                lw=2.2, alpha=0.85, zorder=4, label='Baseline Pareto front')
+
+        ax.scatter(f, v, s=90, marker='o', color='steelblue',
+                   alpha=0.85, edgecolors='black', linewidths=0.6,
+                   label=_label(key), zorder=4)
+        ax.plot(f[pf], v[pf], '--', color='steelblue',
+                lw=1.8, alpha=0.9, zorder=3,
+                label=f'{_label(key)} Pareto front')
+
+        # ⭐ Best PSNR
+        ib = int(np.argmax(v))
+        ax.scatter(f[ib], v[ib], marker='*', s=420, color='gold',
+                   edgecolors='black', linewidths=1.2, zorder=7,
+                   label=f'⭐ Best {_label(key)} = '
+                         f'{v[ib]:.3f} dB ({f[ib]:.2f}G)')
+
+        # 💎 Fewest FLOPs  (جديد)
+        il = int(np.argmin(f))
+        if il != ib:
+            ax.scatter(f[il], v[il], marker='D', s=190, color='cyan',
+                       edgecolors='black', linewidths=1.3, zorder=7,
+                       label=f'💎 Fewest-FLOPs {_label(key)} = '
+                             f'{f[il]:.2f}G ({v[il]:.3f} dB)')
+
+        # ⬛ Best baseline (مرجعي)
+        ib_b = int(np.argmax(base_v))
+        ax.scatter(base_f[ib_b], base_v[ib_b], marker='s', s=260,
+                   facecolors='none', edgecolors='gold', linewidths=2.4,
+                   zorder=6,
+                   label=f'⭐ Best baseline = '
+                         f'{base_v[ib_b]:.3f} dB ({base_f[ib_b]:.2f}G)')
+
+        ax.set_xlabel(f'FLOPs (G) @ {INPUT_SIZE_FOR_FLOPs[2]}×'
+                      f'{INPUT_SIZE_FOR_FLOPs[3]} LR input')
+        ax.set_ylabel('PSNR (dB)')
+        ax.set_title(f'C1_FLOPs — {_label(key)} vs {_label(BASELINE_KEY)}')
+        ax.grid(True, alpha=0.3)
+        ax.legend(loc='lower right', fontsize=9)
+        fig.tight_layout()
+
+        safe = re.sub(r'[^\w\-]+', '_', key)
+        save_figure(fig, f"C1_FLOPs_{safe}_vs_baseline")
+
+# ═════════════════════════════════════════════════════════════════════
+# C2_FLOPs — Best PSNR & Fewest FLOPs لكل موديل + مقارنة بالـ baseline
+# ═════════════════════════════════════════════════════════════════════
+def plot_C2_flops(per_model, summ):
+    """
+    يحتاج عمود 'flops_G'.
+    يُنتج:
+      C2_FLOPs_all_models.*
+      C2_FLOPs_<model>_vs_baseline.*
+    """
+    if 'flops_G' not in trial_df.columns if 'trial_df' in dir() else True:
+        pass  # trial_df قد لا يكون متاحاً هنا — نعمل من per_model
+
+    # اجمع min_flops + psnr لكل موديل
+    rows = []
+    for key, df in per_model.items():
+        if 'flops_G' not in df.columns:
+            continue
+        d = df.dropna(subset=['flops_G'])
+        if d.empty:
+            continue
+        i_hi = d['psnr'].idxmax()
+        i_lo = d['flops_G'].idxmin()
+        rows.append({
+            'model': key,
+            'label': _label(key),
+            'best_psnr':  float(d.loc[i_hi, 'psnr']),
+            'flops_hi':   float(d.loc[i_hi, 'flops_G']),
+            'min_flops':  float(d.loc[i_lo, 'flops_G']),
+            'psnr_lo':    float(d.loc[i_lo, 'psnr']),
+        })
+    if not rows:
+        print("   ℹ️  No flops data — skip C2_FLOPs.")
+        return
+    fdf = pd.DataFrame(rows)
+
+    if BASELINE_KEY not in fdf['model'].values:
+        return
+    base = fdf[fdf['model'] == BASELINE_KEY].iloc[0]
+
+    # ─── (أ) نظرة شاملة ─────────────────────────────────────────
+    labels   = fdf['label'].tolist()
+    best_p   = fdf['best_psnr'].tolist()
+    best_f   = fdf['flops_hi'].tolist()
+    min_f    = fdf['min_flops'].tolist()
+    psnr_mp  = fdf['psnr_lo'].tolist()
+    colors   = ['#d62728' if m == BASELINE_KEY else 'steelblue'
+                for m in fdf['model']]
+
+    fig, axes = plt.subplots(1, 2, figsize=(16, 6.5))
+    ax = axes[0]
+    bars = ax.bar(range(len(labels)), best_p, color=colors,
+                  edgecolor='black', alpha=0.88)
+    for bar, gf, p in zip(bars, best_f, best_p):
+        ax.text(bar.get_x() + bar.get_width()/2,
+                bar.get_height() + 0.03,
+                f'{p:.3f} dB\n{gf:.2f}G',
+                ha='center', fontsize=9)
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels, rotation=22, ha='right', fontsize=9)
+    ax.set_ylabel('Best PSNR (dB)')
+    ax.set_title('Best PSNR per model (with FLOPs annotation)')
+    ax.grid(True, alpha=0.3, axis='y')
+
+    ax = axes[1]
+    bars = ax.bar(range(len(labels)), min_f, color=colors,
+                  edgecolor='black', alpha=0.88)
+    for bar, gf, p in zip(bars, min_f, psnr_mp):
+        ax.text(bar.get_x() + bar.get_width()/2,
+                bar.get_height() + max(min_f)*0.02,
+                f'{gf:.2f}G\n{p:.2f} dB',
+                ha='center', fontsize=9)
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(labels, rotation=22, ha='right', fontsize=9)
+    ax.set_ylabel('Minimum FLOPs (G)')
+    ax.set_title('Fewest FLOPs per model (with PSNR annotation)')
+    ax.grid(True, alpha=0.3, axis='y')
+
+    fig.suptitle('C2_FLOPs — Best PSNR & Fewest FLOPs — all models',
+                 fontsize=14, y=1.02)
+    fig.tight_layout()
+    save_figure(fig, "C2_FLOPs_all_models")
+
+    # ─── (ب) رسم مستقل لكل موديل ─────────────────────────────
+    for _, r in fdf.iterrows():
+        if r['model'] == BASELINE_KEY:
+            continue
+
+        fig, axes = plt.subplots(1, 2, figsize=(13, 6))
+
+        # يسار: Best PSNR مع FLOPs
+        ax = axes[0]
+        lbls = [f"{_label(BASELINE_KEY)}\n(baseline)", r['label']]
+        vals = [base['best_psnr'], r['best_psnr']]
+        fls  = [base['flops_hi'],  r['flops_hi']]
+        bars = ax.bar(lbls, vals, color=['#d62728', 'steelblue'],
+                      edgecolor='black', alpha=0.88, width=0.55)
+        for bar, gf, p in zip(bars, fls, vals):
+            ax.text(bar.get_x() + bar.get_width()/2,
+                    bar.get_height() + 0.03,
+                    f'{p:.3f} dB\n{gf:.2f}G',
+                    ha='center', fontsize=10)
+        delta = r['best_psnr'] - base['best_psnr']
+        ax.set_title(f'Best PSNR — Δ = {delta:+.3f} dB')
+        ax.set_ylabel('PSNR (dB)')
+        ax.grid(True, alpha=0.3, axis='y')
+        ax.set_ylim(min(vals) - 0.4, max(vals) + 0.6)
+
+        # يمين: Fewest FLOPs مع PSNR
+        ax = axes[1]
+        fvals = [base['min_flops'], r['min_flops']]
+        pps   = [base['psnr_lo'],  r['psnr_lo']]
+        bars = ax.bar(lbls, fvals, color=['#d62728', 'green'],
+                      edgecolor='black', alpha=0.88, width=0.55)
+        for bar, gf, p in zip(bars, fvals, pps):
+            ax.text(bar.get_x() + bar.get_width()/2,
+                    bar.get_height() + max(fvals)*0.02,
+                    f'{gf:.2f}G\n{p:.2f} dB',
+                    ha='center', fontsize=10)
+        delta_f = ((r['min_flops'] - base['min_flops'])
+                   / base['min_flops'] * 100)
+        ax.set_title(f'Fewest FLOPs — Δ = {delta_f:+.1f}%')
+        ax.set_ylabel('Minimum FLOPs (G)')
+        ax.grid(True, alpha=0.3, axis='y')
+
+        fig.suptitle(f'C2_FLOPs — {r["label"]} vs {_label(BASELINE_KEY)}',
+                     fontsize=13, y=1.02)
+        fig.tight_layout()
+
+        safe = re.sub(r'[^\w\-]+', '_', r['model'])
+        save_figure(fig, f"C2_FLOPs_{safe}_vs_baseline")
 
 # ═════════════════════════════════════════════════════════════════════
 # C2 — رسم مستقل لكل موديل: Best PSNR + Fewest params vs baseline
@@ -939,8 +1213,8 @@ def plot_E5(per_model, summ):
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 14 — Excel exports
 # ═════════════════════════════════════════════════════════════════════
-def export_excel(summ, trial_df):
-    # Sheet 1: model summary (slides 10 & 11)
+def export_excel(summ, trial_df, per_model):
+    # ═══ Sheet 1: model summary (slides 10 & 11) ═══
     s1 = summ[[
         'label', 'model', 'n_trials',
         'best_psnr', 'best_params', 'best_trial',
@@ -958,10 +1232,10 @@ def export_excel(summ, trial_df):
         'ΔParams %', 'ΔMinParams %',
     ]
 
-    # Sheet 2: raw trial-level
+    # ═══ Sheet 2: raw trial-level ═══
     s2 = trial_df.copy()
 
-    # Sheet 3: long-format for slides
+    # ═══ Sheet 3: long-format for slides ═══
     long_rows = []
     for _, r in summ.iterrows():
         long_rows.append({
@@ -996,14 +1270,40 @@ def export_excel(summ, trial_df):
         })
     s3 = pd.DataFrame(long_rows)
 
+    # ═══ Sheet 4: FLOPs summary (اختياري) ═══
+    s4 = None
+    flops_rows = []
+    for key, df in per_model.items():
+        if 'flops_G' not in df.columns:
+            continue
+        d = df.dropna(subset=['flops_G'])
+        if d.empty:
+            continue
+        i_hi = d['psnr'].idxmax()
+        i_lo = d['flops_G'].idxmin()
+        flops_rows.append({
+            'Model':            key,
+            'Label':            _label(key),
+            'Best PSNR (dB)':   float(d.loc[i_hi, 'psnr']),
+            'FLOPs @ best (G)': float(d.loc[i_hi, 'flops_G']),
+            'Min FLOPs (G)':    float(d.loc[i_lo, 'flops_G']),
+            'PSNR @ min (dB)':  float(d.loc[i_lo, 'psnr']),
+        })
+    if flops_rows:
+        s4 = pd.DataFrame(flops_rows)
+
+    # ═══ اكتب كل الأوراق معاً ═══
     out = OUTPUT_DIR / "models_comparison_summary.xlsx"
     with pd.ExcelWriter(out, engine='openpyxl') as w:
         s1.to_excel(w, sheet_name='model_summary', index=False)
         s3.to_excel(w, sheet_name='slides_10_11',  index=False)
         s2.to_excel(w, sheet_name='trial_level',   index=False)
-    print(f"   ✅ models_comparison_summary.xlsx")
+        if s4 is not None:
+            s4.to_excel(w, sheet_name='flops_summary', index=False)
+    print(f"   ✅ models_comparison_summary.xlsx "
+          f"({4 if s4 is not None else 3} sheets)")
 
-    # ملف مستقل بالـ trial-level (للرجوع السريع)
+    # ملف مستقل بالـ trial-level
     trial_df.to_excel(OUTPUT_DIR / "trial_level_all_models.xlsx", index=False)
     print(f"   ✅ trial_level_all_models.xlsx")
 
@@ -1096,7 +1396,7 @@ def main():
           .to_string(index=False))
 
     # ─── 4) الرسومات ───
-    print("\n🎨 Generating figures...")
+    print("\n🎨 Generating figures (params-based)...")
     plot_C1(per_model)
     plot_C2(summ)
     plot_C3(summ)
@@ -1105,9 +1405,13 @@ def main():
     plot_E4(models)
     plot_E5(per_model, summ)
 
+    print("\n🎨 Generating figures (FLOPs-based)...")
+    plot_C1_flops(per_model)
+    plot_C2_flops(per_model, summ)
+
     # ─── 5) Excel ───
     print("\n📄 Writing Excel summaries...")
-    export_excel(summ, trial_df)
+    export_excel(summ, trial_df, per_model)
 
     # ─── 6) README ───
     write_readme(summ)

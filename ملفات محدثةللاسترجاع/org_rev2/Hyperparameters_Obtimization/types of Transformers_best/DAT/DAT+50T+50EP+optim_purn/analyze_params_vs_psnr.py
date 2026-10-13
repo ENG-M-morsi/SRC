@@ -2,11 +2,19 @@
 # analyze_params_vs_psnr.py  —  DAT (DHTCUN with Dual Aggregation Transformer)
 # =====================================================================
 # نموذج: HUTCN + DAT (custom_attention_blocks.py)
-# يحسب #Params لكل trial بصيغة تحليلية دقيقة — بدون بناء النموذج.
-# يُخرج: Excel (3 أعمدة + كامل) + رسومات 20/21/22 بثلاث امتدادات.
+#
+# ✅ snapshot-first: يستورد النموذج من ./_snapshot_model/
+# ✅ fallback: shared model/
+# ✅ فحص صريح لتوقيع HUTCN قبل البدء
+# ✅ FLOPs عبر fvcore — HUTCN يقبل HP مباشرةً (لكن بمفتاح ws وليس window_size)
+# ✅ Excel (3cols + full) + رسومات 20/21/22/23 × 3 امتدادات
+#
+# ملاحظة مهمة:
+#   HUTCN في DAT يستخدم المفتاح `ws` (وليس `window_size`).
+#   هذا الاختلاف الوحيد عن باقي الموديلات — يمكن التحقق من التوقيع عند البدء.
 # =====================================================================
 
-import os, sys, re, json, hashlib, time, warnings
+import os, sys, re, json, hashlib, time, warnings, importlib, inspect
 from pathlib import Path
 warnings.filterwarnings('ignore')
 
@@ -21,7 +29,7 @@ from matplotlib import cm
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 1 — CONFIG
 # ═════════════════════════════════════════════════════════════════════
-MODEL_DISPLAY_NAME = "DAT"        # يظهر في كل العناوين والملفات
+MODEL_DISPLAY_NAME = "DAT"
 
 HERE         = Path(__file__).resolve().parent
 STORAGE_PATH = HERE / "optuna_study.db"
@@ -30,17 +38,19 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 CACHE_FILE   = OUTPUT_DIR / "n_params_cache.json"
 
 STUDY_NAME         = "hutcn_hyperopt_study"
-AUTO_SCAN_SIBLINGS = False        # لموديل واحد؛ فعّلها يدوياً للمقارنة المتعددة
-# ═════════════════════════════════════════════════════════════════════
-# SECTION 1.b — FLOPs (fvcore) — اختياري
-# ═════════════════════════════════════════════════════════════════════
-COMPUTE_FLOPS = True            # ← اجعلها False لتعطيل FLOPs
-FLOPS_IMG_H   = 48              # ← 🟠  ارتفاع صورة الإدخال (LR) — عدّل هنا
-FLOPS_IMG_W   = 48              # ← 🟠  عرض  صورة الإدخال (LR) — عدّل هنا
-FLOPS_IN_CH   = 3               # عدد قنوات الإدخال (RGB=3)
-FLOPS_UPSCALE = 4               # scale factor (لا يُستخدم إلا لأبعاد HR)
+AUTO_SCAN_SIBLINGS = False
 
+# ═══ Model source ═══
+SNAPSHOT_DIR      = HERE / "_snapshot_model"
+SHARED_MAX_LEVELS = 12
+
+# ═══ FLOPs ═══
+COMPUTE_FLOPS    = True
+FLOPS_IMG_H      = 48           # ← 🟠 ارتفاع صورة الإدخال (LR) — عدّل هنا
+FLOPS_IMG_W      = 48           # ← 🟠 عرض  صورة الإدخال (LR) — عدّل هنا
+FLOPS_IN_CH      = 3
 FLOPS_CACHE_FILE = OUTPUT_DIR / "flops_cache.json"
+
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 2 — Plot style
 # ═════════════════════════════════════════════════════════════════════
@@ -52,7 +62,6 @@ plt.rcParams.update({
 
 
 def save_figure(fig, name):
-    """حفظ الرسم بـ pdf + png + jpeg (300 dpi)."""
     for ext in ('pdf', 'png', 'jpeg'):
         path = OUTPUT_DIR / f"{name}.{ext}"
         kw = dict(dpi=300, bbox_inches='tight', facecolor='white')
@@ -64,7 +73,7 @@ def save_figure(fig, name):
 
 
 # ═════════════════════════════════════════════════════════════════════
-# SECTION 3 — ANALYTIC FORMULA (verified: trial #53 → 1,496,200 ✓)
+# SECTION 3 — ANALYTIC FORMULA (verified: trial #53 → 1,496,200)
 # ═════════════════════════════════════════════════════════════════════
 def dhtcun_dat_nparams(nf, num_heads, ws, num_blocks,
                        out_nc=3, upscale=4):
@@ -78,63 +87,51 @@ def dhtcun_dat_nparams(nf, num_heads, ws, num_blocks,
                                 SWDABlock, DAT
     """
     C   = nf
-    f   = C // 4                          # قنوات ESA المخفّضة
-    up2 = upscale * upscale               # 16
+    f   = C // 4
+    up2 = upscale * upscale
 
-    # ─── ESA (نسخة dhtcu_block.py: conv1..conv4 فقط، بلا conv_f) ──
-    # conv1 : Conv2d(nf, f, 1)   → nf·f + f
-    # conv2 : Conv2d(f,  f, 3)   → 9·f² + f
-    # conv3 : Conv2d(f,  f, 3)   → 9·f² + f
-    # conv4 : Conv2d(f,  nf, 3)  → 9·f·nf + nf
+    # ─── ESA (بدون conv_f) ────────────────────────────────────
+    # conv1: C→f  k=1  → C·f + f
+    # conv2: f→f  k=3  → 9·f² + f
+    # conv3: f→f  k=3  → 9·f² + f
+    # conv4: f→C  k=3  → 9·f·C + C
     esa = (C * f + f) \
         + (9 * f * f + f) \
         + (9 * f * f + f) \
         + (9 * f * C + C)
 
-    # ─── TESA = 3 × ESA ─────────────────────────────────────────
-    tesa = 3 * esa
-
-    # ─── SWDABlock (custom_attention_blocks.py) ─────────────────
-    # 3 × LayerNorm2d(dim)                                → 3 · 2·C  = 6·C
+    # ─── SWDABlock ────────────────────────────────────────────
+    # 3 × LayerNorm2d(C)                            → 6·C
     # 2 × WindowAttention:
-    #    qkv   : Linear(C, 3·C)  → 3·C² + 3·C
-    #    proj  : Linear(C, C)    → C² + C
-    #    rpb   : (2·ws−1)² · nh  → (2·ws−1)²·nh
-    #    ↳ كل واحد = 4·C² + 4·C + (2·ws−1)²·nh
-    # ConvFFN(dim=C, expand=2):
-    #    pw1 : Conv2d(C, 2C, 1)             → 2·C² + 2·C
-    #    dw  : Conv2d(2C, 2C, 3, groups=2C) → 18·C + 2·C = 20·C
-    #    pw2 : Conv2d(2C, C, 1)             → 2·C² + C
-    #    ↳ المجموع = 4·C² + 23·C
+    #    qkv   : Linear(C, 3C)  → 3·C² + 3·C
+    #    proj  : Linear(C, C)   → C² + C
+    #    rpb   : (2ws−1)²·nh
+    # ConvFFN(C, expand=2):
+    #    pw1 : C→2C  k=1   → 2·C² + 2·C
+    #    dw  : 2C→2C k=3 (groups=2C) → 18·C + 2·C
+    #    pw2 : 2C→C  k=1   → 2·C² + C
     #
-    # SWDABlock = 6·C + 2·(4·C² + 4·C + (2·ws−1)²·nh) + (4·C² + 23·C)
-    #           = 12·C² + 37·C + 2·(2·ws−1)²·nh
+    # SWDABlock = 12·C² + 37·C + 2·(2ws−1)²·nh
     swda_block = 12 * C * C + 37 * C + 2 * (2 * ws - 1) ** 2 * num_heads
 
-    # ─── DAT = num_blocks × SWDABlock + final LayerNorm2d ────────
-    # final LayerNorm2d(dim) → 2·C
+    # ─── DAT ──────────────────────────────────────────────────
     dat = num_blocks * swda_block + 2 * C
 
-    # ─── P_HTCB (dhtcu_block.py، tcn2 مُعلَّق) ───────────────────
-    # tesa_in  : TESA           (3 × ESA)
-    # tcn1     : TCN  ← يحتوي DAT وليس conv3
-    # c        : Conv2d(C, C, 1)   → C² + C
-    # tesa_out : TESA           (3 × ESA)
-    # ↳ ptcb = 2·tesa + dat + (C² + C)
-    ptcb = 2 * tesa + dat + (C * C + C)
+    # ─── P_HTCB ───────────────────────────────────────────────
+    # tesa_in (3·ESA) + TCN (DAT) + c (C² + C) + tesa_out (3·ESA)
+    ptcb = 6 * esa + dat + (C * C + C)
 
-    # ─── HUTCN (dhtcun.py) ───────────────────────────────────────
-    # fea_conv        : Conv2d(3, C, 1)               → 3·C + C = 4·C
-    # post_unet_esa   : ESA
-    # post_unet_conv  : Conv2d(C, C, 1)               → C² + C
-    # B1              : P_HTCB                          (B2..B5 مُعلَّقة)
-    # LR_conv1        : Conv2d(C, C, 1)               → C² + C  (غير مستخدم)
-    # LR_conv2        : Conv2d(C, C, 1)               → C² + C  (غير مستخدم)
-    # ps_conv1        : Conv2d(3, 3, 3)               → 9·9 + 3 = 84 (غير مستخدم)
-    # ps_conv2        : Conv2d(3, 3, 3)               → 84 (غير مستخدم)
-    # recon_conv1     : Conv2d(C, C, 3)               → 9·C² + C
-    # recon_conv2     : Conv2d(C, 3·up², 3)           → 9·C·3·up² + 3·up²
-    total = (4 * C)
+    # ─── HUTCN ────────────────────────────────────────────────
+    # fea_conv       : 3→C  k=1   → 4·C
+    # post_unet_esa  : ESA
+    # post_unet_conv : C→C  k=1   → C² + C
+    # B1             : P_HTCB
+    # LR_conv1       : C→C  k=1   → C² + C  (غير مستخدم)
+    # LR_conv2       : C→C  k=1   → C² + C  (غير مستخدم)
+    # ps_conv1/2     : 3→3  k=3   → 84 × 2  (غير مستخدم)
+    # recon_conv1    : C→C  k=3   → 9·C² + C
+    # recon_conv2    : C→3·up² k=3 → 9·C·3·up² + 3·up²
+    total  = 4 * C
     total += esa
     total += (C * C + C)
     total += ptcb
@@ -145,18 +142,95 @@ def dhtcun_dat_nparams(nf, num_heads, ws, num_blocks,
 
     return int(total)
 
+
 # ═════════════════════════════════════════════════════════════════════
-# SECTION 3.5 — FLOPs helpers (fvcore)
+# SECTION 3.5 — Model loading (snapshot-first) + FLOPs
 # ═════════════════════════════════════════════════════════════════════
+_MODEL_PATH_RESOLVED = None
+_HUTCN_CLASS = None
+
+
+def _resolve_model_path():
+    global _MODEL_PATH_RESOLVED
+    if _MODEL_PATH_RESOLVED is not None:
+        return _MODEL_PATH_RESOLVED
+
+    # 1) snapshot محلي
+    if SNAPSHOT_DIR.is_dir() and (SNAPSHOT_DIR / "dhtcun.py").exists():
+        init = SNAPSHOT_DIR / "__init__.py"
+        if not init.exists():
+            init.write_text("# auto-generated\n")
+        if str(HERE) not in sys.path:
+            sys.path.insert(0, str(HERE))
+        _MODEL_PATH_RESOLVED = "_snapshot_model.dhtcun"
+        print(f"   ℹ️  using SNAPSHOT: {SNAPSHOT_DIR.name}/")
+        return _MODEL_PATH_RESOLVED
+
+    # 2) shared model/ صعوداً
+    cur = HERE
+    for _ in range(SHARED_MAX_LEVELS):
+        if (cur / "model").is_dir():
+            if str(cur) not in sys.path:
+                sys.path.insert(0, str(cur))
+            _MODEL_PATH_RESOLVED = "model.dhtcun"
+            print(f"   ℹ️  using SHARED model/ at: {cur}")
+            return _MODEL_PATH_RESOLVED
+        if cur.parent == cur:
+            break
+        cur = cur.parent
+
+    raise RuntimeError(
+        "لا يوجد model/ في _snapshot_model/ ولا في أي مجلد أب."
+    )
+
+
+def _get_HUTCN():
+    global _HUTCN_CLASS
+    if _HUTCN_CLASS is not None:
+        return _HUTCN_CLASS
+    mod_name = _resolve_model_path()
+    mod = importlib.import_module(mod_name)
+    _HUTCN_CLASS = mod.HUTCN
+    try:
+        sig = inspect.signature(_HUTCN_CLASS.__init__)
+        names = sorted(k for k in sig.parameters if k != 'self')
+        print(f"   ℹ️  HUTCN signature: {names}")
+    except Exception:
+        pass
+    return _HUTCN_CLASS
+
+
 def build_model_for_flops(params):
-    from model.dhtcun import HUTCN
+    HUTCN = _get_HUTCN()
     p = dict(params)
     nf        = p.get('n_feats', p.get('nf', 64))
     num_heads = p.get('num_heads', 4)
-    ws        = p.get('window_size', 8)
+    ws        = p.get('ws', p.get('window_size', 8))     # ← DAT يستخدم `ws`
     nb        = p.get('num_blocks', 3)
-    return HUTCN(in_nc=3, nf=nf, num_modules=1, out_nc=3, upscale=4,
-                 num_heads=num_heads, ws=ws, num_blocks=nb)
+
+    # نبدأ بـ kwargs المتوافقة مع DAT
+    kwargs = dict(in_nc=3, nf=nf, num_modules=1, out_nc=3, upscale=4,
+                  num_heads=num_heads, ws=ws, num_blocks=nb)
+
+    try:
+        sig = inspect.signature(HUTCN.__init__)
+        valid = {k for k in sig.parameters if k != 'self'}
+        # إن كان المفتاح `ws` غير مقبول، جرّب `window_size`
+        if 'ws' not in valid and 'window_size' in valid:
+            kwargs.pop('ws', None)
+            kwargs['window_size'] = ws
+        missing = set(kwargs) - valid
+        if missing:
+            raise TypeError(
+                f"HUTCN لا يقبل المفاتيح: {missing}. "
+                f"التوقيع الحالي: {sorted(valid)}."
+            )
+    except (ValueError, TypeError) as e:
+        if isinstance(e, TypeError):
+            raise
+
+    return HUTCN(**kwargs)
+
 
 def load_flops_cache():
     if FLOPS_CACHE_FILE.exists():
@@ -176,27 +250,17 @@ def _flops_key(params):
     data['_H'] = FLOPS_IMG_H
     data['_W'] = FLOPS_IMG_W
     data['_C'] = FLOPS_IN_CH
-    prefix = MODEL_DISPLAY_NAME + "|flops|"
     return hashlib.md5(
-        (prefix + json.dumps(data, sort_keys=True, default=str)).encode()
+        (MODEL_DISPLAY_NAME + "|flops|"
+         + json.dumps(data, sort_keys=True, default=str)).encode()
     ).hexdigest()
 
 
-def _ensure_model_on_path():
-    """يضيف جذر المشروع (الذي يحتوي مجلد model/) إلى sys.path."""
-    cur = HERE
-    for _ in range(6):
-        if (cur / "model").is_dir():
-            if str(cur) not in sys.path:
-                sys.path.insert(0, str(cur))
-            return
-        if cur.parent == cur:
-            break
-        cur = cur.parent
+_FLOP_ERROR_SHOWN = False
 
 
 def compute_flops(params, cache):
-    """يرجع GFLOPs (مليار عملية ضرب+جمع) أو None."""
+    global _FLOP_ERROR_SHOWN
     if not COMPUTE_FLOPS:
         return None
     key = _flops_key(params)
@@ -205,7 +269,6 @@ def compute_flops(params, cache):
     try:
         import torch
         from fvcore.nn import FlopCountAnalysis
-        _ensure_model_on_path()
         model = build_model_for_flops(params)
         model.eval()
         x = torch.randn(1, FLOPS_IN_CH, FLOPS_IMG_H, FLOPS_IMG_W)
@@ -219,10 +282,20 @@ def compute_flops(params, cache):
         cache[key] = float(gflops)
         return float(gflops)
     except Exception as e:
-        print(f"      ⚠️  FLOPs failed: {e}")
+        if not _FLOP_ERROR_SHOWN:
+            import traceback
+            print("\n" + "=" * 78)
+            print("   ❌ FLOPs ERROR (أول فشل — التفصيل الكامل)")
+            print("=" * 78)
+            traceback.print_exc()
+            print(f"   Params at failure: {dict(params)}")
+            print("=" * 78 + "\n")
+            _FLOP_ERROR_SHOWN = True
         return None
+
+
 # ═════════════════════════════════════════════════════════════════════
-# SECTION 4 — n_params (formula + cache, no model building)
+# SECTION 4 — n_params (formula + cache)
 # ═════════════════════════════════════════════════════════════════════
 def load_cache():
     if CACHE_FILE.exists():
@@ -239,25 +312,22 @@ def save_cache(cache):
 
 def _cache_key(params):
     return hashlib.md5(
-        json.dumps(params, sort_keys=True, default=str).encode()
+        (MODEL_DISPLAY_NAME + "|"
+         + json.dumps(params, sort_keys=True, default=str)).encode()
     ).hexdigest()
 
 
 def compute_nparams(params, cache, user_attr=None):
-    """الأولوية: user_attr > صيغة تحليلية > كاش."""
     if user_attr is not None:
         return int(user_attr)
-
     key = _cache_key(params)
     if key in cache:
         return cache[key]
-
-    p         = dict(params)
+    p = dict(params)
     nf        = p.get('n_feats', p.get('nf', 64))
     num_heads = p.get('num_heads', 4)
-    ws        = p.get('window_size', 8)
+    ws        = p.get('window_size', p.get('ws', 8))
     nb        = p.get('num_blocks', 3)
-
     try:
         n = dhtcun_dat_nparams(nf, num_heads, ws, nb)
         cache[key] = int(n)
@@ -340,7 +410,7 @@ def plot_single_study(df, study_name):
     v = df['psnr'].values.astype(float)
     pf = pareto_front(p, v)
 
-    # ── 20 — PSNR vs #Params ─────────────────────────────────────
+    # ── 20 ──
     fig, ax = plt.subplots(figsize=(11, 7))
     sc = ax.scatter(p, v, c=v, cmap='viridis', s=90, alpha=0.85,
                     edgecolors='black', linewidths=0.6)
@@ -359,7 +429,7 @@ def plot_single_study(df, study_name):
     fig.tight_layout()
     save_figure(fig, f"20_{label}_psnr_vs_params")
 
-    # ── 21 — PSNR vs #Params ملوّن بكل HP ────────────────────────
+    # ── 21 ──
     for hp in [c for c in df.columns if c.startswith('hp_')]:
         clean = hp.replace('hp_', '')
         s = df[hp]
@@ -387,7 +457,7 @@ def plot_single_study(df, study_name):
         fig.tight_layout()
         save_figure(fig, f"21_{label}_by_{clean}")
 
-    # ── 22 — Mean PSNR bar per HP value ──────────────────────────
+    # ── 22 ──
     for hp in [c for c in df.columns if c.startswith('hp_')]:
         clean = hp.replace('hp_', '')
         s = df[hp]
@@ -423,7 +493,7 @@ def plot_single_study(df, study_name):
         fig.tight_layout()
         save_figure(fig, f"22_{label}_mean_psnr_by_{clean}")
 
-    # ── 23 — FLOPs vs PSNR ──────────────────────────────────────
+    # ── 23 — FLOPs vs PSNR ──
     if 'flops_G' in df.columns and df['flops_G'].notna().any():
         valid = df.dropna(subset=['flops_G'])
         f  = valid['flops_G'].values.astype(float)
@@ -448,6 +518,10 @@ def plot_single_study(df, study_name):
         plt.colorbar(sc, ax=ax, label='PSNR (dB)')
         fig.tight_layout()
         save_figure(fig, f"23_{label}_psnr_vs_flops")
+    else:
+        print("   ℹ️  لا FLOPs — تخطي شكل 23.")
+
+
 # ═════════════════════════════════════════════════════════════════════
 # MAIN
 # ═════════════════════════════════════════════════════════════════════
@@ -464,17 +538,27 @@ def main():
 
     os.chdir(HERE)
 
-    # ─── تحميل الدراسة ───
     study, study_name = load_first_study(STORAGE_PATH)
     if study is None:
         print("❌ لا توجد دراسة قابلة للقراءة.")
         sys.exit(1)
     print(f"\n✅ Study: '{study_name}' — {len(study.trials)} trials")
 
-    # ─── الجدول ───
+    if COMPUTE_FLOPS:
+        print("🔎 Pre-checking model build...")
+        try:
+            sample = dict(study.trials[0].params) if study.trials else {}
+            _ = build_model_for_flops(sample)
+            print("   ✅ Model builds OK — FLOPs ستعمل")
+        except Exception as e:
+            print(f"   ❌ فشل بناء النموذج: {e}")
+            if SNAPSHOT_DIR.is_dir():
+                print(f"   → snapshot موجود: {SNAPSHOT_DIR}")
+            sys.exit(1)
+
     cache = load_cache()
-    print(f"🗄️  Cache: {len(cache)} entries")
-    print("⏳ Computing n_params (analytic formula — instant)...")
+    print(f"\n🗄️  Cache: {len(cache)} entries")
+    print("⏳ Computing n_params + FLOPs...")
     t0 = time.time()
     df = build_table(study, cache)
     save_cache(cache)
@@ -483,16 +567,17 @@ def main():
         print("❌ لا بيانات صالحة.")
         sys.exit(1)
 
-    # ─── تحقق سريع ───
-    print(f"\n📊 Unique n_params: {df['n_params'].nunique()} "
-          f"(expected: one per unique (nf, nh, ws, nb) combo)")
+    if COMPUTE_FLOPS and 'flops_G' in df.columns:
+        n_valid = df['flops_G'].notna().sum()
+        print(f"📊 FLOPs: {n_valid}/{len(df)} صف ممتلئ")
+
+    print(f"\n📊 Unique n_params: {df['n_params'].nunique()}")
     print(f"   range: [{df['n_params'].min():,}, {df['n_params'].max():,}]")
     i_best = df['psnr'].idxmax()
     print(f"   best trial #{int(df.loc[i_best,'trial'])}: "
           f"PSNR = {df.loc[i_best,'psnr']:.4f} dB | "
           f"#Params = {df.loc[i_best,'n_params']:,}")
 
-    # ─── Excel ───
     safe = re.sub(r'[^\w\-]+', '_', f"{MODEL_DISPLAY_NAME}_{study_name}")
     cols = ['trial', 'n_params']
     if 'flops_G' in df.columns:
@@ -512,7 +597,6 @@ def main():
     df.to_excel(OUTPUT_DIR / f"{safe}_full.xlsx", index=False)
     print(f"\n📄 Excel: {safe}_3cols.xlsx + {safe}_full.xlsx")
 
-    # ─── الرسومات ───
     print("\n🎨 Plots:")
     plot_single_study(df, study_name)
 

@@ -2,11 +2,19 @@
 # analyze_params_vs_psnr.py  —  OmniSR
 # =====================================================================
 # نموذج: HUTCN + OmniSR
-# يحسب #Params لكل trial بصيغة تحليلية دقيقة — بدون بناء النموذج.
-# يُخرج: Excel (3 أعمدة + كامل) + رسومات 20/21/22 بثلاث امتدادات.
+#
+# ✅ snapshot-first: يستورد النموذج من ./_snapshot_model/
+# ✅ fallback: shared model/
+# ✅ FLOPs عبر fvcore (يُصحّح TCN.omnisr بعد بناء HUTCN)
+# ✅ Excel (3cols + full) + رسومات 20/21/22/23 × 3 امتدادات
+#
+# ملاحظة مهمة:
+#   HUTCN في هذا الموديل لا يقبل num_heads / window_size / num_blocks.
+#   تُمرَّر هذه القيم إلى OmniSR عن طريق patch بعد البناء — كما في
+#   سكربت hyperopt الأصلي.
 # =====================================================================
 
-import os, sys, re, json, hashlib, time, warnings
+import os, sys, re, json, hashlib, time, warnings, importlib, inspect
 from pathlib import Path
 warnings.filterwarnings('ignore')
 
@@ -31,16 +39,18 @@ CACHE_FILE   = OUTPUT_DIR / "n_params_cache.json"
 
 STUDY_NAME         = "hutcn_hyperopt_study"
 AUTO_SCAN_SIBLINGS = False
-# ═════════════════════════════════════════════════════════════════════
-# SECTION 1.b — FLOPs (fvcore) — اختياري
-# ═════════════════════════════════════════════════════════════════════
-COMPUTE_FLOPS = True            # ← اجعلها False لتعطيل FLOPs
-FLOPS_IMG_H   = 48              # ← 🟠  ارتفاع صورة الإدخال (LR) — عدّل هنا
-FLOPS_IMG_W   = 48              # ← 🟠  عرض  صورة الإدخال (LR) — عدّل هنا
-FLOPS_IN_CH   = 3               # عدد قنوات الإدخال (RGB=3)
-FLOPS_UPSCALE = 4               # scale factor (لا يُستخدم إلا لأبعاد HR)
 
+# ═══ Model source ═══
+SNAPSHOT_DIR      = HERE / "_snapshot_model"
+SHARED_MAX_LEVELS = 12
+
+# ═══ FLOPs ═══
+COMPUTE_FLOPS    = True
+FLOPS_IMG_H      = 48           # ← 🟠 ارتفاع صورة الإدخال (LR) — عدّل هنا
+FLOPS_IMG_W      = 48           # ← 🟠 عرض  صورة الإدخال (LR) — عدّل هنا
+FLOPS_IN_CH      = 3
 FLOPS_CACHE_FILE = OUTPUT_DIR / "flops_cache.json"
+
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 2 — Plot style
 # ═════════════════════════════════════════════════════════════════════
@@ -78,82 +88,147 @@ def omnisr_hutcn_nparams(nf, num_heads, ws, num_blocks,
     f   = nf // 4
     up2 = upscale * upscale
 
-    # ─── ESA (dhtcu_block.py) ────────────────────────────────────
-    # conv1:  nf→f  k=1  → nf·f + f
-    # conv2:  f→f   k=3  → 9·f² + f
-    # conv3:  f→f   k=3  → 9·f² + f
-    # conv_f: f→f   k=1  → f² + f    (معرّف لكن غير مستخدم)
-    # conv4:  f→nf  k=3  → 9·f·nf + nf
+    # ─── ESA (dhtcu_block.py) ────────────────────────────────
     esa = 10 * f * nf + 19 * f * f + 4 * f + nf
 
-    # ─── WindowAttention (per block) ─────────────────────────────
-    # rpb_table : (2ws-1)² · nh
-    # qkv       : Linear(nf, 3nf)     → 3·nf² + 3·nf
-    # proj      : Linear(nf, nf)      → nf² + nf
+    # ─── WindowAttention (per block) ────────────────────────
     wa = (2 * ws - 1) ** 2 * num_heads + 4 * nf * nf + 4 * nf
 
-    # ─── OSA_Block (per block) ───────────────────────────────────
-    # norm1 (2·nf) + WA + norm2 (2·nf) + MLP(2× expansion)
-    # MLP: fc1 Linear(nf, 2nf) + fc2 Linear(2nf, nf)
-    #    = (2·nf² + 2·nf) + (2·nf² + nf) = 4·nf² + 3·nf
-    osa = 4 * nf + wa + 4 * nf * nf + 3 * nf
-    #   = 8·nf² + (2ws-1)²·nh + 11·nf
+    # ─── OSA_Block (per block) ──────────────────────────────
+    # norm1 (2nf) + WA + norm2 (2nf) + MLP (2×)
+    # MLP: fc1 Linear(nf,2nf) + fc2 Linear(2nf,nf)
+    osa = 8 * nf * nf + (2 * ws - 1) ** 2 * num_heads + 11 * nf
 
-    # ─── OSAG (per block) ────────────────────────────────────────
-    # local_dw : Conv2d(nf, nf, 3, groups=nf, bias=False) → 9·nf
-    # local_pw : Conv2d(nf, nf, 1)                        → nf² + nf
-    osag = 9 * nf + (nf * nf + nf) + osa
-    #    = 9·nf² + (2ws-1)²·nh + 21·nf
+    # ─── OSAG (per block) ───────────────────────────────────
+    # local_dw (9·nf) + local_pw (nf² + nf) + osa
+    osag = 9 * nf * nf + (2 * ws - 1) ** 2 * num_heads + 21 * nf
 
-    # ─── OmniSR ──────────────────────────────────────────────────
-    # patch_embed : Conv2d(nf, nf, 3)  → 9·nf² + nf
-    # blocks      : num_blocks × OSAG
-    # norm        : LayerNorm(nf)      → 2·nf
-    omnisr = (9 * nf * nf + nf) \
-           + num_blocks * osag \
-           + 2 * nf
-    #   = 9·(1+nb)·nf² + nb·(2ws-1)²·nh + (21·nb + 3)·nf
+    # ─── OmniSR ─────────────────────────────────────────────
+    # patch_embed (9·nf² + nf) + nb × OSAG + final LayerNorm (2·nf)
+    omnisr = (9 * nf * nf + nf) + num_blocks * osag + 2 * nf
 
-    # ─── TCN = OmniSR (conv3 معلَّق) ─────────────────────────────
+    # ─── TCN = OmniSR ───────────────────────────────────────
     tcn = omnisr
 
-    # ─── P_HTCB ──────────────────────────────────────────────────
-    # tesa_in  (TESA=3·ESA)
-    # tcn1     (OmniSR)
-    # c        : Conv2d(nf, nf, 1)  → nf² + nf
-    # tesa_out (TESA=3·ESA)
+    # ─── P_HTCB ─────────────────────────────────────────────
+    # tesa_in (3·ESA) + tcn1 (OmniSR) + c (nf² + nf) + tesa_out (3·ESA)
     ptcb = 3 * esa + tcn + (nf * nf + nf) + 3 * esa
 
-    # ─── HUTCN ───────────────────────────────────────────────────
+    # ─── HUTCN ──────────────────────────────────────────────
     total  = 4 * nf                                  # fea_conv
     total += esa                                     # post_unet_esa
     total += (nf * nf + nf)                          # post_unet_conv
     total += ptcb                                    # B1
     total += 2 * (nf * nf + nf)                      # LR_conv1 + LR_conv2
-    total += 2 * (9 * out_nc * out_nc + out_nc)      # ps_conv1 + ps_conv2 (unused)
+    total += 2 * (9 * out_nc * out_nc + out_nc)      # ps_conv1 + ps_conv2 (معرّف — غير مستخدم)
     total += (9 * nf * nf + nf)                      # recon_conv1
     total += (9 * nf * out_nc * up2 + out_nc * up2)  # recon_conv2
 
     return int(total)
 
+
 # ═════════════════════════════════════════════════════════════════════
-# SECTION 3.5 — FLOPs helpers (fvcore)
+# SECTION 3.5 — Model loading (snapshot-first) + FLOPs
 # ═════════════════════════════════════════════════════════════════════
+_MODEL_PATH_RESOLVED = None
+_MODULES_CACHE = {}
+
+
+def _resolve_model_path():
+    global _MODEL_PATH_RESOLVED
+    if _MODEL_PATH_RESOLVED is not None:
+        return _MODEL_PATH_RESOLVED
+
+    # 1) snapshot محلي
+    if SNAPSHOT_DIR.is_dir() and (SNAPSHOT_DIR / "dhtcun.py").exists():
+        init = SNAPSHOT_DIR / "__init__.py"
+        if not init.exists():
+            init.write_text("# auto-generated\n")
+        if str(HERE) not in sys.path:
+            sys.path.insert(0, str(HERE))
+        _MODEL_PATH_RESOLVED = "_snapshot_model.dhtcun"
+        print(f"   ℹ️  using SNAPSHOT: {SNAPSHOT_DIR.name}/")
+        return _MODEL_PATH_RESOLVED
+
+    # 2) shared model/ صعوداً
+    cur = HERE
+    for _ in range(SHARED_MAX_LEVELS):
+        if (cur / "model").is_dir():
+            if str(cur) not in sys.path:
+                sys.path.insert(0, str(cur))
+            _MODEL_PATH_RESOLVED = "model.dhtcun"
+            print(f"   ℹ️  using SHARED model/ at: {cur}")
+            return _MODEL_PATH_RESOLVED
+        if cur.parent == cur:
+            break
+        cur = cur.parent
+
+    raise RuntimeError(
+        "لا يوجد model/ في _snapshot_model/ ولا في أي مجلد أب."
+    )
+
+
+def _load_module(suffix):
+    """suffix = 'dhtcun' | 'dhtcu_block' | 'custom_attention_blocks'."""
+    key = (MODEL_DISPLAY_NAME, suffix)
+    if key in _MODULES_CACHE:
+        return _MODULES_CACHE[key]
+    full_name = _resolve_model_path()               # "...dhtcun"
+    pkg = ".".join(full_name.split(".")[:-1])       # "_snapshot_model" أو "model"
+    mod = importlib.import_module(f"{pkg}.{suffix}")
+    _MODULES_CACHE[key] = mod
+    return mod
+
+
 def build_model_for_flops(params):
-    from model.dhtcun import HUTCN
-    from model import dhtcu_block as B
-    from model.custom_attention_blocks import OmniSR
+    dhtcun_mod = _load_module("dhtcun")
+    B_mod      = _load_module("dhtcu_block")
+    ca_mod     = _load_module("custom_attention_blocks")
+
+    HUTCN   = dhtcun_mod.HUTCN
+    TCN_cls = B_mod.TCN
+    OmniSR_cls = ca_mod.OmniSR
+
     p = dict(params)
     nf        = p.get('n_feats', p.get('nf', 64))
     num_heads = p.get('num_heads', 4)
     ws        = p.get('window_size', 16)
     nb        = p.get('num_blocks', 2)
-    model = HUTCN(in_nc=3, nf=nf, num_modules=1, out_nc=3, upscale=4)
+
+    # تحقق من أن HUTCN يقبل المفاتيح الأساسية فقط
+    try:
+        sig = inspect.signature(HUTCN.__init__)
+        valid = {k for k in sig.parameters if k != 'self'}
+    except (ValueError, TypeError):
+        valid = None
+
+    if valid is not None:
+        base_kwargs = dict(in_nc=3, nf=nf, num_modules=1,
+                           out_nc=3, upscale=4)
+        missing = set(base_kwargs) - valid
+        if missing:
+            raise TypeError(
+                f"HUTCN لا يقبل المفاتيح الأساسية: {missing}. "
+                f"التوقيع الحالي: {sorted(valid)}."
+            )
+    else:
+        base_kwargs = dict(in_nc=3, nf=nf, num_modules=1,
+                           out_nc=3, upscale=4)
+
+    model = HUTCN(**base_kwargs)
+
+    # patch TCN.omnisr بقيم HP
+    n_patched = 0
     for m in model.modules():
-        if isinstance(m, B.TCN):
-            m.omnisr = OmniSR(dim=nf, num_heads=num_heads,
-                              ws=ws, num_blocks=nb)
+        if isinstance(m, TCN_cls):
+            m.omnisr = OmniSR_cls(dim=nf, num_heads=num_heads,
+                                  ws=ws, num_blocks=nb)
+            n_patched += 1
+    if n_patched == 0:
+        raise RuntimeError("لم يتم العثور على أي TCN لتعديل omnisr.")
+
     return model
+
 
 def load_flops_cache():
     if FLOPS_CACHE_FILE.exists():
@@ -173,27 +248,17 @@ def _flops_key(params):
     data['_H'] = FLOPS_IMG_H
     data['_W'] = FLOPS_IMG_W
     data['_C'] = FLOPS_IN_CH
-    prefix = MODEL_DISPLAY_NAME + "|flops|"
     return hashlib.md5(
-        (prefix + json.dumps(data, sort_keys=True, default=str)).encode()
+        (MODEL_DISPLAY_NAME + "|flops|"
+         + json.dumps(data, sort_keys=True, default=str)).encode()
     ).hexdigest()
 
 
-def _ensure_model_on_path():
-    """يضيف جذر المشروع (الذي يحتوي مجلد model/) إلى sys.path."""
-    cur = HERE
-    for _ in range(6):
-        if (cur / "model").is_dir():
-            if str(cur) not in sys.path:
-                sys.path.insert(0, str(cur))
-            return
-        if cur.parent == cur:
-            break
-        cur = cur.parent
+_FLOP_ERROR_SHOWN = False
 
 
 def compute_flops(params, cache):
-    """يرجع GFLOPs (مليار عملية ضرب+جمع) أو None."""
+    global _FLOP_ERROR_SHOWN
     if not COMPUTE_FLOPS:
         return None
     key = _flops_key(params)
@@ -202,7 +267,6 @@ def compute_flops(params, cache):
     try:
         import torch
         from fvcore.nn import FlopCountAnalysis
-        _ensure_model_on_path()
         model = build_model_for_flops(params)
         model.eval()
         x = torch.randn(1, FLOPS_IN_CH, FLOPS_IMG_H, FLOPS_IMG_W)
@@ -216,8 +280,18 @@ def compute_flops(params, cache):
         cache[key] = float(gflops)
         return float(gflops)
     except Exception as e:
-        print(f"      ⚠️  FLOPs failed: {e}")
+        if not _FLOP_ERROR_SHOWN:
+            import traceback
+            print("\n" + "=" * 78)
+            print("   ❌ FLOPs ERROR (أول فشل — التفصيل الكامل)")
+            print("=" * 78)
+            traceback.print_exc()
+            print(f"   Params at failure: {dict(params)}")
+            print("=" * 78 + "\n")
+            _FLOP_ERROR_SHOWN = True
         return None
+
+
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 4 — n_params (formula + cache)
 # ═════════════════════════════════════════════════════════════════════
@@ -235,26 +309,23 @@ def save_cache(cache):
 
 
 def _cache_key(params):
-    prefix = MODEL_DISPLAY_NAME + "|"
     return hashlib.md5(
-        (prefix + json.dumps(params, sort_keys=True, default=str)).encode()
+        (MODEL_DISPLAY_NAME + "|"
+         + json.dumps(params, sort_keys=True, default=str)).encode()
     ).hexdigest()
 
 
 def compute_nparams(params, cache, user_attr=None):
     if user_attr is not None:
         return int(user_attr)
-
     key = _cache_key(params)
     if key in cache:
         return cache[key]
-
-    p         = dict(params)
+    p = dict(params)
     nf        = p.get('n_feats', p.get('nf', 64))
     num_heads = p.get('num_heads', 4)
     ws        = p.get('window_size', 16)
     nb        = p.get('num_blocks', 2)
-
     try:
         n = omnisr_hutcn_nparams(nf, num_heads, ws, nb)
         cache[key] = int(n)
@@ -337,7 +408,7 @@ def plot_single_study(df, study_name):
     v = df['psnr'].values.astype(float)
     pf = pareto_front(p, v)
 
-    # ── 20 — PSNR vs #Params ─────────────────────────────────────
+    # ── 20 ──
     fig, ax = plt.subplots(figsize=(11, 7))
     sc = ax.scatter(p, v, c=v, cmap='viridis', s=90, alpha=0.85,
                     edgecolors='black', linewidths=0.6)
@@ -356,7 +427,7 @@ def plot_single_study(df, study_name):
     fig.tight_layout()
     save_figure(fig, f"20_{label}_psnr_vs_params")
 
-    # ── 21 — ملوّن بكل HP ────────────────────────────────────────
+    # ── 21 ──
     for hp in [c for c in df.columns if c.startswith('hp_')]:
         clean = hp.replace('hp_', '')
         s = df[hp]
@@ -384,7 +455,7 @@ def plot_single_study(df, study_name):
         fig.tight_layout()
         save_figure(fig, f"21_{label}_by_{clean}")
 
-    # ── 22 — Mean PSNR bar per HP value ──────────────────────────
+    # ── 22 ──
     for hp in [c for c in df.columns if c.startswith('hp_')]:
         clean = hp.replace('hp_', '')
         s = df[hp]
@@ -420,7 +491,7 @@ def plot_single_study(df, study_name):
         fig.tight_layout()
         save_figure(fig, f"22_{label}_mean_psnr_by_{clean}")
 
-    # ── 23 — FLOPs vs PSNR ──────────────────────────────────────
+    # ── 23 — FLOPs vs PSNR ──
     if 'flops_G' in df.columns and df['flops_G'].notna().any():
         valid = df.dropna(subset=['flops_G'])
         f  = valid['flops_G'].values.astype(float)
@@ -445,6 +516,9 @@ def plot_single_study(df, study_name):
         plt.colorbar(sc, ax=ax, label='PSNR (dB)')
         fig.tight_layout()
         save_figure(fig, f"23_{label}_psnr_vs_flops")
+    else:
+        print("   ℹ️  لا FLOPs — تخطي شكل 23.")
+
 
 # ═════════════════════════════════════════════════════════════════════
 # MAIN
@@ -468,9 +542,21 @@ def main():
         sys.exit(1)
     print(f"\n✅ Study: '{study_name}' — {len(study.trials)} trials")
 
+    if COMPUTE_FLOPS:
+        print("🔎 Pre-checking model build...")
+        try:
+            sample = dict(study.trials[0].params) if study.trials else {}
+            _ = build_model_for_flops(sample)
+            print("   ✅ Model builds OK — FLOPs ستعمل")
+        except Exception as e:
+            print(f"   ❌ فشل بناء النموذج: {e}")
+            if SNAPSHOT_DIR.is_dir():
+                print(f"   → snapshot موجود: {SNAPSHOT_DIR}")
+            sys.exit(1)
+
     cache = load_cache()
-    print(f"🗄️  Cache: {len(cache)} entries")
-    print("⏳ Computing n_params (analytic formula — instant)...")
+    print(f"\n🗄️  Cache: {len(cache)} entries")
+    print("⏳ Computing n_params + FLOPs...")
     t0 = time.time()
     df = build_table(study, cache)
     save_cache(cache)
@@ -478,6 +564,10 @@ def main():
     if df.empty:
         print("❌ لا بيانات صالحة.")
         sys.exit(1)
+
+    if COMPUTE_FLOPS and 'flops_G' in df.columns:
+        n_valid = df['flops_G'].notna().sum()
+        print(f"📊 FLOPs: {n_valid}/{len(df)} صف ممتلئ")
 
     print(f"\n📊 Unique n_params: {df['n_params'].nunique()}")
     print(f"   range: [{df['n_params'].min():,}, {df['n_params'].max():,}]")

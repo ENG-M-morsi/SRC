@@ -2,11 +2,18 @@
 # analyze_params_vs_psnr.py  —  SRFormer (PSA)
 # =====================================================================
 # نموذج: HUTCN + PSA (Pyramid Structure Attention)
-# يحسب #Params لكل trial بصيغة تحليلية دقيقة — بدون بناء النموذج.
-# يُخرج: Excel (3 أعمدة + كامل) + رسومات 20/21/22 بثلاث امتدادات.
+#
+# ✅ snapshot-first: يستورد النموذج من ./_snapshot_model/
+# ✅ fallback: shared model/ (إن لم يوجد snapshot)
+# ✅ فحص صريح لتوقيع HUTCN قبل البدء
+# ✅ FLOPs عبر fvcore من نفس بنية الموديل
+# ✅ Excel (3cols + full) + رسومات 20/21/22/23 × 3 امتدادات
+#
+# ملاحظة: SRFormer يستخدم HP إضافي — ffn_ratio —
+#         يُمرَّر إلى HUTCN كما هو مطلوب في بنيته.
 # =====================================================================
 
-import os, sys, re, json, hashlib, time, warnings
+import os, sys, re, json, hashlib, time, warnings, importlib, inspect
 from pathlib import Path
 warnings.filterwarnings('ignore')
 
@@ -21,7 +28,7 @@ from matplotlib import cm
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 1 — CONFIG
 # ═════════════════════════════════════════════════════════════════════
-MODEL_DISPLAY_NAME = "SRFormer"       # يظهر في كل العناوين والملفات
+MODEL_DISPLAY_NAME = "SRFormer"
 
 HERE         = Path(__file__).resolve().parent
 STORAGE_PATH = HERE / "optuna_study.db"
@@ -31,16 +38,18 @@ CACHE_FILE   = OUTPUT_DIR / "n_params_cache.json"
 
 STUDY_NAME         = "hutcn_hyperopt_study"
 AUTO_SCAN_SIBLINGS = False
-# ═════════════════════════════════════════════════════════════════════
-# SECTION 1.b — FLOPs (fvcore) — اختياري
-# ═════════════════════════════════════════════════════════════════════
-COMPUTE_FLOPS = True            # ← اجعلها False لتعطيل FLOPs
-FLOPS_IMG_H   = 48              # ← 🟠  ارتفاع صورة الإدخال (LR) — عدّل هنا
-FLOPS_IMG_W   = 48              # ← 🟠  عرض  صورة الإدخال (LR) — عدّل هنا
-FLOPS_IN_CH   = 3               # عدد قنوات الإدخال (RGB=3)
-FLOPS_UPSCALE = 4               # scale factor (لا يُستخدم إلا لأبعاد HR)
 
+# ═══ Model source ═══
+SNAPSHOT_DIR      = HERE / "_snapshot_model"
+SHARED_MAX_LEVELS = 12
+
+# ═══ FLOPs ═══
+COMPUTE_FLOPS    = True
+FLOPS_IMG_H      = 48           # ← 🟠 ارتفاع صورة الإدخال (LR) — عدّل هنا
+FLOPS_IMG_W      = 48           # ← 🟠 عرض  صورة الإدخال (LR) — عدّل هنا
+FLOPS_IN_CH      = 3
 FLOPS_CACHE_FILE = OUTPUT_DIR / "flops_cache.json"
+
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 2 — Plot style
 # ═════════════════════════════════════════════════════════════════════
@@ -79,19 +88,19 @@ def srformer_hutcn_nparams(nf, num_heads, ws, num_blocks, ffn_ratio,
     up2 = upscale * upscale
     mid = max(int(nf * ffn_ratio), nf)     # LightFFN hidden
 
-    # ─── ESA (dhtcu_block.py — نسخة بدون conv_f) ─────────────────
+    # ─── ESA (بدون conv_f) ─────────────────────────────────────
     # conv1: nf→f  k=1  → nf·f + f
     # conv2: f→f   k=3  → 9·f² + f
     # conv3: f→f   k=3  → 9·f² + f
     # conv4: f→nf  k=3  → 9·f·nf + nf
     esa = 10 * f * nf + 18 * f * f + 3 * f + nf
 
-    # ─── ContinuousRPB ───────────────────────────────────────────
+    # ─── ContinuousRPB ────────────────────────────────────────
     # Linear(2,16,bias=True)     → 2·16 + 16 = 48
     # Linear(16,nh,bias=False)   → 16·nh
     crpb = 48 + 16 * num_heads
 
-    # ─── PSA_Block (per block) ───────────────────────────────────
+    # ─── PSA_Block (per block) ────────────────────────────────
     # norm_attn : LayerNorm(nf)                    → 2·nf
     # norm_ffn  : LayerNorm(nf)                    → 2·nf
     # compress  : Linear(4nf, nf, bias=False)      → 4·nf²
@@ -102,56 +111,118 @@ def srformer_hutcn_nparams(nf, num_heads, ws, num_blocks, ffn_ratio,
     # ffn.fc1   : Linear(nf, mid, bias=True)       → nf·mid + mid
     # ffn.dw    : Conv2d(mid, mid, 3, groups=mid)  → 9·mid
     # ffn.fc2   : Linear(mid, nf, bias=True)       → mid·nf + nf
-    #
-    # ↳ مجموع: 12·nf² + 10·nf + (48 + 16·nh) + 2·nf·mid + 10·mid
     psa_block = (12 * nf * nf
                  + 10 * nf
                  + crpb
                  + 2 * nf * mid
                  + 10 * mid)
 
-    # ─── PSA = num_blocks × PSA_Block + final LayerNorm ──────────
+    # ─── PSA = num_blocks × PSA_Block + final LayerNorm ──────
     psa = num_blocks * psa_block + 2 * nf
 
-    # ─── TCN = PSA ───────────────────────────────────────────────
+    # ─── TCN = PSA ────────────────────────────────────────────
     tcn = psa
 
-    # ─── P_HTCB ──────────────────────────────────────────────────
-    # tesa_in  (3·ESA) + tcn1 (PSA) + c (nf² + nf) + tesa_out (3·ESA)
+    # ─── P_HTCB ───────────────────────────────────────────────
     ptcb = 6 * esa + tcn + (nf * nf + nf)
 
-    # ─── HUTCN ───────────────────────────────────────────────────
-    # fea_conv (3→nf, k=1)          → 3·nf + nf = 4·nf
-    # post_unet_esa                 → ESA
-    # post_unet_conv (nf→nf, k=1)   → nf² + nf
-    # B1                            → P_HTCB
-    # LR_conv1 (nf→nf, k=1)         → nf² + nf  (معرّف — غير مستخدم)
-    # LR_conv2 (nf→nf, k=1)         → nf² + nf  (معرّف — غير مستخدم)
-    # recon_conv1 (nf→nf, k=3)      → 9·nf² + nf
-    # recon_conv2 (nf→3·up², k=3)   → 9·nf·3·up² + 3·up²
-    total  = 7 * esa                    # 7 = 1 (post) + 3 (tesa_in) + 3 (tesa_out)
+    # ─── HUTCN ────────────────────────────────────────────────
+    total  = 7 * esa                    # 1 (post) + 3 (tesa_in) + 3 (tesa_out)
     total += psa
-    total += 13 * nf * nf               # post_unet_conv + c + LR1 + LR2 + recon_conv1(9×)
-    total += 9 * nf                     # fea(4) + post(1) + c(1) + LR1(1) + LR2(1) + recon1(1)
+    total += 13 * nf * nf               # post_conv + c + LR1 + LR2 + recon1(9×)
+    total += 9 * nf                     # biases: fea(4) + post(1) + c(1) + LR1(1) + LR2(1) + recon1(1)
     total += 9 * nf * out_nc * up2      # recon_conv2
     total += out_nc * up2               # recon_conv2 bias
 
     return int(total)
 
+
 # ═════════════════════════════════════════════════════════════════════
-# SECTION 3.5 — FLOPs helpers (fvcore)
+# SECTION 3.5 — Model loading (snapshot-first) + FLOPs
 # ═════════════════════════════════════════════════════════════════════
+_MODEL_PATH_RESOLVED = None
+_HUTCN_CLASS = None
+
+
+def _resolve_model_path():
+    global _MODEL_PATH_RESOLVED
+    if _MODEL_PATH_RESOLVED is not None:
+        return _MODEL_PATH_RESOLVED
+
+    # 1) snapshot محلي
+    if SNAPSHOT_DIR.is_dir() and (SNAPSHOT_DIR / "dhtcun.py").exists():
+        init = SNAPSHOT_DIR / "__init__.py"
+        if not init.exists():
+            init.write_text("# auto-generated\n")
+        if str(HERE) not in sys.path:
+            sys.path.insert(0, str(HERE))
+        _MODEL_PATH_RESOLVED = "_snapshot_model.dhtcun"
+        print(f"   ℹ️  using SNAPSHOT: {SNAPSHOT_DIR.name}/")
+        return _MODEL_PATH_RESOLVED
+
+    # 2) shared model/ صعوداً
+    cur = HERE
+    for _ in range(SHARED_MAX_LEVELS):
+        if (cur / "model").is_dir():
+            if str(cur) not in sys.path:
+                sys.path.insert(0, str(cur))
+            _MODEL_PATH_RESOLVED = "model.dhtcun"
+            print(f"   ℹ️  using SHARED model/ at: {cur}")
+            return _MODEL_PATH_RESOLVED
+        if cur.parent == cur:
+            break
+        cur = cur.parent
+
+    raise RuntimeError(
+        "لا يوجد model/ في _snapshot_model/ ولا في أي مجلد أب."
+    )
+
+
+def _get_HUTCN():
+    global _HUTCN_CLASS
+    if _HUTCN_CLASS is not None:
+        return _HUTCN_CLASS
+    mod_name = _resolve_model_path()
+    mod = importlib.import_module(mod_name)
+    _HUTCN_CLASS = mod.HUTCN
+    try:
+        sig = inspect.signature(_HUTCN_CLASS.__init__)
+        names = sorted(k for k in sig.parameters if k != 'self')
+        print(f"   ℹ️  HUTCN signature: {names}")
+    except Exception:
+        pass
+    return _HUTCN_CLASS
+
+
 def build_model_for_flops(params):
-    from model.dhtcun import HUTCN
+    HUTCN = _get_HUTCN()
     p = dict(params)
     nf        = p.get('nf', p.get('n_feats', 64))
     num_heads = p.get('num_heads', 2)
     ws        = p.get('window_size', 8)
     nb        = p.get('num_blocks', 1)
     fr        = p.get('ffn_ratio', 1.5)
-    return HUTCN(in_nc=3, nf=nf, num_modules=1, out_nc=3, upscale=4,
-                 num_heads=num_heads, window_size=ws,
-                 num_blocks=nb, ffn_ratio=fr)
+
+    kwargs = dict(in_nc=3, nf=nf, num_modules=1, out_nc=3, upscale=4,
+                  num_heads=num_heads, window_size=ws,
+                  num_blocks=nb, ffn_ratio=fr)
+
+    try:
+        sig = inspect.signature(HUTCN.__init__)
+        valid = {k for k in sig.parameters if k != 'self'}
+        missing = set(kwargs) - valid
+        if missing:
+            raise TypeError(
+                f"HUTCN لا يقبل المفاتيح: {missing}. "
+                f"التوقيع الحالي: {sorted(valid)}. "
+                f"تأكد أن _snapshot_model/ يحتوي نسخة SRFormer الصحيحة."
+            )
+    except (ValueError, TypeError) as e:
+        if isinstance(e, TypeError):
+            raise
+
+    return HUTCN(**kwargs)
+
 
 def load_flops_cache():
     if FLOPS_CACHE_FILE.exists():
@@ -171,27 +242,17 @@ def _flops_key(params):
     data['_H'] = FLOPS_IMG_H
     data['_W'] = FLOPS_IMG_W
     data['_C'] = FLOPS_IN_CH
-    prefix = MODEL_DISPLAY_NAME + "|flops|"
     return hashlib.md5(
-        (prefix + json.dumps(data, sort_keys=True, default=str)).encode()
+        (MODEL_DISPLAY_NAME + "|flops|"
+         + json.dumps(data, sort_keys=True, default=str)).encode()
     ).hexdigest()
 
 
-def _ensure_model_on_path():
-    """يضيف جذر المشروع (الذي يحتوي مجلد model/) إلى sys.path."""
-    cur = HERE
-    for _ in range(6):
-        if (cur / "model").is_dir():
-            if str(cur) not in sys.path:
-                sys.path.insert(0, str(cur))
-            return
-        if cur.parent == cur:
-            break
-        cur = cur.parent
+_FLOP_ERROR_SHOWN = False
 
 
 def compute_flops(params, cache):
-    """يرجع GFLOPs (مليار عملية ضرب+جمع) أو None."""
+    global _FLOP_ERROR_SHOWN
     if not COMPUTE_FLOPS:
         return None
     key = _flops_key(params)
@@ -200,7 +261,6 @@ def compute_flops(params, cache):
     try:
         import torch
         from fvcore.nn import FlopCountAnalysis
-        _ensure_model_on_path()
         model = build_model_for_flops(params)
         model.eval()
         x = torch.randn(1, FLOPS_IN_CH, FLOPS_IMG_H, FLOPS_IMG_W)
@@ -214,8 +274,18 @@ def compute_flops(params, cache):
         cache[key] = float(gflops)
         return float(gflops)
     except Exception as e:
-        print(f"      ⚠️  FLOPs failed: {e}")
+        if not _FLOP_ERROR_SHOWN:
+            import traceback
+            print("\n" + "=" * 78)
+            print("   ❌ FLOPs ERROR (أول فشل — التفصيل الكامل)")
+            print("=" * 78)
+            traceback.print_exc()
+            print(f"   Params at failure: {dict(params)}")
+            print("=" * 78 + "\n")
+            _FLOP_ERROR_SHOWN = True
         return None
+
+
 # ═════════════════════════════════════════════════════════════════════
 # SECTION 4 — n_params (formula + cache)
 # ═════════════════════════════════════════════════════════════════════
@@ -233,28 +303,24 @@ def save_cache(cache):
 
 
 def _cache_key(params):
-    prefix = MODEL_DISPLAY_NAME + "|"
     return hashlib.md5(
-        (prefix + json.dumps(params, sort_keys=True, default=str)).encode()
+        (MODEL_DISPLAY_NAME + "|"
+         + json.dumps(params, sort_keys=True, default=str)).encode()
     ).hexdigest()
 
 
 def compute_nparams(params, cache, user_attr=None):
     if user_attr is not None:
         return int(user_attr)
-
     key = _cache_key(params)
     if key in cache:
         return cache[key]
-
     p  = dict(params)
-    # دعم كلا الاسمين: nf (SRFormer) أو n_feats (DAT/HAT/…)
     nf        = p.get('nf', p.get('n_feats', 64))
     num_heads = p.get('num_heads', 2)
     ws        = p.get('window_size', 8)
     nb        = p.get('num_blocks', 1)
     fr        = p.get('ffn_ratio', 1.5)
-
     try:
         n = srformer_hutcn_nparams(nf, num_heads, ws, nb, fr)
         cache[key] = int(n)
@@ -337,7 +403,7 @@ def plot_single_study(df, study_name):
     v = df['psnr'].values.astype(float)
     pf = pareto_front(p, v)
 
-    # ── 20 — PSNR vs #Params ─────────────────────────────────────
+    # ── 20 ──
     fig, ax = plt.subplots(figsize=(11, 7))
     sc = ax.scatter(p, v, c=v, cmap='viridis', s=90, alpha=0.85,
                     edgecolors='black', linewidths=0.6)
@@ -356,7 +422,7 @@ def plot_single_study(df, study_name):
     fig.tight_layout()
     save_figure(fig, f"20_{label}_psnr_vs_params")
 
-    # ── 21 — ملوّن بكل HP ────────────────────────────────────────
+    # ── 21 ──
     for hp in [c for c in df.columns if c.startswith('hp_')]:
         clean = hp.replace('hp_', '')
         s = df[hp]
@@ -384,7 +450,7 @@ def plot_single_study(df, study_name):
         fig.tight_layout()
         save_figure(fig, f"21_{label}_by_{clean}")
 
-    # ── 22 — Mean PSNR bar per HP value ──────────────────────────
+    # ── 22 ──
     for hp in [c for c in df.columns if c.startswith('hp_')]:
         clean = hp.replace('hp_', '')
         s = df[hp]
@@ -420,7 +486,7 @@ def plot_single_study(df, study_name):
         fig.tight_layout()
         save_figure(fig, f"22_{label}_mean_psnr_by_{clean}")
 
-    # ── 23 — FLOPs vs PSNR ──────────────────────────────────────
+    # ── 23 — FLOPs vs PSNR ──
     if 'flops_G' in df.columns and df['flops_G'].notna().any():
         valid = df.dropna(subset=['flops_G'])
         f  = valid['flops_G'].values.astype(float)
@@ -445,6 +511,9 @@ def plot_single_study(df, study_name):
         plt.colorbar(sc, ax=ax, label='PSNR (dB)')
         fig.tight_layout()
         save_figure(fig, f"23_{label}_psnr_vs_flops")
+    else:
+        print("   ℹ️  لا FLOPs — تخطي شكل 23.")
+
 
 # ═════════════════════════════════════════════════════════════════════
 # MAIN
@@ -468,9 +537,21 @@ def main():
         sys.exit(1)
     print(f"\n✅ Study: '{study_name}' — {len(study.trials)} trials")
 
+    if COMPUTE_FLOPS:
+        print("🔎 Pre-checking model build...")
+        try:
+            sample = dict(study.trials[0].params) if study.trials else {}
+            _ = build_model_for_flops(sample)
+            print("   ✅ Model builds OK — FLOPs ستعمل")
+        except Exception as e:
+            print(f"   ❌ فشل بناء النموذج: {e}")
+            if SNAPSHOT_DIR.is_dir():
+                print(f"   → snapshot موجود: {SNAPSHOT_DIR}")
+            sys.exit(1)
+
     cache = load_cache()
-    print(f"🗄️  Cache: {len(cache)} entries")
-    print("⏳ Computing n_params (analytic formula — instant)...")
+    print(f"\n🗄️  Cache: {len(cache)} entries")
+    print("⏳ Computing n_params + FLOPs...")
     t0 = time.time()
     df = build_table(study, cache)
     save_cache(cache)
@@ -478,6 +559,10 @@ def main():
     if df.empty:
         print("❌ لا بيانات صالحة.")
         sys.exit(1)
+
+    if COMPUTE_FLOPS and 'flops_G' in df.columns:
+        n_valid = df['flops_G'].notna().sum()
+        print(f"📊 FLOPs: {n_valid}/{len(df)} صف ممتلئ")
 
     print(f"\n📊 Unique n_params: {df['n_params'].nunique()}")
     print(f"   range: [{df['n_params'].min():,}, {df['n_params'].max():,}]")
