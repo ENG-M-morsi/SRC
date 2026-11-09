@@ -1,0 +1,8 @@
+{
+    "best_trial_number": 15,
+    "best_psnr_db": 26.890900802612304,
+    "best_params": {
+        "num_cnn_stages": 4,
+        "act_fn": "prelu"
+    }
+}

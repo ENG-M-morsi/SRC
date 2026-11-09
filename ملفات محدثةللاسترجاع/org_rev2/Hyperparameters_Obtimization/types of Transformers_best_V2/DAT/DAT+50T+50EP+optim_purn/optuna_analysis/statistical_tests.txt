@@ -1,0 +1,50 @@
+===========================================================================
+Statistical Tests Report
+===========================================================================
+
+1) Descriptive statistics for PSNR (completed trials)
+--------------------------------------------------
+   Number of trials: 32
+   Mean: 29.9794 dB
+   Standard deviation: 1.1715 dB
+   Median: 30.6142 dB
+   Minimum: 27.6333 dB
+   Maximum: 30.9316 dB
+   1st quartile (Q1): 29.2764 dB
+   3rd quartile (Q3): 30.7696 dB
+   IQR: 1.4932 dB
+   95% confidence interval (Bootstrap): [29.5631, 30.3667]
+   Standard error (SE): 0.2071 dB
+
+2) Mann-Whitney U test (best 25% vs worst 25%)
+--------------------------------------------------
+   Best-group size: 8
+   Worst-group size: 8
+   Best-group mean: 30.8509 dB
+   Worst-group mean: 28.0883 dB
+   Difference: 2.7626 dB
+   U statistic: 64.0000
+   p-value: 7.770008e-05
+   ✅ Highly significant difference (p < 0.001) — results are publishable
+
+3) Shapiro-Wilk test (is the distribution normal?)
+--------------------------------------------------
+   W statistic: 0.7227
+   p-value: 1.931899e-06
+   ⚠️ The distribution is not normal (p < 0.05)
+   → Non-parametric tests (e.g., Mann-Whitney) are preferred
+
+4) Comparison of completed vs pruned trials
+--------------------------------------------------
+   Number completed: 32
+   Number pruned: 21
+   Pruning rate: 38.2%
+
+   Parameters most associated with pruning:
+
+5) Reliability of the best trial
+--------------------------------------------------
+   Best PSNR: 30.9316 dB
+   Difference from mean: +0.9522 dB
+   Standard deviations above mean: 0.81 sigma
+   ⚠️ Best trial is close to the mean — more trials may be needed

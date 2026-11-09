@@ -1,0 +1,48 @@
+===========================================================================
+Optuna Study Analysis Report (generic, v2)
+===========================================================================
+
+Study name: hutcn_hyperopt_study
+Storage path: D:\Mohamed Morsi PhD- P2\types of Transformers_best - claude\Org_rev2_best\DHTCUN+50T+50EP+optim_purn\optuna_study.db
+Total trials recorded: 50
+Completed: 35
+Pruned by the Pruner: 14 (28.6% of trials that ran)
+Stopped as invalid config: 0
+Still RUNNING (stale): 1
+Failed: 0
+Best PSNR: 30.8044 dB
+Best trial: #33
+
+===========================================================================
+Best parameters:
+===========================================================================
+                    n_feats : 80
+                  num_heads : 4
+                      depth : 3
+                window_size : 12
+                  mlp_ratio : 2.250000e+00
+                 patch_size : 192
+                  optimizer : AdamW
+                  scheduler : fixed
+                       loss : L1
+                         lr : 2.585884e-04
+               weight_decay : 4.119538e-04
+
+===========================================================================
+Spearman rank correlation of each numeric parameter with PSNR (sorted):
+===========================================================================
+  [MOD+]                     depth : +0.4970
+  [MOD+]                 mlp ratio : +0.4817
+  [MOD+]                        lr : +0.4076
+  [MOD+]                   n feats : +0.3808
+  [MOD+]              weight decay : +0.3143
+
+===========================================================================
+Notes for choosing parameters (within the searched ranges only):
+===========================================================================
+  • higher depth goes with better PSNR (rho = +0.497) — association, not proof of causation.
+  • higher mlp ratio goes with better PSNR (rho = +0.482) — association, not proof of causation.
+  • higher lr goes with better PSNR (rho = +0.408) — association, not proof of causation.
+  • higher n feats goes with better PSNR (rho = +0.381) — association, not proof of causation.
+  • higher weight decay goes with better PSNR (rho = +0.314) — association, not proof of causation.
+  ⚠️ depth: the best value 3 is at the edge of its range [1, 3] — extend the range and re-run.

@@ -1,0 +1,45 @@
+===========================================================================
+Optuna Study Analysis Report (generic, v2)
+===========================================================================
+
+Study name: hutcn_hyperopt_study
+Storage path: D:\Mohamed Morsi PhD- P2\types of Transformers_best - claude\SRFormer2\SRFormer2+50T+50EP+optim_purn\optuna_study.db
+Total trials recorded: 50
+Completed: 32
+Pruned by the Pruner: 18 (36.0% of trials that ran)
+Stopped as invalid config: 0
+Still RUNNING (stale): 0
+Failed: 0
+Best PSNR: 30.4535 dB
+Best trial: #31
+
+===========================================================================
+Best parameters:
+===========================================================================
+                         nf : 120
+                  num_heads : 2
+                window_size : 6
+                 num_blocks : 3
+                  ffn_ratio : 2.000000e+00
+                 patch_size : 160
+                  optimizer : AdamW
+                  scheduler : fixed
+                       loss : Huber
+                         lr : 4.806224e-04
+               weight_decay : 6.415363e-05
+
+===========================================================================
+Spearman rank correlation of each numeric parameter with PSNR (sorted):
+===========================================================================
+  [STRONG+]                        lr : +0.6891
+  [STRONG+]                        nf : +0.5637
+  [MOD+]                num blocks : +0.3303
+  [WEAK]              weight decay : +0.1217
+
+===========================================================================
+Notes for choosing parameters (within the searched ranges only):
+===========================================================================
+  • higher lr goes with better PSNR (rho = +0.689) — association, not proof of causation.
+  • higher nf goes with better PSNR (rho = +0.564) — association, not proof of causation.
+  • higher num blocks goes with better PSNR (rho = +0.330) — association, not proof of causation.
+  ⚠️ lr: the best value 0.0004806 is at the edge of its range [1e-05, 0.0005] — extend the range and re-run.

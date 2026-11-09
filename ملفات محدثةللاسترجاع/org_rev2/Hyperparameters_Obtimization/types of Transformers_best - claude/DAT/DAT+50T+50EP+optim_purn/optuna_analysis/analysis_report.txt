@@ -1,0 +1,45 @@
+===========================================================================
+Optuna Study Analysis Report (generic, v2)
+===========================================================================
+
+Study name: hutcn_hyperopt_study
+Storage path: D:\Mohamed Morsi PhD- P2\types of Transformers_best - claude\DAT\DAT+50T+50EP+optim_purn\optuna_study.db
+Total trials recorded: 55
+Completed: 32
+Pruned by the Pruner: 13 (28.9% of trials that ran)
+Stopped as invalid config: 8
+Still RUNNING (stale): 2
+Failed: 0
+Best PSNR: 30.9316 dB
+Best trial: #53
+
+===========================================================================
+Best parameters:
+===========================================================================
+                    n_feats : 128
+                  num_heads : 2
+                 num_blocks : 4
+                window_size : 8
+                 patch_size : 224
+                  optimizer : AdamW
+                  scheduler : cosine
+                       loss : Charbonnier
+                         lr : 4.044026e-04
+               weight_decay : 2.674362e-05
+
+===========================================================================
+Spearman rank correlation of each numeric parameter with PSNR (sorted):
+===========================================================================
+  [STRONG+]                        lr : +0.8609
+  [STRONG+]                num blocks : +0.7752
+  [STRONG+]                   n feats : +0.6757
+  [WEAK]              weight decay : -0.1701
+
+===========================================================================
+Notes for choosing parameters (within the searched ranges only):
+===========================================================================
+  • higher lr goes with better PSNR (rho = +0.861) — association, not proof of causation.
+  • higher num blocks goes with better PSNR (rho = +0.775) — association, not proof of causation.
+  • higher n feats goes with better PSNR (rho = +0.676) — association, not proof of causation.
+  ⚠️ n feats: the best value 128 is at the edge of its range [64, 128] — extend the range and re-run.
+  ⚠️ num blocks: the best value 4 is at the edge of its range [2, 4] — extend the range and re-run.

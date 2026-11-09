@@ -1,0 +1,502 @@
+{
+ "59a920202db84ff3fc8ba252c2db48e7": {
+  "n_params": 1016236,
+  "n_effective": 1009726,
+  "flops_G": 2.718208332,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "c01d45bc17861481ccc4e5b58e1bdaad": {
+  "n_params": 1251836,
+  "n_effective": 1245326,
+  "flops_G": 3.789107532,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "ec18c8063c98c821de6a8ab6b40aa831": {
+  "n_params": 1168008,
+  "n_effective": 1163172,
+  "flops_G": 3.321879984,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "07aa9d874b87ec8e02c357e6d410c939": {
+  "n_params": 4114476,
+  "n_effective": 4095876,
+  "flops_G": 12.045350592,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "3e3d6517123e03497eda11d4193469c9": {
+  "n_params": 2390208,
+  "n_effective": 2377188,
+  "flops_G": 5.45183352,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "c15b73e186c0cf40bfbfbd66de69054b": {
+  "n_params": 2948428,
+  "n_effective": 2932742,
+  "flops_G": 7.179103404,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "bb3679cc41a675282d07ec3f1e70deb3": {
+  "n_params": 1278876,
+  "n_effective": 1272366,
+  "flops_G": 3.014963532,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "5e3aa01378a46f21da3d59874482ef89": {
+  "n_params": 2467416,
+  "n_effective": 2456814,
+  "flops_G": 5.8936491,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "0be4389ce616fa5cbf2e9974fae60f63": {
+  "n_params": 1038368,
+  "n_effective": 1033532,
+  "flops_G": 3.169263024,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "32e8dd6be4aaadf40528c0eba6ad0d59": {
+  "n_params": 2606256,
+  "n_effective": 2595654,
+  "flops_G": 7.62551982,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "e4cb67e4726e97d86b3d086771752fa8": {
+  "n_params": 333796,
+  "n_effective": 331564,
+  "flops_G": 0.77391072,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "806eda20c95f9a4fab2136c755e17c34": {
+  "n_params": 1587036,
+  "n_effective": 1576434,
+  "flops_G": 3.46504878,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "650147fa91592b7cc9de20bf261d7bab": {
+  "n_params": 2389116,
+  "n_effective": 2378514,
+  "flops_G": 5.71449006,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "148877b4c39277340e486e6856cde761": {
+  "n_params": 3658888,
+  "n_effective": 3643202,
+  "flops_G": 9.299889324,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "94a74b146bbfd5057acf51ca2d649805": {
+  "n_params": 4739616,
+  "n_effective": 4721016,
+  "flops_G": 11.833013952,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "03dc9e1178028207efda74e9bd3e7f4f": {
+  "n_params": 3775708,
+  "n_effective": 3760022,
+  "flops_G": 9.567521964,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "3fd106eda5c4148bc18dca47ad754112": {
+  "n_params": 3148768,
+  "n_effective": 3135748,
+  "flops_G": 8.06549112,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "ee664ecba51e72c7212c72668451d6ae": {
+  "n_params": 2133952,
+  "n_effective": 2125520,
+  "flops_G": 5.582340864,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "967b95687f675099d1bcbe537d220686": {
+  "n_params": 2585648,
+  "n_effective": 2572628,
+  "flops_G": 6.33656952,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "1810d602559ec8f4c6eb6dbbf1eac60a": {
+  "n_params": 3181888,
+  "n_effective": 3168868,
+  "flops_G": 8.28667512,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "3256fde67d95bb5efc4eae8c41292a80": {
+  "n_params": 3829048,
+  "n_effective": 3813362,
+  "flops_G": 9.835154604,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "a8c843b8a0854b134f52a5d7b52246ba": {
+  "n_params": 3880888,
+  "n_effective": 3865202,
+  "flops_G": 11.197648044,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "d511abd21da3b2cfffc0878342a61a45": {
+  "n_params": 3174308,
+  "n_effective": 3158622,
+  "flops_G": 8.622697644,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "e939204e08b9a5dd7fe990cefbaeff31": {
+  "n_params": 3145408,
+  "n_effective": 3132388,
+  "flops_G": 7.40193912,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ },
+ "a5ef07e6305b134779f999811a9a22c7": {
+  "n_params": 3233728,
+  "n_effective": 3220708,
+  "flops_G": 9.52530552,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "B2.tesa_in.esa1.conv_f",
+   "B2.tesa_in.esa2.conv_f",
+   "B2.tesa_in.esa3.conv_f",
+   "B2.tesa_out.esa1.conv_f",
+   "B2.tesa_out.esa2.conv_f",
+   "B2.tesa_out.esa3.conv_f",
+   "..."
+  ]
+ }
+}

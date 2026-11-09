@@ -1,0 +1,43 @@
+===========================================================================
+Optuna Study Analysis Report (generic, v2)
+===========================================================================
+
+Study name: hutcn_hyperopt_study
+Storage path: D:\Mohamed Morsi PhD- P2\types of Transformers_best - claude\ELAN\ELAN+50T+50EP+optim_purn\optuna_study.db
+Total trials recorded: 51
+Completed: 21
+Pruned by the Pruner: 19 (47.5% of trials that ran)
+Stopped as invalid config: 10
+Still RUNNING (stale): 1
+Failed: 0
+Best PSNR: 30.6437 dB
+Best trial: #34
+
+===========================================================================
+Best parameters:
+===========================================================================
+                    n_feats : 96
+                  num_heads : 2
+                 num_blocks : 4
+                window_size : 12
+                 patch_size : 192
+                  optimizer : AdamW
+                  scheduler : cosine
+                       loss : L2
+                         lr : 3.647017e-04
+               weight_decay : 1.905022e-06
+
+===========================================================================
+Spearman rank correlation of each numeric parameter with PSNR (sorted):
+===========================================================================
+  [STRONG+]                        lr : +0.6818
+  [STRONG+]                num blocks : +0.6106
+  [WEAK]                   n feats : +0.2002
+  [WEAK]              weight decay : -0.2506
+
+===========================================================================
+Notes for choosing parameters (within the searched ranges only):
+===========================================================================
+  • higher lr goes with better PSNR (rho = +0.682) — association, not proof of causation.
+  • higher num blocks goes with better PSNR (rho = +0.611) — association, not proof of causation.
+  ⚠️ num blocks: the best value 4 is at the edge of its range [2, 4] — extend the range and re-run.

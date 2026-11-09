@@ -1,0 +1,362 @@
+{
+ "c270561d4f7c2077693a05b65a3afb55": {
+  "n_params": 2597811,
+  "n_effective": 1073833,
+  "flops_G": 1.453996236,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "6aad147e4c86b70b0e04a218fcc02662": {
+  "n_params": 2188373,
+  "n_effective": 1272075,
+  "flops_G": 1.300936896,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "..."
+  ]
+ },
+ "0c0bc389539d4ab159192f93fc747b97": {
+  "n_params": 2193945,
+  "n_effective": 1274861,
+  "flops_G": 1.702803648,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "..."
+  ]
+ },
+ "7ee0f245a9faadd87d9d6abf08e02265": {
+  "n_params": 1785721,
+  "n_effective": 577315,
+  "flops_G": 0.615009024,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "e90e83bfd6e4af71ff32e09162e759d2": {
+  "n_params": 3972889,
+  "n_effective": 1271467,
+  "flops_G": 1.265547456,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "eb2bedd794180199d82df20a485a38e8": {
+  "n_params": 3401393,
+  "n_effective": 1971921,
+  "flops_G": 2.56585182,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "..."
+  ]
+ },
+ "defddf01201dafee238bf7ecad904368": {
+  "n_params": 1530681,
+  "n_effective": 891865,
+  "flops_G": 0.92643768,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "..."
+  ]
+ },
+ "04ea4c48b1cec0486569a0701b0bc652": {
+  "n_params": 1789953,
+  "n_effective": 578373,
+  "flops_G": 0.615009024,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "cb612720161fc5c3f0e18743c99da626": {
+  "n_params": 5454305,
+  "n_effective": 2240481,
+  "flops_G": 2.191961088,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "e8377032855a23d63353e7b528d93ef0": {
+  "n_params": 1530049,
+  "n_effective": 891549,
+  "flops_G": 0.89694648,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "..."
+  ]
+ },
+ "6b6545d9243c78d0fb996c1652d5cb9c": {
+  "n_params": 5405009,
+  "n_effective": 1723661,
+  "flops_G": 1.697218992,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "ed4c4ac70a8cc6298dc58c4329fdc250": {
+  "n_params": 4188225,
+  "n_effective": 1723661,
+  "flops_G": 1.697218992,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "46cd708cc7ac2d314914157c1bf5619c": {
+  "n_params": 4655589,
+  "n_effective": 1487517,
+  "flops_G": 1.473499404,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "2f540b61aeb178b883edcab5168e0d0c": {
+  "n_params": 3344309,
+  "n_effective": 1072361,
+  "flops_G": 1.073363148,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "f3b0c64712c4ef694a7d0320c8cd0741": {
+  "n_params": 4661477,
+  "n_effective": 1488989,
+  "flops_G": 1.971048716,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "da1519477c27c73138e08cbb58e765cb": {
+  "n_params": 5398297,
+  "n_effective": 1721983,
+  "flops_G": 2.25873144,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "3c004670ca8d31b0006fc08341362d3e": {
+  "n_params": 3978777,
+  "n_effective": 1272939,
+  "flops_G": 1.702803648,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tcn1.wavelet_attn.blocks.1.attn",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.1.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.1.ffn.dw",
+   "..."
+  ]
+ },
+ "9d8226708c95085b64fe4720fc7aa0a1": {
+  "n_params": 2968085,
+  "n_effective": 1721983,
+  "flops_G": 2.25873144,
+  "unused_modules": [
+   "B1.tcn1.wavelet_attn.blocks.0.attn",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.proj",
+   "B1.tcn1.wavelet_attn.blocks.0.attn.qkv",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.dw",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw1",
+   "B1.tcn1.wavelet_attn.blocks.0.ffn.pw2",
+   "B1.tcn1.wavelet_attn.blocks.0.norm1.n",
+   "B1.tcn1.wavelet_attn.blocks.0.norm2.n",
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "..."
+  ]
+ }
+}

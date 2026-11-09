@@ -1,0 +1,209 @@
+{
+ "30ac54adf294a69933032dfa9305a0c4": {
+  "n_params": 375536,
+  "n_effective": 367216,
+  "flops_G": 0.532461312,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "2564736490196529306b6b9c1ff1b79e": {
+  "n_params": 478260,
+  "n_effective": 465300,
+  "flops_G": 0.70953912,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "4138a0e542647071b13d4eb72a4be5c6": {
+  "n_params": 573990,
+  "n_effective": 558326,
+  "flops_G": 0.853496012,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "66d41645fd09f1c4a79b9cc8a7dbac79": {
+  "n_params": 538040,
+  "n_effective": 519416,
+  "flops_G": 0.861195456,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "b3affa05f2fe6fbbfbf2305179a50a64": {
+  "n_params": 143596,
+  "n_effective": 138892,
+  "flops_G": 0.234716208,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "413784f62471e7167071a07c8afc5876": {
+  "n_params": 312544,
+  "n_effective": 304224,
+  "flops_G": 0.464754432,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "0960d202e13f79483ff1540ac291d047": {
+  "n_params": 547832,
+  "n_effective": 529208,
+  "flops_G": 0.88709344,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "893fef27c29d3336bd3e67c0bab6e576": {
+  "n_params": 326462,
+  "n_effective": 320078,
+  "flops_G": 0.444021868,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "0c37e7e55317d6705d23700d8f1f6731": {
+  "n_params": 245104,
+  "n_effective": 236784,
+  "flops_G": 0.394269952,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "5a35e1d049a5d4cf43d8e77686943e1e": {
+  "n_params": 456384,
+  "n_effective": 448064,
+  "flops_G": 0.625926912,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "d93e51d408564592f9b28330ed138f5d": {
+  "n_params": 1614992,
+  "n_effective": 1581968,
+  "flops_G": 2.031102976,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "fb3ad0e47b75a574e308d36889b434c1": {
+  "n_params": 1383008,
+  "n_effective": 1349984,
+  "flops_G": 1.834355712,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "856e3eb46b9c81555f5d1298242957b7": {
+  "n_params": 1066172,
+  "n_effective": 1040860,
+  "flops_G": 1.42148856,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "61087f4597095a8a749feba44fcfff3c": {
+  "n_params": 1066172,
+  "n_effective": 1040860,
+  "flops_G": 1.418695056,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "7f87b28e3ff4e3c43471b48ec9b3f6f1": {
+  "n_params": 1144796,
+  "n_effective": 1119484,
+  "flops_G": 1.599070608,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "cae53750645c185cfbaa8483c4012572": {
+  "n_params": 1144508,
+  "n_effective": 1119196,
+  "flops_G": 1.59904728,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "4c471993db5b0bfd783b7423347dedba": {
+  "n_params": 990914,
+  "n_effective": 969074,
+  "flops_G": 1.388091852,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "ab8ab8f3fb7899926aafc475dd21bafa": {
+  "n_params": 1309158,
+  "n_effective": 1280118,
+  "flops_G": 1.824885612,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "f6c9961b9bea0bd8a16a72cddb5a45d2": {
+  "n_params": 1075198,
+  "n_effective": 1046158,
+  "flops_G": 1.583651628,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "2070a59a97f99a6a0165103045b19193": {
+  "n_params": 814762,
+  "n_effective": 792922,
+  "flops_G": 1.2058587,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "e41b98e8bbe786ebce4cf96a573e3d04": {
+  "n_params": 843430,
+  "n_effective": 827766,
+  "flops_G": 1.142319564,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "6b5bc2c3f2cd1453271dadee943de4b2": {
+  "n_params": 1543118,
+  "n_effective": 1514078,
+  "flops_G": 2.066119596,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ },
+ "1d5c8c1bd32c2851e30cfe759afa9489": {
+  "n_params": 572210,
+  "n_effective": 561698,
+  "flops_G": 0.780427756,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2"
+  ]
+ }
+}

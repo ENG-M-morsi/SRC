@@ -1,0 +1,11 @@
+{
+    "n_feats": 120,
+    "num_heads": 2,
+    "num_blocks": 2,
+    "window_size": 16,
+    "optimizer": "AdamW",
+    "scheduler": "step",
+    "loss": "Charbonnier",
+    "lr": 0.0002716195197994465,
+    "weight_decay": 1.1278973589640804e-06
+}

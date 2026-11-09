@@ -1,0 +1,164 @@
+{
+ "ffafd382f0b9bea8592a298347a0581f": {
+  "n_params": 751712,
+  "n_effective": 732338,
+  "flops_G": 1.791728972,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "407351e7706ad9098f6755137b1a8898": {
+  "n_params": 1366016,
+  "n_effective": 1330298,
+  "flops_G": 3.13748766,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "655efd28d8e12780bd7da83dd4d507ce": {
+  "n_params": 1548332,
+  "n_effective": 1507748,
+  "flops_G": 3.531779072,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "ec25721c1fa5590d2dd19c4395236b78": {
+  "n_params": 1195196,
+  "n_effective": 1164032,
+  "flops_G": 2.766336944,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "e752d0c60a8797421d43a9f3528c7d28": {
+  "n_params": 411692,
+  "n_effective": 401300,
+  "flops_G": 1.025387264,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "7e25f70cd57057fe504e8cdaccd51917": {
+  "n_params": 513536,
+  "n_effective": 500462,
+  "flops_G": 1.257693804,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "5258573950e5476578c06c9817a31c59": {
+  "n_params": 1035872,
+  "n_effective": 1008950,
+  "flops_G": 2.418326924,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "329fc90c51080570dd1947ed3d32c1de": {
+  "n_params": 626876,
+  "n_effective": 610808,
+  "flops_G": 1.51314104,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "93f93cbd4b0194645f68cb3c1805915f": {
+  "n_params": 888044,
+  "n_effective": 865052,
+  "flops_G": 2.0934576,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ }
+}

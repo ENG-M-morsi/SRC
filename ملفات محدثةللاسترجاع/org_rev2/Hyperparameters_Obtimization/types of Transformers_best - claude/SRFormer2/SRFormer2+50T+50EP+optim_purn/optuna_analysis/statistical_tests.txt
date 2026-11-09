@@ -1,0 +1,61 @@
+===========================================================================
+Statistical Report
+===========================================================================
+Note: TPE samples ADAPTIVELY (later trials concentrate near good regions), so trials are
+not i.i.d. draws; p-values below are descriptive evidence, not formal significance.
+
+1) Descriptive statistics for PSNR (completed trials)
+--------------------------------------------------
+   Number of trials: 32
+   Median: 30.2339 dB   IQR: [28.9089, 30.3259]
+   Minimum: 20.9325 dB   Maximum: 30.4535 dB
+   (mean / SD / bootstrap CI are intentionally not reported: the distribution is shaped
+    by the sampler, mixing many poor early trials with many near-optimal late trials)
+
+2) Convergence of the best-so-far PSNR
+--------------------------------------------------
+   after   8 completed trials ( 25%): 29.6736 dB
+   after  16 completed trials ( 50%): 30.2731 dB
+   after  24 completed trials ( 75%): 30.3788 dB
+   after  32 completed trials (100%): 30.4535 dB
+   last improvement at completed-trial #25 of 32; 7 trial(s) since.
+   gain over the second half of the search: +0.1804 dB
+
+3) Run-to-run noise (completed trials with IDENTICAL hyperparameters)
+--------------------------------------------------
+   no duplicated configuration — noise cannot be estimated; repeat the best trial with several seeds.
+
+4) Hyperparameter effects on PSNR (BH-adjusted p-values)
+--------------------------------------------------
+                   lr | Spearman       | rho=+0.689                   | p=0.0000 | p_BH=0.0002
+            ffn ratio | Kruskal-Wallis | eps2=0.580 (3 groups)        | p=0.0001 | p_BH=0.0005
+          window size | Kruskal-Wallis | eps2=0.685 (5 groups)        | p=0.0002 | p_BH=0.0007
+            optimizer | Kruskal-Wallis | eps2=0.427 (2 groups)        | p=0.0002 | p_BH=0.0007
+                   nf | Spearman       | rho=+0.564                   | p=0.0008 | p_BH=0.0017
+            scheduler | Kruskal-Wallis | eps2=0.424 (3 groups)        | p=0.0008 | p_BH=0.0017
+                   nf | Kruskal-Wallis | eps2=0.762 (7 groups)        | p=0.0012 | p_BH=0.0022
+                 loss | Kruskal-Wallis | eps2=0.383 (4 groups)        | p=0.0033 | p_BH=0.0054
+            num heads | Kruskal-Wallis | eps2=0.301 (3 groups)        | p=0.0047 | p_BH=0.0068
+           num blocks | Kruskal-Wallis | eps2=0.308 (4 groups)        | p=0.0088 | p_BH=0.0114
+           patch size | Kruskal-Wallis | eps2=0.207 (3 groups)        | p=0.0182 | p_BH=0.0215
+           num blocks | Spearman       | rho=+0.330                   | p=0.0649 | p_BH=0.0703
+         weight decay | Spearman       | rho=+0.122                   | p=0.5070 | p_BH=0.5070
+
+5) Completed vs performance-pruned trials
+--------------------------------------------------
+   completed: 32   pruned by the Pruner: 18   invalid-config (excluded): 0
+      no numeric parameter differs significantly (or too few pruned trials)
+
+6) Search-space boundary check (is the best value at the edge of its range?)
+--------------------------------------------------
+                   lr: best=0.0004806 in [1e-05, 0.0005] (log)  position=0.99; median position of top-5 = 0.99  ⚠️ AT THE EDGE — widen the range
+                   nf: best=120 in [32, 128]  position=0.92; median position of top-5 = 0.92
+           num blocks: best=3 in [1, 4]  position=0.67; median position of top-5 = 0.67
+         weight decay: best=6.415e-05 in [1e-06, 0.001] (log)  position=0.60; median position of top-5 = 0.70
+
+7) How well separated is the best trial?
+--------------------------------------------------
+   top-5: #31 (30.453), #44 (30.451), #24 (30.379), #21 (30.370), #42 (30.366)
+   completed trials within 0.05 dB of the best: 2
+   completed trials within 0.10 dB of the best: 7
+   → if several trials are within the run-to-run noise (section 3), treat them as tied.

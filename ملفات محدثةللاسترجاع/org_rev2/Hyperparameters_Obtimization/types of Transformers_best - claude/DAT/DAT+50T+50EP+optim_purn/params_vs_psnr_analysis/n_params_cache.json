@@ -1,0 +1,178 @@
+{
+ "c15a5b33b92db114a4c60e1a8563dd6c": {
+  "n_params": 531622,
+  "n_effective": 515790,
+  "flops_G": 1.16176302,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "ee90e2ff0fbdddeadfdfff1e5f6c2c94": {
+  "n_params": 626264,
+  "n_effective": 607472,
+  "flops_G": 1.277049024,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "caf5caa541b6982d17688e8ca1ee6674": {
+  "n_params": 861360,
+  "n_effective": 842568,
+  "flops_G": 1.999435968,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "7f41d965e054cb810807b8848b69f3db": {
+  "n_params": 293808,
+  "n_effective": 285320,
+  "flops_G": 0.75007872,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "a635ea6a082e0097a4f823f9719c62ff": {
+  "n_params": 746364,
+  "n_effective": 727572,
+  "flops_G": 1.893046464,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "6f52e753d67c85ffa43bf78a22436f00": {
+  "n_params": 1141866,
+  "n_effective": 1112658,
+  "flops_G": 2.53528542,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "7c321481b4ca2444d395d583c54ba567": {
+  "n_params": 442540,
+  "n_effective": 429412,
+  "flops_G": 0.90653112,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "cf256eeaaf27d41c5035d0c7adf14ae5": {
+  "n_params": 298040,
+  "n_effective": 289552,
+  "flops_G": 0.75007872,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "195daf222a4036f5994be18592b2125b": {
+  "n_params": 1021988,
+  "n_effective": 996508,
+  "flops_G": 2.478846384,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "226189b048cf60a4889bf9ef019b497c": {
+  "n_params": 1560312,
+  "n_effective": 1527120,
+  "flops_G": 3.77445888,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "d78b85c9c4dc11d05763a0bf5a6b98c3": {
+  "n_params": 1498872,
+  "n_effective": 1465680,
+  "flops_G": 3.170479104,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "9f8d4eda4ea77e25a34ade6aeefdb03b": {
+  "n_params": 1157540,
+  "n_effective": 1132060,
+  "flops_G": 2.454331824,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "dd4d1492d15e235a22277e4abcd16b51": {
+  "n_params": 1317974,
+  "n_effective": 1288766,
+  "flops_G": 2.8009827,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "3a4413f7d3bb74eb17f02539d3ded286": {
+  "n_params": 1154868,
+  "n_effective": 1129388,
+  "flops_G": 2.652512688,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "ca65d2245d266996d6f4d645de6fe73c": {
+  "n_params": 1496200,
+  "n_effective": 1463008,
+  "flops_G": 3.39697152,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "5273a30646a9d0243291b69e38d77686": {
+  "n_params": 1320006,
+  "n_effective": 1290798,
+  "flops_G": 3.01331934,
+  "unused_modules": [
+   "LR_conv1",
+   "LR_conv2",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ }
+}

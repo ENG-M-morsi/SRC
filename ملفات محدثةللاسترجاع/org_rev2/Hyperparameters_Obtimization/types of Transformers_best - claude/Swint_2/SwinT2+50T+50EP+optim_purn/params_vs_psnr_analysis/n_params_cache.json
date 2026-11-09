@@ -1,0 +1,272 @@
+{
+ "188cdfc0fdf8bc1e8eb9db88d975ddf8": {
+  "n_params": 686598,
+  "n_effective": 667224,
+  "flops_G": 1.708990668,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "ffa15dd817bb64c0fbdf2b2fdb61f9c8": {
+  "n_params": 728622,
+  "n_effective": 705630,
+  "flops_G": 1.598429376,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "7065830eda77c0b450946552c16d6ad7": {
+  "n_params": 734194,
+  "n_effective": 711202,
+  "flops_G": 1.697519808,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "177d4965b09c109e5082f5e3938ebe3b": {
+  "n_params": 408546,
+  "n_effective": 398154,
+  "flops_G": 1.009748736,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "628b71c3e7e5e068baf45a00ac4bb74b": {
+  "n_params": 887138,
+  "n_effective": 864146,
+  "flops_G": 1.949669568,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "032a1227d65bc4f7a4650c5aca08d5ae": {
+  "n_params": 1124502,
+  "n_effective": 1088784,
+  "flops_G": 2.54966238,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "349f5c7e7fcb9cefa7d995f6324c4244": {
+  "n_params": 515210,
+  "n_effective": 499142,
+  "flops_G": 1.14190776,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "7761842b9ef52b948895e32562933c05": {
+  "n_params": 412778,
+  "n_effective": 402386,
+  "flops_G": 1.009748736,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "2990f3d9c529bb8e9a29688e3ba72025": {
+  "n_params": 1422442,
+  "n_effective": 1381858,
+  "flops_G": 3.006802944,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "a29692754c914c3be51c70a209846f9f": {
+  "n_params": 514578,
+  "n_effective": 498510,
+  "flops_G": 1.08292536,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "e8441536e2e61e514b8f7e56d55c6843": {
+  "n_params": 1098510,
+  "n_effective": 1067346,
+  "flops_G": 2.32969464,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "26b0861c87f9847b5aae7913742d2fae": {
+  "n_params": 1209994,
+  "n_effective": 1178830,
+  "flops_G": 2.61096696,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "8b21522eb097eae0c76d232f6cfa3103": {
+  "n_params": 577078,
+  "n_effective": 561010,
+  "flops_G": 1.23369912,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "6f996ccd230077567c8eac48f1a5b763": {
+  "n_params": 1041854,
+  "n_effective": 1014932,
+  "flops_G": 2.268305676,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ },
+ "c2b95a4a7ba9048cc1ef50e34c7f8b7b": {
+  "n_params": 1457770,
+  "n_effective": 1417186,
+  "flops_G": 3.346541568,
+  "unused_modules": [
+   "B1.tesa_in.esa1.conv_f",
+   "B1.tesa_in.esa2.conv_f",
+   "B1.tesa_in.esa3.conv_f",
+   "B1.tesa_out.esa1.conv_f",
+   "B1.tesa_out.esa2.conv_f",
+   "B1.tesa_out.esa3.conv_f",
+   "LR_conv1",
+   "LR_conv2",
+   "post_unet_esa.conv_f",
+   "ps_conv1",
+   "ps_conv2"
+  ]
+ }
+}

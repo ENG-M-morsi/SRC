@@ -146,7 +146,7 @@ class TCN(nn.Module):
         self.dat = DAT(dim=in_channels, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
         self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
         layers = []
-        for _ in range(4):
+        for _ in range(3):
             layers += [nn.Conv2d(in_channels, in_channels, 3, padding=1),
                         nn.ReLU(inplace=True)]
         self.cnn = nn.Sequential(*layers[:-1])   # بدون ReLU أخيرة
@@ -166,7 +166,7 @@ class TECN(nn.Module):
         self.elan = ELAN(dim=in_channels, num_heads=num_heads, window_size=window_size, num_blocks=num_blocks)
         self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
         layers = []
-        for _ in range(4):
+        for _ in range(2):
             layers += [nn.Conv2d(in_channels, in_channels, 3, padding=1),
                         nn.ReLU(inplace=True)]
         self.cnn = nn.Sequential(*layers[:-1])   # بدون ReLU أخيرة

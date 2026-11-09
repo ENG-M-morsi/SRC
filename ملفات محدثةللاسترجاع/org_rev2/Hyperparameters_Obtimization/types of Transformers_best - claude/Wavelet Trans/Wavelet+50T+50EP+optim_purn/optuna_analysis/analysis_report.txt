@@ -1,0 +1,47 @@
+===========================================================================
+Optuna Study Analysis Report (generic, v2)
+===========================================================================
+
+Study name: hutcn_hyperopt_study
+Storage path: D:\Mohamed Morsi PhD- P2\types of Transformers_best - claude\Wavelet Trans\Wavelet+50T+50EP+optim_purn\optuna_study.db
+Total trials recorded: 50
+Completed: 28
+Pruned by the Pruner: 19 (40.4% of trials that ran)
+Stopped as invalid config: 3
+Still RUNNING (stale): 0
+Failed: 0
+Best PSNR: 30.3676 dB
+Best trial: #26
+
+===========================================================================
+Best parameters:
+===========================================================================
+                    n_feats : 112
+                  num_heads : 2
+                window_size : 16
+                 num_blocks : 4
+                 patch_size : 192
+                  optimizer : AdamW
+                  scheduler : cosine
+                       loss : L2
+                         lr : 4.657004e-04
+               weight_decay : 9.217288e-04
+
+===========================================================================
+Spearman rank correlation of each numeric parameter with PSNR (sorted):
+===========================================================================
+  [STRONG+]                        lr : +0.7701
+  [STRONG+]                num blocks : +0.5581
+  [STRONG+]              weight decay : +0.5320
+  [MOD+]                   n feats : +0.3721
+
+===========================================================================
+Notes for choosing parameters (within the searched ranges only):
+===========================================================================
+  • higher lr goes with better PSNR (rho = +0.770) — association, not proof of causation.
+  • higher num blocks goes with better PSNR (rho = +0.558) — association, not proof of causation.
+  • higher weight decay goes with better PSNR (rho = +0.532) — association, not proof of causation.
+  • higher n feats goes with better PSNR (rho = +0.372) — association, not proof of causation.
+  ⚠️ lr: the best value 0.0004657 is at the edge of its range [1e-05, 0.0005] — extend the range and re-run.
+  ⚠️ num blocks: the best value 4 is at the edge of its range [2, 4] — extend the range and re-run.
+  ⚠️ weight decay: the best value 0.0009217 is at the edge of its range [1e-06, 0.001] — extend the range and re-run.
