@@ -139,68 +139,78 @@ class TESA(nn.Module):
     def forward(self, x):
         return self.esa3(self.esa2(self.esa1(x)))
 
-
 # -------------------------------------------------------------------
-# TCN — Transformer CNN Block (يستخدم DAT المصحّح)
-# الإصلاح الرئيسي: self.dat(x) بدون H, W
+# TCN — Transformer CNN Block (مع CNN stages قابلة للتحكم)
 # -------------------------------------------------------------------
 class TCN(nn.Module):
-    def __init__(self, in_channels, num_heads=3, ws=8, num_blocks=1):
+    def __init__(self, in_channels, num_heads=3, ws=8, num_blocks=1,
+                 num_cnn_stages=4, act_fn='relu'):
         super(TCN, self).__init__()
-        # التحقق من توافق dim مع num_heads
         assert in_channels % num_heads == 0, \
             f"in_channels={in_channels} يجب أن يقبل القسمة على num_heads={num_heads}"
-        self.dat = DAT(dim=in_channels, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
-        # Conv3×3 بعد DAT (كما في الورقة: FConv3 ∘ FSTL)
-        #self.conv3 = conv_layer(in_channels, in_channels, kernel_size=3)
+
+        # DAT (Transformer)
+        self.dat = DAT(dim=in_channels, num_heads=num_heads, ws=ws,
+                       num_blocks=num_blocks)
+
+        # ✅ بناء CNN Stages مع activation قابل للتغيير
+        def build_act(name):
+            name = name.lower()
+            if name == 'relu':
+                return nn.ReLU(inplace=True)
+            elif name == 'lrelu':
+                return nn.LeakyReLU(0.05, inplace=True)
+            elif name == 'prelu':
+                return nn.PReLU()
+            elif name == 'gelu':
+                return nn.GELU()
+            elif name == 'silu':
+                return nn.SiLU(inplace=True)
+            elif name == 'tanh':
+                return nn.Tanh()
+            else:
+                raise ValueError(f"Unknown activation: {name}")
+
+        layers = []
+        for _ in range(num_cnn_stages):
+            layers.append(nn.Conv2d(in_channels, in_channels, 3, padding=1))
+            layers.append(build_act(act_fn))
+
+        if num_cnn_stages > 0:
+            # إزالة آخر activation (نفس منطق الأصل)
+            self.cnn = nn.Sequential(*layers[:-1])
+        else:
+            self.cnn = nn.Identity()
 
     def forward(self, x):
-        # x: (B, C, H, W)  — DAT يستقبل ويُرجع نفس الشكل
-        return self.dat(x)
-        #return self.conv3(self.dat(x))
+        return x + self.cnn(self.dat(x))
 
 
 # -------------------------------------------------------------------
-# P_HTCB — Parallel Hybrid Transformer CNN Block (مصحّح)
+# P_HTCB — Parallel Hybrid Transformer CNN Block
 # -------------------------------------------------------------------
 class P_HTCB(nn.Module):
-    """
-    الإصلاحات:
-    - TCN.forward يُستدعى بـ (x) فقط
-    - TCN2 مفعّل (parallel كما في الورقة)
-    - Addition بدل Cat (الورقة Eq.4: HTCN1 + HTCN2)
-    """
-    def __init__(self, in_channels, num_heads=3, ws=8, num_blocks=1):
+    def __init__(self, in_channels, num_heads=3, ws=8, num_blocks=1,
+                 num_cnn_stages=4, act_fn='relu'):
         super(P_HTCB, self).__init__()
 
         self.tesa_in  = TESA(in_channels)
+        self.tcn1 = TCN(
+            in_channels,
+            num_heads=num_heads,
+            ws=ws,
+            num_blocks=num_blocks,
+            num_cnn_stages=num_cnn_stages,
+            act_fn=act_fn,
+        )
 
-        # TCN1 و TCN2 متوازيان — Eq.3
-        self.tcn1 = TCN(in_channels, num_heads=num_heads, ws=ws, num_blocks=num_blocks)
-        #self.tcn2 = TCN(in_channels, num_heads=num_heads)
-
-        # Conv1×1 بعد Addition — Eq.5
         self.c = conv_block(in_channels, in_channels,
                             kernel_size=1, act_type='lrelu')
-
         self.tesa_out = TESA(in_channels)
 
     def forward(self, x):
         h_tesa = self.tesa_in(x)
-
-        # TCN1 و TCN2 بالتوازي على نفس المدخل
         h_tcn1 = self.tcn1(h_tesa)
-       # h_tcn2 = self.tcn2(h_tesa)
-
-        # Addition — Eq.4
-        #h_add  = h_tcn1 + h_tcn2
-        h_add  = h_tcn1 
-
-        # Conv1×1 — Eq.5
-        h_conv = self.c(h_add)
-
-        # TESA النهائية — Eq.6
+        h_conv = self.c(h_tcn1)
         out = self.tesa_out(h_conv)
-
-        # Global residual
         return out + x
