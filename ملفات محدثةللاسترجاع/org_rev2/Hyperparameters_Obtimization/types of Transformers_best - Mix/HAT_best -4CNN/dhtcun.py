@@ -2,15 +2,34 @@ import torch
 import torch.nn as nn
 from . import dhtcu_block as B
 
+# ── أفضل قيم من Optuna (HAT + CNN/Act) ──
+BEST_NF = 128
+BEST_HEADS = 4
+BEST_WINDOW = 12
+BEST_BLOCKS = 4
+BEST_CNN_STAGES = 6
+BEST_ACT_FN = 'lrelu'
+
+
 def make_model(args, parent=False):
-    model = HUTCN(upscale=args.scale[0], nf=args.n_feats)
+    if getattr(args, 'n_feats', BEST_NF) != BEST_NF:
+        print(f'⚠️ args.n_feats={args.n_feats} يُتجاهل، وسيُستخدم nf={BEST_NF}')
+    model = HUTCN(
+        upscale=args.scale[0],
+        nf=BEST_NF,
+        num_heads=BEST_HEADS,
+        window_size=BEST_WINDOW,
+        num_blocks=BEST_BLOCKS,
+        num_cnn_stages=BEST_CNN_STAGES,
+        act_fn=BEST_ACT_FN,
+    )
     return model
 
 
 class HUTCN(nn.Module):
-    def __init__(self, in_nc=3, nf=50, num_modules=1, out_nc=3, upscale=3,
-                 num_heads=4, window_size=12, num_blocks=4,
-                 num_cnn_stages=4, act_fn='relu'):
+    def __init__(self, in_nc=3, nf=BEST_NF, num_modules=1, out_nc=3, upscale=3,
+                 num_heads=BEST_HEADS, window_size=BEST_WINDOW, num_blocks=BEST_BLOCKS,
+                 num_cnn_stages=BEST_CNN_STAGES, act_fn=BEST_ACT_FN):
         super(HUTCN, self).__init__()
 
         self.fea_conv = B.conv_layer(in_nc, nf, kernel_size=1)
