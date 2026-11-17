@@ -162,6 +162,9 @@ parser.add_argument('--save_results', action='store_true',
                     help='save output results')
 parser.add_argument('--save_gt', action='store_true',
                     help='save low-resolution and high-resolution images together')
+parser.add_argument('--no_flops', action='store_true',
+                    help='do not add the per-image FLOPs column to the test Excel files '
+                         '(requires: pip install fvcore)')
 
 # EMA (Exponential Moving Average)
 parser.add_argument('--ema', action='store_true', default=False,

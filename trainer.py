@@ -72,6 +72,13 @@ class Trainer():
 
         self.error_last = 1e8
 
+        # ---- per-image FLOPs in the test Excel files (cached by input shape) ----
+        self.compute_flops = not getattr(args, 'no_flops', False)
+        self.flops_counter = (
+            utility.FlopsCounter(self.model, os.path.join(ckp.dir, 'flops_cache.json'))
+            if self.compute_flops else None
+        )
+
         print(self.model)
         total_params = sum(p.numel() for p in self.model.parameters())
         print(f'{total_params:,} total parameters.')
@@ -184,10 +191,14 @@ class Trainer():
                 eval_acc      = 0.0
                 eval_acc_ssim = 0.0
                 PSNR_values, SSIM_values, image_names = [], [], []
+                FLOPS_values, LR_sizes = [], []
 
                 for lr, hr, filename in tqdm(d, ncols=80):
                     image_names.append(filename[0])
                     lr, hr = self.prepare(lr, hr)
+                    if self.compute_flops:
+                        FLOPS_values.append(self.flops_counter(lr, idx_scale))
+                        LR_sizes.append('{}x{}'.format(lr.shape[-1], lr.shape[-2]))   # W x H
                     sr = self.model(lr, idx_scale)
 
                     if filename[0] in ['butterfly', 'baboon', '253027', 'img062', 'ARMS', '0828']:
@@ -221,28 +232,37 @@ class Trainer():
 
                 image_names.append('average')
                 PSNR_values.append(avg_psnr)
+                if self.compute_flops:
+                    _valid = [v for v in FLOPS_values if v == v]          # drop NaN
+                    FLOPS_values.append(sum(_valid) / len(_valid) if _valid else float('nan'))
+                    LR_sizes.append('mean')
 
-                if self.args.load in ('.', ''):
-                    xlsx_path = f'D:/Mohamed Morsi/src/experiment/{self.args.save}/results-{d.dataset.name}/{d.dataset.name}.xlsx'
-                else:
-                    xlsx_path = f'D:/Mohamed Morsi/src/experiment/{self.args.load}/results-{d.dataset.name}/{d.dataset.name}.xlsx'
-
+                # dynamic path (any machine / any model folder):
+                #   <src>/experiment/<save>/results-<dataset>/<dataset>.xlsx
+                xlsx_path = self.ckp.get_path(
+                    'results-{}'.format(d.dataset.name), '{}.xlsx'.format(d.dataset.name))
                 os.makedirs(os.path.dirname(xlsx_path), exist_ok=True)
 
                 if self.args.test_only:
                     avg_ssim = eval_acc_ssim / n_images
                     self.ckp.log_ssim[-1, idx_data, idx_scale] /= n_images
                     SSIM_values.append(avg_ssim)
-                    DataFrame({
-                        'image': np.array(image_names, dtype=object),
-                        'psnr':  [round(v, 2) for v in PSNR_values],
-                        'ssim':  [round(v, 4) for v in SSIM_values]
-                    }).to_excel(xlsx_path, index=False)
-                else:
-                    DataFrame({
-                        'image': np.array(image_names, dtype=object),
-                        'psnr':  [round(v, 2) for v in PSNR_values],
-                    }).to_excel(xlsx_path, index=False)
+
+                table = {
+                    'image': np.array(image_names, dtype=object),
+                    'psnr':  [round(v, 2) for v in PSNR_values],
+                }
+                if self.args.test_only:
+                    table['ssim'] = [round(v, 4) for v in SSIM_values]
+                if self.compute_flops:
+                    table['lr_size'] = LR_sizes                                  # LR input W x H
+                    table['flops_G'] = [round(v, 3) for v in FLOPS_values]       # G (fvcore, 1 MAC = 1 FLOP)
+                try:
+                    DataFrame(table).to_excel(xlsx_path, index=False)
+                except PermissionError:                                          # file open in Excel
+                    xlsx_path = xlsx_path.replace('.xlsx', '_alt.xlsx')
+                    DataFrame(table).to_excel(xlsx_path, index=False)
+                self.ckp.write_log('Excel saved: {}'.format(xlsx_path))
 
                 best = self.ckp.log.max(0)
                 best_epoch = int(best[1][idx_data, idx_scale].item()) + 1
@@ -261,6 +281,14 @@ class Trainer():
                             avg_psnr, best_psnr, best_epoch)
                     )
 
+                if self.compute_flops and len(FLOPS_values) > 0:
+                    self.ckp.write_log(
+                        '[{} x{}]\tAverage FLOPs per image: {:.3f} G'.format(
+                            d.dataset.name, scale, FLOPS_values[-1])
+                    )
+
+        if self.compute_flops:
+            self.flops_counter.save()          # reuse the per-shape FLOPs in later epochs / runs
         self.ckp.write_log('Forward: {:.2f}s\n'.format(timer_test.toc()))
         self.ckp.write_log('Saving...')
 

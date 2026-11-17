@@ -93,8 +93,7 @@ class checkpoint():
             for arg in vars(args):
                 f.write('{}: {}\n'.format(arg, getattr(args, arg)))
             f.write('\n')
-        #self.n_processes = 8
-        self.n_processes = 1
+        self.n_processes = 8
 
         # ================================================================
         # ✅ تحميل PSNR log مع دعم --resume N
@@ -294,6 +293,167 @@ def ssim(img1, img2):
     ssim_map    = numerator / (denominator + 1e-12)
 
     return ssim_map.mean()
+
+
+# ============================================================
+# Per-image FLOPs for ANY model (fvcore: 1 multiply-add = 1 FLOP, i.e. MACs;
+# operations fvcore does not support are ignored).
+# ============================================================
+class _CallWithScale(torch.nn.Module):
+    """Lets fvcore trace models whose forward is  forward(x, idx_scale)."""
+    def __init__(self, net, idx_scale):
+        super(_CallWithScale, self).__init__()
+        self.net = net
+        self.idx_scale = idx_scale
+
+    def forward(self, x):
+        return self.net(x, self.idx_scale)
+
+
+class FlopsCounter():
+    """
+    GFLOPs of one forward pass for an exact LR input (1, C, H, W).
+      * finds the real network inside the `model.Model` wrapper by itself
+        (get_model() / .model / .module) and checks it holds ALL the parameters;
+      * tries forward(x) and forward(x, idx_scale) and remembers the way that works;
+      * FLOPs depend only on the input SHAPE: results are cached in memory and in
+        `cache_file` (JSON, valid only for a model with the same parameter count),
+        so later epochs / later runs do not trace again.
+    Returns NaN (never raises) when FLOPs cannot be computed.
+    """
+    def __init__(self, model, cache_file=None):
+        self.model = model
+        self.cache_file = cache_file
+        self.values = {}
+        self.strategy = None
+        self.disabled = False
+        self.failures = 0
+        self.warned = set()
+        self.n_params = sum(p.numel() for p in model.parameters())
+        self._load()
+
+    # ---------------- cache ----------------
+    def _load(self):
+        if not self.cache_file or not os.path.isfile(self.cache_file):
+            return
+        try:
+            import json
+            with open(self.cache_file, 'r') as f:
+                data = json.load(f)
+            if data.get('n_params') == self.n_params:
+                self.values = {k: float(v) for k, v in data.get('values', {}).items()}
+        except Exception:
+            self.values = {}
+
+    def save(self):
+        if not self.cache_file:
+            return
+        try:
+            import json
+            ok = {k: v for k, v in self.values.items() if v == v}      # drop NaN
+            with open(self.cache_file, 'w') as f:
+                json.dump({'n_params': self.n_params, 'values': ok}, f, indent=1)
+        except Exception:
+            pass
+
+    # ---------------- finding the real network ----------------
+    @staticmethod
+    def _unwrap(model):
+        net = model
+        for _ in range(6):
+            if isinstance(net, torch.nn.DataParallel):
+                net = net.module
+                continue
+            getter = getattr(net, 'get_model', None)
+            if callable(getter):
+                try:
+                    nxt = getter()
+                except Exception:
+                    nxt = None
+                if nxt is not None and nxt is not net:
+                    net = nxt
+                    continue
+            inner = getattr(net, 'model', None)
+            if isinstance(inner, torch.nn.Module) and inner is not net:
+                net = inner
+                continue
+            break
+        return net
+
+    def _candidates(self):
+        inner = self._unwrap(self.model)
+        out = []
+        if inner is not self.model and sum(p.numel() for p in inner.parameters()) == self.n_params:
+            out += [('inner network, forward(x)', inner, False),
+                    ('inner network, forward(x, idx_scale)', inner, True)]
+        out += [('whole model, forward(x, idx_scale)', self.model, True),
+                ('whole model, forward(x)', self.model, False)]
+        return out
+
+    # ---------------- tracing ----------------
+    @staticmethod
+    def _trace(net, lr, idx_scale, use_scale):
+        from fvcore.nn import FlopCountAnalysis
+        target = _CallWithScale(net, idx_scale) if use_scale else net
+        was_training = net.training
+        net.eval()
+        try:
+            with torch.no_grad():
+                fca = FlopCountAnalysis(target, (lr,))
+                fca.unsupported_ops_warnings(False)
+                fca.uncalled_modules_warnings(False)
+                return float(fca.total()) / 1e9
+        finally:
+            net.train(was_training)
+
+    def _warn(self, key, msg):
+        if key not in self.warned:
+            self.warned.add(key)
+            print(msg)
+
+    def __call__(self, lr, idx_scale=0):
+        key = 'x'.join(str(s) for s in lr.shape)
+        if key in self.values:
+            return self.values[key]
+        if self.disabled:
+            return float('nan')
+        try:
+            import fvcore  # noqa: F401
+        except ImportError:
+            self._warn('fvcore', '[FLOPs] fvcore is not installed -> the FLOPs column will be empty. '
+                                 'Install it with:  pip install fvcore')
+            self.disabled = True
+            return float('nan')
+
+        order = [self.strategy] if self.strategy else self._candidates()
+        first_err = None
+        for name, net, use_scale in order:
+            try:
+                value = self._trace(net, lr, idx_scale, use_scale)
+                if self.strategy is None:
+                    self.strategy = (name, net, use_scale)
+                    print('[FLOPs] tracing via: {}'.format(name))
+                self.values[key] = value
+                return value
+            except Exception as e:
+                if first_err is None:
+                    first_err = (name, e)          # the first (most plausible) way is the most informative error
+                try:
+                    if torch.cuda.is_available():
+                        torch.cuda.empty_cache()
+                except Exception:
+                    pass
+
+        self.failures += 1
+        self._warn('fail', '[FLOPs] could not compute FLOPs for input {} (tried {} way(s); first error '
+                           'while using "{}": {}: {}). NaN is written for such images.'.format(
+                               tuple(lr.shape), len(order), first_err[0],
+                               type(first_err[1]).__name__, first_err[1]))
+        if self.strategy is None and self.failures >= 3:
+            self.disabled = True
+            print('[FLOPs] no way of tracing this model worked after 3 images -> FLOPs disabled for this run.')
+        self.values[key] = float('nan')
+        return float('nan')
 
 
 # ============================================================
