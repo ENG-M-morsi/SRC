@@ -1,7 +1,7 @@
 # ===================================================================
-# hyperopt_hat_cnn_act.py — بحث سريع لموديل HUTCN + HAT
-# المحاور المبحوثة: num_cnn_stages + act_fn
-# كل شيء آخر ثابت من بحث HAT الشامل (best_params_optimized.json)
+# hyperopt_with_your_data_general.py
+# البحث عن أفضل: num_cnn_stages + act_fn (+ بقية المعاملات)
+# الهدف: تحسين PSNR
 # ===================================================================
 import optuna
 import torch
@@ -13,9 +13,6 @@ import sys
 import copy
 import json
 import gc
-import time
-import random
-import numpy as np
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
@@ -25,57 +22,50 @@ import model as model_module
 import loss as loss_module
 from option import args as base_args
 from model.dhtcun import HUTCN
+from model import dhtcu_block as B
 
 # ═══════════════════════════════════════════════════════════════════
-# 🎯 إعدادات البحث (غيّر هنا فقط)
+# 🎯 إعدادات البحث
 # ═══════════════════════════════════════════════════════════════════
-STAGES_CHOICES = [1, 2, 3, 4, 5, 6]
-ACT_CHOICES = ['relu', 'lrelu', 'prelu', 'gelu', 'silu', 'tanh']   # يمكن إضافة 'mish'
-SEARCH_SPACE = {
-    'num_cnn_stages': STAGES_CHOICES,
-    'act_fn': ACT_CHOICES,
-}
-N_TRIALS = len(STAGES_CHOICES) * len(ACT_CHOICES)   # حجم الشبكة (36)
+N_TRIALS = 30
+EPOCHS_PER_TRIAL = 30
+N_STARTUP_TRIALS = 10
+N_WARMUP_STEPS = 6
 
-# ── إعدادات السرعة ──
-EPOCHS_PER_TRIAL = 20
-MAX_ITERS_PER_EPOCH = 250    # يحدد طول الـ epoch مهما كان حجم الداتا
-VAL_EVERY = 2                # تقييم كل epoch زوجي + آخر epoch
-VAL_CROP_LR = 120            # مضاعف لـ window_size=12
-SEARCH_PATCH_SIZE = 224      # HR → LR=36 = 3 × window_size (بلا padding)
-SEARCH_BATCH = 8
-USE_AMP = True               # يُعطَّل تلقائياً على CPU. إن ظهرت nan اجعله False
-SEED = 42
-
-STUDY_NAME = "hutcn_hat_search_cnn_act_fast_x4"
+STUDY_NAME = "hutcn_search_cnn_stages_and_act"
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                            "optuna_study_hat_cnn_act_fast_x4.db")
+                             "optuna_study_cnn_act.db")
 STORAGE_URL = f"sqlite:///{STORAGE_PATH}"
 
 DATA_DIR = r'D:\Mohamed Morsi\DATA'
-SCALE = 4
-
-# ── القيم الثابتة من بحث HAT ──
-FIXED_NF = 128
-FIXED_HEADS = 4
-FIXED_WINDOW = 12
-FIXED_BLOCKS = 4
-FIXED_LR = 0.00040181223544441785
-FIXED_WD = 0.00018709724200887206
-# optimizer = AdamW | scheduler = cosine | loss = L1
+SCALE = 2   # ← يناسب DAT_bestx2
 
 
 # ===================================================================
-# أدوات مساعدة
+# دوال الخسارة الإضافية
 # ===================================================================
-def set_seed(seed):
-    random.seed(seed)
-    np.random.seed(seed)
-    torch.manual_seed(seed)
-    if torch.cuda.is_available():
-        torch.cuda.manual_seed_all(seed)
+class CharbonnierLoss(nn.Module):
+    def __init__(self, eps=1e-3):
+        super(CharbonnierLoss, self).__init__()
+        self.eps = eps
+    def forward(self, x, y):
+        return torch.mean(torch.sqrt((x - y) ** 2 + self.eps ** 2))
 
 
+class HuberLoss(nn.Module):
+    def __init__(self, delta=0.01):
+        super(HuberLoss, self).__init__()
+        self.delta = delta
+    def forward(self, x, y):
+        diff = torch.abs(x - y)
+        mask = (diff < self.delta).float()
+        return torch.mean(mask * (x - y) ** 2 +
+                          (1 - mask) * (2 * self.delta * diff - self.delta ** 2))
+
+
+# ===================================================================
+# تحرير الذاكرة
+# ===================================================================
 def cleanup_memory():
     gc.collect()
     if torch.cuda.is_available():
@@ -83,46 +73,20 @@ def cleanup_memory():
         torch.cuda.synchronize()
 
 
-def center_crop_pair(lr, hr, scale, size):
-    """يقص منطقة مركزية من LR وما يقابلها من HR."""
-    _, _, h, w = lr.shape
-    ch, cw = min(size, h), min(size, w)
-    top, left = (h - ch) // 2, (w - cw) // 2
-    lr_c = lr[:, :, top:top + ch, left:left + cw]
-    hr_c = hr[:, :, top * scale:(top + ch) * scale,
-              left * scale:(left + cw) * scale]
-    return lr_c, hr_c
-
-
-def evaluate(model, val_loader, device, use_amp):
-    model.eval()
-    psnr_sum, n = 0.0, 0
-    with torch.no_grad():
-        for lr_b, hr_b, _ in val_loader:
-            lr_b, hr_b = lr_b.to(device), hr_b.to(device)
-            lr_b, hr_b = center_crop_pair(lr_b, hr_b, SCALE, VAL_CROP_LR)
-            with torch.autocast(device_type='cuda', dtype=torch.float16,
-                                enabled=use_amp):
-                sr = model(lr_b)
-            mse = torch.mean((sr.float() - hr_b) ** 2)
-            psnr_sum += (10 * torch.log10(1.0 / (mse + 1e-8))).item()
-            n += 1
-    return psnr_sum / max(n, 1)
-
-
 # ===================================================================
 # تحميل البيانات
 # ===================================================================
-def get_loaders_from_args(patch_size, batch_size, base_args):
+def get_loaders_from_args(trial_params, base_args):
     args = copy.deepcopy(base_args)
     args.data_train = ['DIV2K']
     args.data_test = ['DIV2K']
     args.data_range = '1-800/896-900'
     args.scale = [SCALE]
     args.dir_data = DATA_DIR
-    args.patch_size = patch_size
-    args.batch_size = batch_size
-    args.n_threads = 0
+    args.patch_size = trial_params['patch_size']
+    args.batch_size = trial_params['batch_size']
+    args.n_threads = 0   # ✅ يمنع multiprocessing ومشاكل memory
+
     loader = data.Data(args)
     return loader.loader_train, loader.loader_test
 
@@ -131,80 +95,147 @@ def get_loaders_from_args(patch_size, batch_size, base_args):
 # دالة الهدف
 # ===================================================================
 def objective(trial):
-    t0 = time.time()
-    num_cnn_stages = trial.suggest_categorical('num_cnn_stages', STAGES_CHOICES)
-    act_fn = trial.suggest_categorical('act_fn', ACT_CHOICES)
+    # ---------- معاملات النموذج ----------
+    nf = trial.suggest_int('nf', 32, 96, step=8)
+    num_heads = trial.suggest_categorical('num_heads', [2, 4, 8])
+    if nf % num_heads != 0:
+        raise optuna.TrialPruned()
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    use_amp = USE_AMP and device.type == 'cuda'
-    torch.backends.cudnn.benchmark = True
+    window_size = trial.suggest_categorical('window_size', [4, 6, 8, 12, 16])
+    num_blocks_hat = trial.suggest_int('num_blocks_hat', 2, 6, step=2)
 
-    # نفس الـ seed لكل trial => نفس التهيئة ونفس ترتيب البيانات تقريباً
-    set_seed(SEED)
+    # ═══════════════════════════════════════════════════════════════
+    # 🌟 محور البحث الأساسي: CNN stages + Activation
+    # ═══════════════════════════════════════════════════════════════
+    num_cnn_stages = trial.suggest_int('num_cnn_stages', 1, 6, step=1)
+    act_fn = trial.suggest_categorical(
+        'act_fn', ['relu', 'lrelu', 'prelu', 'gelu', 'silu', 'tanh']
+    )
 
+    # ---------- معاملات التدريب ----------
+    # patch_size مناسب لـ scale=2
+    patch_size = trial.suggest_categorical('patch_size', [64, 96, 128, 160, 192])
+    if window_size > patch_size:
+        raise optuna.TrialPruned()
+
+    # batch_size ديناميكي حسب patch_size
+    if patch_size >= 160:
+        safe_batch = 4
+    elif patch_size >= 128:
+        safe_batch = 6
+    else:
+        safe_batch = 8
+
+    optimizer_name = trial.suggest_categorical('optimizer', ['ADAM', 'AdamW'])
+    scheduler_name = trial.suggest_categorical('scheduler',
+                                               ['fixed', 'cosine', 'step'])
+    loss_name = trial.suggest_categorical('loss',
+                                          ['L1', 'L2', 'Charbonnier', 'Huber'])
+    lr = trial.suggest_float('lr', 1e-5, 5e-4, log=True)
+    weight_decay = trial.suggest_float('weight_decay', 1e-6, 1e-3, log=True)
+
+    # ---------- بناء النموذج ----------
     model = HUTCN(
-        in_nc=3, nf=FIXED_NF, num_modules=1, out_nc=3,
+        in_nc=3,
+        nf=nf,
+        num_modules=1,
+        out_nc=3,
         upscale=SCALE,
-        num_heads=FIXED_HEADS,
-        window_size=FIXED_WINDOW,      # ⚠️ في HAT الاسم window_size وليس ws
-        num_blocks=FIXED_BLOCKS,
+        num_heads=num_heads,
+        window_size=window_size,
+        num_blocks=num_blocks_hat,
         num_cnn_stages=num_cnn_stages,
         act_fn=act_fn,
-    ).to(device)
+    )
+
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
 
     n_params = sum(p.numel() for p in model.parameters())
-    print(f'   📊 [Trial {trial.number}] cnn_stages={num_cnn_stages}, '
-          f'act={act_fn}, params={n_params:,}')
+    print(f'\n   📊 [Trial {trial.number}] nf={nf}, heads={num_heads}, '
+          f'ws={window_size}, hat_blocks={num_blocks_hat}, '
+          f'cnn_stages={num_cnn_stages}, act={act_fn}, '
+          f'patch={patch_size}, batch={safe_batch}, params={n_params:,}')
 
-    optimizer = optim.AdamW(model.parameters(), lr=FIXED_LR,
-                            weight_decay=FIXED_WD, betas=(0.9, 0.99))
-    scheduler = lrs.CosineAnnealingLR(optimizer, T_max=EPOCHS_PER_TRIAL,
-                                      eta_min=1e-7)
-    criterion = nn.L1Loss()
-    scaler = torch.amp.GradScaler('cuda', enabled=use_amp)
+    # ---------- المحسّن ----------
+    if optimizer_name == 'ADAM':
+        optimizer = optim.Adam(model.parameters(), lr=lr,
+                               weight_decay=weight_decay, betas=(0.9, 0.99))
+    else:
+        optimizer = optim.AdamW(model.parameters(), lr=lr,
+                                weight_decay=weight_decay, betas=(0.9, 0.99))
 
-    train_loader, test_loaders = get_loaders_from_args(
-        SEARCH_PATCH_SIZE, SEARCH_BATCH, base_args)
+    EPOCHS = EPOCHS_PER_TRIAL
+    if scheduler_name == 'fixed':
+        scheduler = None
+    elif scheduler_name == 'cosine':
+        scheduler = lrs.CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=1e-7)
+    else:
+        scheduler = lrs.StepLR(optimizer, step_size=3, gamma=0.5)
+
+    # ---------- دالة الخسارة ----------
+    if loss_name == 'L1':
+        criterion = nn.L1Loss()
+    elif loss_name == 'L2':
+        criterion = nn.MSELoss()
+    elif loss_name == 'Charbonnier':
+        criterion = CharbonnierLoss(eps=1e-3)
+    else:
+        criterion = HuberLoss(delta=0.01)
+
+    # ---------- تحميل البيانات ----------
+    trial_params = {'patch_size': patch_size, 'batch_size': safe_batch}
+    train_loader, test_loaders = get_loaders_from_args(trial_params, base_args)
     val_loader = test_loaders[0] if test_loaders else None
     if val_loader is None:
         raise optuna.TrialPruned()
 
+    # ---------- التدريب والتقييم ----------
     best_psnr = 0.0
     try:
-        for epoch in range(1, EPOCHS_PER_TRIAL + 1):
+        for epoch in range(1, EPOCHS + 1):
             model.train()
-            for it, (lr_b, hr_b, _) in enumerate(train_loader):
-                if it >= MAX_ITERS_PER_EPOCH:
-                    break
-                lr_b = lr_b.to(device, non_blocking=True)
-                hr_b = hr_b.to(device, non_blocking=True)
+            for lr_batch, hr_batch, _ in train_loader:
+                lr_batch = lr_batch.to(device)
+                hr_batch = hr_batch.to(device)
+                optimizer.zero_grad()
+                sr = model(lr_batch)
+                loss = criterion(sr, hr_batch)
+                loss.backward()
+                optimizer.step()
+                del lr_batch, hr_batch, sr, loss
 
-                optimizer.zero_grad(set_to_none=True)
-                with torch.autocast(device_type='cuda', dtype=torch.float16,
-                                    enabled=use_amp):
-                    sr = model(lr_b)
-                loss = criterion(sr.float(), hr_b)
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
+            if scheduler is not None:
+                scheduler.step()
 
-            scheduler.step()
+            model.eval()
+            psnr_sum = 0.0
+            with torch.no_grad():
+                for lr_batch, hr_batch, _ in val_loader:
+                    lr_batch = lr_batch.to(device)
+                    hr_batch = hr_batch.to(device)
+                    sr = model(lr_batch)
+                    mse = torch.mean((sr - hr_batch) ** 2)
+                    psnr = 10 * torch.log10(1.0 / (mse + 1e-8))
+                    psnr_sum += psnr.item()
+                    del lr_batch, hr_batch, sr
 
-            if epoch % VAL_EVERY == 0 or epoch == EPOCHS_PER_TRIAL:
-                avg_psnr = evaluate(model, val_loader, device, use_amp)
-                print(f'   📈 [Trial {trial.number}] Epoch {epoch}/'
-                      f'{EPOCHS_PER_TRIAL}: PSNR = {avg_psnr:.3f} dB')
+            avg_psnr = psnr_sum / len(val_loader)
+            print(f'   📈 [Trial {trial.number}] Epoch {epoch}/{EPOCHS}: '
+                  f'PSNR = {avg_psnr:.3f} dB')
 
-                if not np.isfinite(avg_psnr):
-                    print(f'   ⚠️ [Trial {trial.number}] PSNR غير صالح (nan/inf) '
-                          f'→ جرّب USE_AMP = False')
-                    raise optuna.TrialPruned()
+            trial.report(avg_psnr, epoch)
+            if trial.should_prune():
+                raise optuna.TrialPruned()
 
-                trial.report(avg_psnr, epoch)
-                best_psnr = max(best_psnr, avg_psnr)
+            best_psnr = max(best_psnr, avg_psnr)
 
     except torch.cuda.OutOfMemoryError:
         print(f'   ⚠️ [Trial {trial.number}] CUDA OOM → pruned')
+        raise optuna.TrialPruned()
+
+    except MemoryError:
+        print(f'   ⚠️ [Trial {trial.number}] RAM OOM → pruned')
         raise optuna.TrialPruned()
 
     finally:
@@ -214,7 +245,6 @@ def objective(trial):
             pass
         cleanup_memory()
 
-    print(f'   ⏱️ [Trial {trial.number}] الزمن: {(time.time() - t0) / 60:.1f} دقيقة')
     return best_psnr
 
 
@@ -222,33 +252,42 @@ def objective(trial):
 # التشغيل
 # ===================================================================
 if __name__ == "__main__":
+
     study = optuna.create_study(
         study_name=STUDY_NAME,
         storage=STORAGE_URL,
         direction='maximize',
-        # GridSampler: لا تكرار للتركيبات
-        sampler=optuna.samplers.GridSampler(SEARCH_SPACE, seed=SEED),
-        # NopPruner: كل trial يُكمل لتبقى المقارنة عادلة
-        pruner=optuna.pruners.NopPruner(),
+        sampler=optuna.samplers.TPESampler(seed=42),
+        pruner=optuna.pruners.MedianPruner(
+            n_startup_trials=N_STARTUP_TRIALS,
+            n_warmup_steps=N_WARMUP_STEPS,
+        ),
         load_if_exists=True
     )
 
-    TS = optuna.trial.TrialState
-    complete_trials = [t for t in study.trials if t.state == TS.COMPLETE]
-    pruned_trials = [t for t in study.trials if t.state == TS.PRUNED]
-    failed_trials = [t for t in study.trials if t.state == TS.FAIL]
-    remaining = max(0, N_TRIALS - len(complete_trials) - len(pruned_trials))
+    # الإحصاءات
+    complete_trials = [t for t in study.trials
+                       if t.state == optuna.trial.TrialState.COMPLETE]
+    pruned_trials = [t for t in study.trials
+                     if t.state == optuna.trial.TrialState.PRUNED]
+    failed_trials = [t for t in study.trials
+                     if t.state == optuna.trial.TrialState.FAIL]
+
+    valid_trials = [t for t in study.trials
+                    if t.state in [optuna.trial.TrialState.COMPLETE,
+                                   optuna.trial.TrialState.PRUNED]]
+    remaining = max(0, N_TRIALS - len(valid_trials))
 
     print("=" * 70)
     print(f"📚 Study: {STUDY_NAME}")
-    print(f"🎯 Grid size: {N_TRIALS} combinations")
+    print(f"🎯 Target: {N_TRIALS} valid trials")
     print("=" * 70)
     print(f"✅ COMPLETE: {len(complete_trials)}")
     print(f"✂️ PRUNED  : {len(pruned_trials)}")
     print(f"❌ FAILED  : {len(failed_trials)}  (ignored)")
     print(f"🎯 Remaining: {remaining}")
-    if complete_trials:
-        print(f"🏆 Best PSNR: {study.best_value:.4f} dB "
+    if len(complete_trials) > 0:
+        print(f"🏆 Best PSNR so far: {study.best_value:.4f} dB "
               f"(Trial #{study.best_trial.number})")
     print("=" * 70)
 
@@ -266,35 +305,46 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
             print("\n⚠️ تم الإيقاف يدوياً. النتائج محفوظة.")
 
-    complete_now = [t for t in study.trials if t.state == TS.COMPLETE]
-    if complete_now:
+    # حفظ النتائج
+    complete_now = [t for t in study.trials
+                    if t.state == optuna.trial.TrialState.COMPLETE]
+
+    if len(complete_now) > 0:
         print("\n" + "=" * 70)
         print("🏆 أفضل المعاملات:")
         print("=" * 70)
         for key, value in study.best_params.items():
-            print(f"  {key:>18} : {value}")
+            if isinstance(value, float):
+                print(f"  {key:>18} : {value:.6e}")
+            else:
+                print(f"  {key:>18} : {value}")
         print(f"\n📈 أفضل PSNR: {study.best_value:.4f} dB")
-
-        print("\n🔝 أفضل 5 تركيبات:")
-        for t in sorted(complete_now, key=lambda t: t.value, reverse=True)[:5]:
-            print(f"   {t.value:.4f} dB | stages={t.params['num_cnn_stages']} "
-                  f"| act={t.params['act_fn']}")
         print("=" * 70)
 
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        output_json = os.path.join(base_dir, 'best_params_hat_cnn_act.json')
+        output_json = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            'best_params_cnn_act.json'
+        )
+        best_result = {
+            'best_trial_number': study.best_trial.number,
+            'best_psnr_db': study.best_value,
+            'best_params': study.best_params,
+            'n_complete': len(complete_now),
+            'n_pruned': len(pruned_trials),
+            'n_failed': len(failed_trials),
+        }
         with open(output_json, 'w', encoding='utf-8') as f:
-            json.dump({
-                'best_trial_number': study.best_trial.number,
-                'best_psnr_db': study.best_value,
-                'best_params': study.best_params,
-            }, f, indent=4, ensure_ascii=False)
+            json.dump(best_result, f, indent=4, ensure_ascii=False)
         print(f"\n✅ محفوظ في: {output_json}")
 
+        # حفظ CSV
         try:
-            csv_path = os.path.join(base_dir, 'optuna_trials_hat_cnn_act.csv')
+            csv_path = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                'optuna_trials_cnn_act.csv'
+            )
             study.trials_dataframe().to_csv(csv_path, index=False,
-                                            encoding='utf-8-sig')
+                                             encoding='utf-8-sig')
             print(f"✅ CSV: {csv_path}")
         except Exception as e:
             print(f"⚠️ CSV: {e}")

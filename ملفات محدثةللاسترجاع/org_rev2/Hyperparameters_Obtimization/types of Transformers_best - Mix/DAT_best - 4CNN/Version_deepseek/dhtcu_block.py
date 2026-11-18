@@ -138,7 +138,6 @@ class TESA(nn.Module):
 
     def forward(self, x):
         return self.esa3(self.esa2(self.esa1(x)))
-
 # -------------------------------------------------------------------
 # TCN — Transformer CNN Block (مع CNN stages قابلة للتحكم)
 # -------------------------------------------------------------------

@@ -1,18 +1,21 @@
 {
-    "best_trial_number": 2,
-    "best_psnr_db": 33.33878402709961,
+    "best_trial_number": 10,
+    "best_psnr_db": 35.955545806884764,
     "best_params": {
-        "nf": 40,
+        "nf": 80,
         "num_heads": 8,
-        "ws": 12,
-        "num_blocks": 3,
-        "num_cnn_stages": 5,
-        "act_fn": "gelu",
+        "window_size": 16,
+        "num_blocks_hat": 6,
+        "num_cnn_stages": 4,
+        "act_fn": "silu",
         "patch_size": 160,
-        "optimizer": "ADAM",
-        "scheduler": "step",
-        "loss": "L2",
-        "lr": 5.3257327064372034e-05,
-        "weight_decay": 1.1919481947918734e-06
-    }
+        "optimizer": "AdamW",
+        "scheduler": "fixed",
+        "loss": "Charbonnier",
+        "lr": 0.0004544832359941605,
+        "weight_decay": 0.00012925932058873278
+    },
+    "n_complete": 11,
+    "n_pruned": 0,
+    "n_failed": 0
 }

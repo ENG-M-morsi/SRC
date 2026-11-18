@@ -1,30 +1,11 @@
 import torch
 import torch.nn as nn
 from . import dhtcu_block as B
+
 def make_model(args, parent=False):
-    #model = HUTCN()
-    #model = HUTCN(upscale = args.scale[0])
-    model = HUTCN(upscale=args.scale[0],nf=args.n_feats)
+    model = HUTCN(upscale=args.scale[0], nf=args.n_feats)
     return model
 
-
-"""class Cascade(nn.Module):
-    def __init__(self, ):
-        super(Cascade, self).__init__()
-        self.conv1 = B.conv_layer(50, 50, kernel_size=1)
-        self.conv3 = B.conv_layer(50, 50, kernel_size=3)
-        self.conv5 = B.conv_layer(50, 50, kernel_size=5)
-        self.c = B.conv_block(50 * 4, 50, kernel_size=1, act_type='lrelu')
-
-    def forward(self, x):
-        conv5 = self.conv5(x)
-        extra = x+conv5
-        conv3 = self.conv3(extra)
-        extra = x + conv3
-        conv1 = self.conv1(extra)
-        cat = torch.cat([conv5, conv3, conv1, x], dim=1)
-        input = self.c(cat)
-        return input"""
 
 class HUTCN(nn.Module):
     def __init__(self, in_nc=3, nf=50, num_modules=4, out_nc=3, upscale=3,

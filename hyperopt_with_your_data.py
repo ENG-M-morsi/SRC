@@ -1,6 +1,6 @@
 # ===================================================================
 # hyperopt_with_your_data_general.py
-# البحث عن: num_cnn_stages + act_fn + (بقية المعاملات)
+# البحث عن أفضل: num_cnn_stages + act_fn (+ بقية المعاملات)
 # الهدف: تحسين PSNR
 # ===================================================================
 import optuna
@@ -32,13 +32,13 @@ EPOCHS_PER_TRIAL = 30
 N_STARTUP_TRIALS = 10
 N_WARMUP_STEPS = 6
 
-STUDY_NAME = "hutcn_search_cnn_act_fn"   # ← اسم جديد للدراسة
+STUDY_NAME = "hutcn_search_cnn_stages_and_act"
 STORAGE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                              "optuna_study_cnn_act.db")
 STORAGE_URL = f"sqlite:///{STORAGE_PATH}"
 
 DATA_DIR = r'D:\Mohamed Morsi\DATA'
-SCALE = 2   # ← يتوافق مع DAT_bestx2
+SCALE = 2   # ← يناسب DAT_bestx2
 
 
 # ===================================================================
@@ -85,7 +85,7 @@ def get_loaders_from_args(trial_params, base_args):
     args.dir_data = DATA_DIR
     args.patch_size = trial_params['patch_size']
     args.batch_size = trial_params['batch_size']
-    args.n_threads = 0   # ✅ منع multiprocessing
+    args.n_threads = 0   # ✅ يمنع multiprocessing ومشاكل memory
 
     loader = data.Data(args)
     return loader.loader_train, loader.loader_test
@@ -96,26 +96,29 @@ def get_loaders_from_args(trial_params, base_args):
 # ===================================================================
 def objective(trial):
     # ---------- معاملات النموذج ----------
-    nf = trial.suggest_int('nf', 32, 128, step=8)
+    nf = trial.suggest_int('nf', 32, 96, step=8)
     num_heads = trial.suggest_categorical('num_heads', [2, 4, 8])
     if nf % num_heads != 0:
         raise optuna.TrialPruned()
 
-    ws = trial.suggest_categorical('ws', [4, 6, 8, 12, 16])
-    num_blocks = trial.suggest_int('num_blocks', 1, 4, step=1)
+    window_size = trial.suggest_categorical('window_size', [4, 6, 8, 12, 16])
+    num_blocks_hat = trial.suggest_int('num_blocks_hat', 2, 6, step=2)
 
-    # ✅ المعاملات الجديدة — محور البحث الأساسي
+    # ═══════════════════════════════════════════════════════════════
+    # 🌟 محور البحث الأساسي: CNN stages + Activation
+    # ═══════════════════════════════════════════════════════════════
     num_cnn_stages = trial.suggest_int('num_cnn_stages', 1, 6, step=1)
     act_fn = trial.suggest_categorical(
         'act_fn', ['relu', 'lrelu', 'prelu', 'gelu', 'silu', 'tanh']
     )
 
     # ---------- معاملات التدريب ----------
+    # patch_size مناسب لـ scale=2
     patch_size = trial.suggest_categorical('patch_size', [64, 96, 128, 160, 192])
-    if ws > patch_size:
+    if window_size > patch_size:
         raise optuna.TrialPruned()
 
-    # batch_size ديناميكي
+    # batch_size ديناميكي حسب patch_size
     if patch_size >= 160:
         safe_batch = 4
     elif patch_size >= 128:
@@ -133,11 +136,14 @@ def objective(trial):
 
     # ---------- بناء النموذج ----------
     model = HUTCN(
-        in_nc=3, nf=nf, num_modules=1, out_nc=3,
+        in_nc=3,
+        nf=nf,
+        num_modules=1,
+        out_nc=3,
         upscale=SCALE,
         num_heads=num_heads,
-        ws=ws,
-        num_blocks=num_blocks,
+        window_size=window_size,
+        num_blocks=num_blocks_hat,
         num_cnn_stages=num_cnn_stages,
         act_fn=act_fn,
     )
@@ -146,9 +152,10 @@ def objective(trial):
     model.to(device)
 
     n_params = sum(p.numel() for p in model.parameters())
-    print(f'   📊 [Trial {trial.number}] nf={nf}, heads={num_heads}, '
-          f'ws={ws}, blocks={num_blocks}, cnn_stages={num_cnn_stages}, '
-          f'act={act_fn}, params={n_params:,}')
+    print(f'\n   📊 [Trial {trial.number}] nf={nf}, heads={num_heads}, '
+          f'ws={window_size}, hat_blocks={num_blocks_hat}, '
+          f'cnn_stages={num_cnn_stages}, act={act_fn}, '
+          f'patch={patch_size}, batch={safe_batch}, params={n_params:,}')
 
     # ---------- المحسّن ----------
     if optimizer_name == 'ADAM':
@@ -227,6 +234,10 @@ def objective(trial):
         print(f'   ⚠️ [Trial {trial.number}] CUDA OOM → pruned')
         raise optuna.TrialPruned()
 
+    except MemoryError:
+        print(f'   ⚠️ [Trial {trial.number}] RAM OOM → pruned')
+        raise optuna.TrialPruned()
+
     finally:
         try:
             del model, optimizer, train_loader, val_loader
@@ -241,6 +252,7 @@ def objective(trial):
 # التشغيل
 # ===================================================================
 if __name__ == "__main__":
+
     study = optuna.create_study(
         study_name=STUDY_NAME,
         storage=STORAGE_URL,
@@ -253,6 +265,7 @@ if __name__ == "__main__":
         load_if_exists=True
     )
 
+    # الإحصاءات
     complete_trials = [t for t in study.trials
                        if t.state == optuna.trial.TrialState.COMPLETE]
     pruned_trials = [t for t in study.trials
@@ -274,7 +287,7 @@ if __name__ == "__main__":
     print(f"❌ FAILED  : {len(failed_trials)}  (ignored)")
     print(f"🎯 Remaining: {remaining}")
     if len(complete_trials) > 0:
-        print(f"🏆 Best PSNR: {study.best_value:.4f} dB "
+        print(f"🏆 Best PSNR so far: {study.best_value:.4f} dB "
               f"(Trial #{study.best_trial.number})")
     print("=" * 70)
 
@@ -295,6 +308,7 @@ if __name__ == "__main__":
     # حفظ النتائج
     complete_now = [t for t in study.trials
                     if t.state == optuna.trial.TrialState.COMPLETE]
+
     if len(complete_now) > 0:
         print("\n" + "=" * 70)
         print("🏆 أفضل المعاملات:")
@@ -315,6 +329,9 @@ if __name__ == "__main__":
             'best_trial_number': study.best_trial.number,
             'best_psnr_db': study.best_value,
             'best_params': study.best_params,
+            'n_complete': len(complete_now),
+            'n_pruned': len(pruned_trials),
+            'n_failed': len(failed_trials),
         }
         with open(output_json, 'w', encoding='utf-8') as f:
             json.dump(best_result, f, indent=4, ensure_ascii=False)

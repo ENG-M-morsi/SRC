@@ -1,0 +1,18 @@
+{
+    "best_trial_number": 2,
+    "best_psnr_db": 33.33878402709961,
+    "best_params": {
+        "nf": 40,
+        "num_heads": 8,
+        "ws": 12,
+        "num_blocks": 3,
+        "num_cnn_stages": 5,
+        "act_fn": "gelu",
+        "patch_size": 160,
+        "optimizer": "ADAM",
+        "scheduler": "step",
+        "loss": "L2",
+        "lr": 5.3257327064372034e-05,
+        "weight_decay": 1.1919481947918734e-06
+    }
+}

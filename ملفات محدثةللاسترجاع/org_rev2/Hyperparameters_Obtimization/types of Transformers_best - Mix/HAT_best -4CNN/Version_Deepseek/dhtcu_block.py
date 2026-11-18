@@ -242,7 +242,6 @@ class TESA(nn.Module):
     def forward(self, x):
         # HTESA = FESA(FESA(FESA(Hi/p)))
         return self.esa3(self.esa2(self.esa1(x)))
-
 # -------------------------------------------------------------------
 # TCN — Transformer CNN Block (يستخدم HAT + CNN قابلة للتحكم)
 # -------------------------------------------------------------------
