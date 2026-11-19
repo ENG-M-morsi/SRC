@@ -8,9 +8,9 @@ def make_model(args, parent=False):
 
 
 class HUTCN(nn.Module):
-    def __init__(self, in_nc=3, nf=50, num_modules=1, out_nc=3, upscale=3,
-                 num_heads=4, window_size=12, num_blocks=4,
-                 num_cnn_stages=4, act_fn='relu'):
+    def __init__(self, in_nc=3, nf=80, num_modules=1, out_nc=3, upscale=3,
+                 num_heads=8, window_size=16, num_blocks=6,
+                 num_cnn_stages=4, act_fn='silu'):
         super(HUTCN, self).__init__()
 
         self.fea_conv = B.conv_layer(in_nc, nf, kernel_size=1)
